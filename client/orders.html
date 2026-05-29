@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YAYRA – Mes commandes</title>
+  <link rel="stylesheet" href="../assets/css/main.css" />
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-logo"><a href="../index.html"><span class="logo-y">Y</span>AYRA</a></div>
+    <div class="nav-actions">
+      <a href="dashboard.html" class="btn-outline">Dashboard</a>
+      <button class="btn-outline" type="button" id="logoutBtn">Se déconnecter</button>
+    </div>
+  </nav>
+
+  <section class="page">
+    <div class="container" style="max-width:980px;">
+      <div class="section-header">
+        <p class="section-eyebrow">Mon Espace</p>
+        <h2 class="section-title">Mes commandes</h2>
+      </div>
+      <div id="ordersWrap"></div>
+    </div>
+  </section>
+
+  <script src="../assets/js/main.js"></script>
+  <script>
+    const token = () => localStorage.getItem('yayra_token') || '';
+
+    function goLogin(){
+      window.location.href = 'login.html';
+    }
+
+    document.getElementById('logoutBtn').addEventListener('click', ()=>{
+      localStorage.removeItem('yayra_token');
+      goLogin();
+    });
+
+    async function loadOrders(){
+      const wrap = document.getElementById('ordersWrap');
+      const t = token();
+      if(!t){ goLogin(); return; }
+
+      wrap.innerHTML = '<p style="color:rgba(255,255,255,.7); font-weight:700;">Chargement...</p>';
+
+      try{
+        const res = await fetch('../api/orders.php?action=list', {
+          method: 'GET',
+          headers: { 'Authorization': 'Bearer ' + t }
+        });
+        const data = await res.json();
+        if(!data.ok){
+          wrap.innerHTML = '<p style="color:rgba(255,255,255,.7); font-weight:700;">Erreur / session expirée.</p>';
+          return;
+        }
+
+        const orders = data.orders || [];
+        if(orders.length === 0){
+          wrap.innerHTML = '<p style="color:rgba(255,255,255,.7); font-weight:700;">Aucune commande.</p>';
+          return;
+        }
+
+        let html = '<div class="table-wrap"><table class="table"><thead><tr><th>ID</th><th>Statut</th><th>Total</th><th>Date</th></tr></thead><tbody>';
+        for(const o of orders){
+          html += `<tr><td>${o.id}</td><td>${o.status}</td><td>${(parseInt(o.total_fcfa,10)||0).toLocaleString('fr-FR')} FCFA</td><td>${o.created_at || ''}</td></tr>`;
+        }
+        html += '</tbody></table></div>';
+        wrap.innerHTML = html;
+
+      }catch(e){
+        wrap.innerHTML = '<p style="color:rgba(255,255,255,.7); font-weight:700;">Erreur réseau.</p>';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadOrders);
+  </script>
+</body>
+</html>
+

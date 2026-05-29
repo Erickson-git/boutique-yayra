@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YAYRA – Ateliers</title>
+  <link rel="stylesheet" href="assets/css/main.css" />
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-logo"><a href="index.html"><span class="logo-y">Y</span>AYRA</a></div>
+    <ul class="nav-links">
+      <li><a href="index.html">Accueil</a></li>
+      <li><a href="shop.html">Boutique</a></li>
+      <li><a href="services.html">Services</a></li>
+      <li><a href="ateliers.html" class="active">Ateliers</a></li>
+      <li><a href="contact.html">Contact</a></li>
+    </ul>
+    <div class="nav-actions">
+      <a href="client/login.html" class="btn-outline">Mon Compte</a>
+      <a href="shop.html#panier" class="btn-cart" aria-label="Panier"><span class="cart-icon">🛍</span><span id="cart-count">0</span></a>
+    </div>
+    <button class="menu-toggle" id="menuToggle">☰</button>
+  </nav>
+
+  <section class="page">
+    <div class="container">
+      <div class="section-header">
+        <p class="section-eyebrow">Formation</p>
+        <h2 class="section-title">Ateliers beauté</h2>
+        <p class="section-sub">Apprenez les techniques et repartez confiante.</p>
+      </div>
+
+      <div class="products-grid">
+        <div class="product-card" style="grid-column: span 12; flex-direction:column;">
+          <h3 style="margin:0 0 10px;">Atelier Cosmétique (démo)</h3>
+          <p style="color:var(--muted); font-weight:700; max-width:760px;">Durée 2h · Matériel inclus · Places limitées.</p>
+          <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:14px;">
+            <a href="client/appointments.html" class="btn-gold" style="text-decoration:none; display:inline-flex;">Réserver un rendez-vous</a>
+            <a href="contact.html" class="btn-outline-dark" style="text-decoration:none; display:inline-flex;">Poser une question</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script src="assets/js/main.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YAYRA Nail Shop – L'Élégance de Lomé</title>
+  <link rel="stylesheet" href="assets/css/main.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <div id="loader" aria-hidden="true">
+    <div class="loader-inner">
+      <svg viewBox="0 0 100 40" class="loader-logo-svg">
+        <text x="50%" y="70%" text-anchor="middle" class="loader-text-svg">YAYRA</text>
+      </svg>
+      <div class="loader-bar"><div class="loader-fill"></div></div>
+    </div>
+  </div>
+
+  <nav class="navbar" id="navbar">
+    <div class="nav-logo">
+      <a href="index.html"><span class="logo-y">Y</span>AYRA</a>
+    </div>
+    <ul class="nav-links">
+      <li><a href="index.html" class="active">Accueil</a></li>
+      <li><a href="shop.html">Boutique</a></li>
+      <li><a href="services.html">Services</a></li>
+      <li><a href="ateliers.html">Ateliers</a></li>
+      <li><a href="locations.html">Livraison</a></li>
+      <li><a href="contact.html">Contact</a></li>
+
+    </ul>
+    <div class="nav-actions">
+      <a href="client/login.html" class="btn-outline">Mon Compte</a>
+      <a href="shop.html" class="btn-cart" aria-label="Panier">
+        <span class="cart-icon">🛍</span>
+        <span id="cart-count">0</span>
+      </a>
+    </div>
+    <button class="menu-toggle" id="menuToggle">☰</button>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-bg">
+      <div class="hero-shape shape1"></div>
+      <div class="hero-shape shape2"></div>
+      <div class="hero-shape shape3"></div>
+      <div class="hero-particles"></div>
+    </div>
+    <div class="hero-content">
+      <p class="hero-eyebrow">Bienvenue à Lomé · Togo</p>
+      <h1 class="hero-title">L'Art de la<br><em>Beauté Féminine</em><br>à Votre Portée</h1>
+      <p class="hero-desc">Soins ongulaires, cosmétiques de prestige et ateliers beauté — conçus pour la femme togolaise moderne.</p>
+      <div class="hero-btns">
+        <a href="shop.html" class="btn-gold">Découvrir la Boutique</a>
+        <a href="services.html" class="btn-ghost">Nos Services</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat"><strong>500+</strong><span>Clientes satisfaites</span></div>
+        <div class="stat-sep"></div>
+        <div class="stat"><strong>2</strong><span>Boutiques à Lomé</span></div>
+        <div class="stat-sep"></div>
+        <div class="stat"><strong>5★</strong><span>Note moyenne</span></div>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="hero-card floating">
+        <div class="hcard-img nail-art"></div>
+        <div class="hcard-info">
+          <span class="hcard-tag">Bestseller</span>
+          <p class="hcard-name">Nail Art Prestige</p>
+          <p class="hcard-price">dès 3 500 FCFA</p>
+        </div>
+      </div>
+      <div class="hero-badge">
+        <div class="badge-ring"></div>
+        <div class="badge-inner">
+          <span>✦</span>
+          <p>Qualité</p>
+          <p>Premium</p>
+          <span>✦</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="marquee-band" aria-hidden="true">
+    <div class="marquee-track">
+      <span>Nail Art ✦</span><span>Soins Visage ✦</span><span>Cosmétiques ✦</span><span>Ateliers ✦</span><span>Produits Capillaires ✦</span><span>Kits Beauté ✦</span>
+      <span>Nail Art ✦</span><span>Soins Visage ✦</span><span>Cosmétiques ✦</span><span>Ateliers ✦</span><span>Produits Capillaires ✦</span><span>Kits Beauté ✦</span>
+    </div>
+  </div>
+
+  <section class="services-section" id="services">
+    <div class="container">
+      <div class="section-header">
+        <p class="section-eyebrow">Notre Excellence</p>
+        <h2 class="section-title">Services & Collections</h2>
+        <p class="section-sub">Chaque service est pensé pour sublimer votre beauté naturelle</p>
+      </div>
+      <div class="services-grid">
+        <div class="service-card sc-large" data-aos="fade-up">
+          <div class="sc-image nail-bg"></div>
+          <div class="sc-overlay">
+            <span class="sc-cat">ART & SOIN</span>
+            <h3>L'Art de l'Ongle</h3>
+            <p>Créations ongulaires personnalisées, des finitions minimalistes aux designs les plus sophistiqués.</p>
+            <a href="shop.html?cat=ongles" class="sc-link">Explorer →</a>
+          </div>
+        </div>
+        <div class="service-card" data-aos="fade-up" data-aos-delay="100">
+          <div class="sc-image kit-bg"></div>
+          <div class="sc-overlay">
+            <span class="sc-cat">COSMÉTIQUE</span>
+            <h3>Kits Beauté</h3>
+            <p>Ensembles luxueux pour un rituel de soin à domicile avec des ingrédients de confiance.</p>
+            <a href="shop.html?cat=kits" class="sc-link">Explorer →</a>
+          </div>
+        </div>
+        <div class="service-card" data-aos="fade-up" data-aos-delay="150">
+          <div class="sc-image face-bg"></div>
+          <div class="sc-overlay">
+            <span class="sc-cat">SOIN VISAGE</span>
+            <h3>Soins & Sérums</h3>
+            <p>Huiles précieuses, sérums et rouleaux de quartz pour une peau visiblement éclatante.</p>
+            <a href="shop.html?cat=visage" class="sc-link">Explorer →</a>
+          </div>
+        </div>
+        <div class="service-card" data-aos="fade-up" data-aos-delay="200">
+          <div class="sc-image hair-bg"></div>
+          <div class="sc-overlay">
+            <span class="sc-cat">CAPILLAIRE</span>
+            <h3>Soins Capillaires</h3>
+            <p>Shampoings, après-shampoings et soins professionnels pour toutes textures.</p>
+            <a href="shop.html?cat=capillaire" class="sc-link">Explorer →</a>
+          </div>
+        </div>
+        <div class="service-card sc-wide" data-aos="fade-up" data-aos-delay="250">
+          <div class="sc-image atelier-bg"></div>
+          <div class="sc-overlay">
+            <span class="sc-cat">FORMATION</span>
+            <h3>Ateliers Cosmétique</h3>
+            <p>Développez vos compétences en beauté dans notre espace moderne et équipé.</p>
+            <a href="ateliers.html" class="sc-link">Voir les ateliers →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="featured-section">
+    <div class="container">
+      <div class="section-header">
+        <p class="section-eyebrow">Coup de Cœur</p>
+        <h2 class="section-title">Produits Vedettes</h2>
+      </div>
+      <div class="products-grid" id="featured-products"></div>
+      <div class="text-center mt-4">
+        <a href="shop.html" class="btn-gold">Voir toute la boutique</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="why-section">
+    <div class="why-bg-deco"></div>
+    <div class="container">
+      <div class="why-grid">
+        <div class="why-content">
+          <p class="section-eyebrow">Pourquoi YAYRA ?</p>
+          <h2>L'Excellence au<br> Cœur de Lomé</h2>
+          <p class="why-desc">YAYRA Nail Shop est née d'une passion profonde pour la beauté africaine moderne. Chaque produit, chaque service est sélectionné avec soin.</p>
+          <div class="why-features">
+            <div class="wf-item"><div class="wf-icon">💎</div><div><h4>Produits Premium</h4><p>Sélection rigoureuse d'ingrédients de qualité</p></div></div>
+            <div class="wf-item"><div class="wf-icon">🌿</div><div><h4>Formulés pour Nous</h4><p>Adaptés au climat et aux peaux locales</p></div></div>
+            <div class="wf-item"><div class="wf-icon">🎓</div><div><h4>Formation & Ateliers</h4><p>Apprenez et maîtrisez l'art de la beauté</p></div></div>
+            <div class="wf-item"><div class="wf-icon">🏠</div><div><h4>2 Boutiques</h4><p>Atiégou & Agoè — proches de chez vous</p></div></div>
+          </div>
+        </div>
+        <div class="why-visual">
+          <div class="why-img-frame">
+            <div class="why-img-inner"></div>
+            <div class="why-img-badge"><strong>+500</strong><span>Clientes</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="testimonials-section">
+    <div class="container">
+      <div class="section-header">
+        <p class="section-eyebrow">Témoignages</p>
+        <h2 class="section-title">Ce Qu'elles Disent</h2>
+      </div>
+      <div class="testimonials-slider" id="testimSlider">
+        <div class="tesm-track">
+          <div class="tesm-card">
+            <div class="tesm-stars">★★★★★</div>
+            <p>"Les ongles les plus beaux que j'ai jamais eu ! L'équipe est professionnelle et le résultat est tout simplement magnifique."</p>
+            <div class="tesm-author"><div class="tesm-avatar">A</div><div><strong>Akossiwa M.</strong><span>Lomé</span></div></div>
+          </div>
+          <div class="tesm-card">
+            <div class="tesm-stars">★★★★★</div>
+            <p>"Le kit beauté que j'ai commandé est incroyable. Ma peau a vraiment changé en deux semaines."</p>
+            <div class="tesm-author"><div class="tesm-avatar">F</div><div><strong>Fatoumata K.</strong><span>Agoè</span></div></div>
+          </div>
+          <div class="tesm-card">
+            <div class="tesm-stars">★★★★★</div>
+            <p>"J'ai suivi l'atelier cosmétique — une expérience transformatrice !"</p>
+            <div class="tesm-author"><div class="tesm-avatar">E</div><div><strong>Edem A.</strong><span>Atiégou</span></div></div>
+          </div>
+          <div class="tesm-card">
+            <div class="tesm-stars">★★★★★</div>
+            <p>"Service impeccable, produits de qualité et une ambiance agréable."</p>
+            <div class="tesm-author"><div class="tesm-avatar">D</div><div><strong>Dovi S.</strong><span>Lomé</span></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="tesm-dots" id="tesmDots"></div>
+    </div>
+  </section>
+
+  <section class="locations-section">
+    <div class="container">
+      <div class="section-header">
+        <p class="section-eyebrow">Nos Adresses</p>
+        <h2 class="section-title">Retrouvez-Nous à Lomé</h2>
+      </div>
+      <div class="locations-grid">
+        <div class="loc-card">
+          <div class="loc-number">01</div>
+          <h3>Boutique Atiégou</h3>
+          <p>À côté de la Mairie du Golfe 1</p>
+          <div class="loc-info">
+            <div class="loc-row"><span>📍</span><span>Atiégou, Lomé</span></div>
+            <div class="loc-row"><span>📞</span><span>+228 97 49 86 85</span></div>
+            <div class="loc-row"><span>🕐</span><span>Lun-Sam : 8h00 – 20h00</span></div>
+          </div>
+          <a href="contact.html" class="btn-outline-dark">Nous Contacter</a>
+        </div>
+        <div class="loc-card lc-gold">
+          <div class="loc-number">02</div>
+          <h3>Boutique Agoè</h3>
+          <p>Non loin de la Pharmacie Shalom</p>
+          <div class="loc-info">
+            <div class="loc-row"><span>📍</span><span>Agoè-CACavéli, Lomé</span></div>
+            <div class="loc-row"><span>📞</span><span>+228 91 01 81 81</span></div>
+            <div class="loc-row"><span>🕐</span><span>Lun-Sam : 8h00 – 20h00</span></div>
+          </div>
+          <a href="contact.html" class="btn-gold">Nous Contacter</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="newsletter-section">
+    <div class="container">
+      <div class="newsletter-box">
+        <div class="nl-deco"></div>
+        <div class="nl-content">
+          <h2>Restez Connectée</h2>
+          <p>Recevez nos promotions, nouveautés et conseils beauté.</p>
+          <form class="nl-form" id="newsletterForm">
+            <input type="email" name="email" placeholder="Votre adresse email" required />
+            <button type="submit" class="btn-gold">S'abonner</button>
+          </form>
+          <p class="muted" id="newsletterMsg" aria-live="polite"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div class="footer-logo"><span class="logo-y">Y</span>AYRA Nail Shop</div>
+          <p>L'élégance de Lomé à votre portée. Beauté, soin et confiance pour la femme togolaise moderne.</p>
+          <div class="footer-social">
+            <a href="#" class="social-link">📘</a>
+            <a href="#" class="social-link">📸</a>
+            <a href="https://wa.me/22897498685" class="social-link">💬</a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h4>Navigation</h4>
+          <ul>
+            <li><a href="index.html">Accueil</a></li>
+            <li><a href="shop.html">Boutique</a></li>
+            <li><a href="services.html">Services</a></li>
+            <li><a href="ateliers.html">Ateliers</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Mon Espace</h4>
+          <ul>
+            <li><a href="client/login.html">Se connecter</a></li>
+            <li><a href="client/register.html">Créer un compte</a></li>
+            <li><a href="client/dashboard.html">Mon tableau de bord</a></li>
+            <li><a href="client/orders.html">Mes commandes</a></li>
+            <li><a href="client/appointments.html">Mes rendez-vous</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Contact</h4>
+          <div class="footer-contact">
+            <p>📞 +228 97 49 86 85</p>
+            <p>📞 +228 91 01 81 81</p>
+            <p>📞 +228 70 39 25 39</p>
+            <p>✉️ yayranailshop146@gmail.com</p>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2025 YAYRA Nail Shop — Tous droits réservés | Lomé, Togo</p>
+        <div class="footer-legal">
+          <a href="#">Politique de confidentialité</a>
+          <a href="#">Conditions générales</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <a href="https://wa.me/22897498685?text=Bonjour+YAYRA+Nail+Shop+!" class="whatsapp-float" target="_blank" rel="noopener">
+    <span>💬</span>
+    <div class="wa-tooltip">Commandez sur WhatsApp !</div>
+  </a>
+
+  <script src="assets/js/main.js"></script>
+  <script src="assets/js/cart.js"></script>
+  <script src="assets/js/featured.js"></script>
+</body>
+</html>
+

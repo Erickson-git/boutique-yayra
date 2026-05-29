@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YAYRA – Inscription</title>
+  <link rel="stylesheet" href="../assets/css/main.css" />
+</head>
+<body>
+  <div id="loader" aria-hidden="true">
+    <div class="loader-inner">
+      <svg viewBox="0 0 100 40" class="loader-logo-svg">
+        <text x="50%" y="70%" text-anchor="middle" class="loader-text-svg">YAYRA</text>
+      </svg>
+      <div class="loader-bar"><div class="loader-fill"></div></div>
+    </div>
+  </div>
+
+  <nav class="navbar">
+    <div class="nav-logo"><a href="../index.html"><span class="logo-y">Y</span>AYRA</a></div>
+    <div class="nav-actions">
+      <a href="login.html" class="btn-outline">Se connecter</a>
+    </div>
+    <button class="menu-toggle" id="menuToggle">☰</button>
+  </nav>
+
+  <section class="page">
+    <div class="container" style="max-width:560px;">
+      <div class="section-header">
+        <p class="section-eyebrow">Mon Compte</p>
+        <h2 class="section-title">Créer un compte</h2>
+      </div>
+
+      <form class="form" id="registerForm">
+        <input name="full_name" type="text" placeholder="Nom complet" required />
+        <input name="email" type="email" placeholder="Email" required />
+        <input name="password" type="password" placeholder="Mot de passe" required />
+        <p class="muted" id="registerMsg" aria-live="polite"></p>
+        <button class="btn-gold" type="submit" style="border:0; cursor:pointer;">Créer</button>
+      </form>
+    </div>
+  </section>
+
+  <script src="../assets/js/main.js"></script>
+  <script>
+    const form = document.getElementById('registerForm');
+    const msg = document.getElementById('registerMsg');
+
+    form.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      msg.textContent = '';
+
+      const fd = new FormData(form);
+      const full_name = fd.get('full_name');
+      const email = fd.get('email');
+      const password = fd.get('password');
+
+      try{
+        const res = await fetch('../api/auth.php?action=register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'register', full_name, email, password }),
+        });
+        const data = await res.json();
+        if(!data.ok){
+          msg.textContent = data.error || 'Erreur.';
+          return;
+        }
+        msg.textContent = data.message || 'OK';
+        window.location.href = 'login.html';
+      }catch(err){
+        msg.textContent = 'Erreur réseau.';
+      }
+    });
+  </script>
+</body>
+</html>
+

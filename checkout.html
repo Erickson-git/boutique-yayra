@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YAYRA – Checkout</title>
+  <link rel="stylesheet" href="assets/css/main.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <div id="loader" aria-hidden="true">
+    <div class="loader-inner">
+      <svg viewBox="0 0 100 40" class="loader-logo-svg">
+        <text x="50%" y="70%" text-anchor="middle" class="loader-text-svg">YAYRA</text>
+      </svg>
+      <div class="loader-bar"><div class="loader-fill"></div></div>
+    </div>
+  </div>
+
+  <nav class="navbar" id="navbar">
+    <div class="nav-logo"><a href="index.html"><span class="logo-y">Y</span>AYRA</a></div>
+    <ul class="nav-links">
+      <li><a href="index.html">Accueil</a></li>
+      <li><a href="shop.html" class="active">Boutique</a></li>
+      <li><a href="services.html">Services</a></li>
+      <li><a href="ateliers.html">Ateliers</a></li>
+      <li><a href="contact.html">Contact</a></li>
+    </ul>
+    <div class="nav-actions">
+      <a href="client/login.html" class="btn-outline">Mon Compte</a>
+      <a href="shop.html#panier" class="btn-cart" aria-label="Panier"><span class="cart-icon">🛍</span><span id="cart-count">0</span></a>
+    </div>
+    <button class="menu-toggle" id="menuToggle">☰</button>
+  </nav>
+
+  <section class="page">
+    <div class="container">
+      <div class="section-header">
+        <p class="section-eyebrow">Checkout</p>
+        <h2 class="section-title">Finaliser votre commande</h2>
+        <p class="section-sub">Connexion requise (token) pour enregistrer la commande.</p>
+      </div>
+
+      <div class="products-grid" style="grid-template-columns: 1fr; gap: 18px;">
+        <div class="product-card" style="flex-direction:column; align-items:stretch;">
+          <h3 style="margin:0 0 10px;">Votre panier</h3>
+          <div id="cartBox"></div>
+          <div style="margin-top:12px; display:flex; justify-content:flex-end; font-weight:1000; color:var(--text);">
+            Total : <span id="grandTotal">0</span>
+          </div>
+        </div>
+
+        <div class="product-card" style="flex-direction:column; align-items:stretch;">
+          <h3 style="margin:0 0 10px;">Vos informations</h3>
+          <form id="checkoutForm" class="form">
+            <input name="full_name" placeholder="Nom complet" required />
+            <input name="phone" placeholder="Téléphone" required />
+            <input name="address" placeholder="Adresse (Quartier / Rue)" required />
+
+            <p class="muted" id="checkoutMsg" aria-live="polite" style="margin:0;"></p>
+
+            <button class="btn-gold" type="submit" style="border:0; cursor:pointer;">
+              Envoyer la commande
+            </button>
+          </form>
+
+          <p class="muted">Astuce démo : login / register utilise `client123` / `admin123` (voir script DB).</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-bottom"><p>© 2025 YAYRA Nail Shop — Lomé, Togo</p></div>
+    </div>
+  </footer>
+
+  <a href="https://wa.me/22897498685?text=Bonjour+YAYRA+Nail+Shop+!" class="whatsapp-float" target="_blank" rel="noopener">
+    <span>💬</span>
+    <div class="wa-tooltip">Commandez sur WhatsApp !</div>
+  </a>
+
+  <script src="assets/js/main.js"></script>
+  <script src="assets/js/cart.js"></script>
+  <script>
+    const currencyFCFA = (n)=> (parseInt(n,10)||0).toLocaleString('fr-FR') + ' FCFA';
+
+    function tokenFromStorage(){
+      try{
+        return localStorage.getItem('yayra_token') || '';
+      }catch(e){
+        return '';
+      }
+    }
+
+    function requireToken(){
+      const t = tokenFromStorage();
+      if(!t){
+        document.getElementById('checkoutMsg').textContent = 'Veuillez vous connecter pour finaliser.';
+        throw new Error('no token');
+      }
+      return t;
+    }
+
+    function renderCart(){
+      const box = document.getElementById('cartBox');
+      const state = window.YayaCart ? window.YayaCart.load() : {items:[]};
+      const items = state.items || [];
+      if(items.length === 0){
+        box.innerHTML = '<p style="color:rgba(255,255,255,.7); font-weight:700;">Panier vide.</p>';
+        document.getElementById('grandTotal').textContent = currencyFCFA(0);
+        return;
+      }
+
+      let html = '<div class="table-wrap"><table class="table"><thead><tr><th>Produit</th><th>Qté</th><th>Prix</th><th>Total</th></tr></thead><tbody>';
+      for(const it of items){
+        const line = currencyFCFA((parseInt(it.price_fcfa,10)||0) * (parseInt(it.qty,10)||0));
+        html += `<tr><td style="font-weight:900; color:var(--text);">${it.name||''}</td><td>${it.qty}</td><td>${currencyFCFA(it.price_fcfa)}</td><td>${line}</td></tr>`;
+      }
+      html += '</tbody></table></div>';
+      box.innerHTML = html;
+      document.getElementById('grandTotal').textContent = currencyFCFA(window.YayaCart.total());
+    }
+
+    document.addEventListener('DOMContentLoaded', ()=>{
+      renderCart();
+      window.YayaCart.syncCartCount();
+
+      document.getElementById('checkoutForm').addEventListener('submit', async (e)=>{
+        e.preventDefault();
+        const msg = document.getElementById('checkoutMsg');
+        msg.textContent = '';
+
+        try{
+          requireToken();
+        }catch{
+          return;
+        }
+
+        const form = e.target;
+        const body = {
+          full_name: form.full_name.value.trim(),
+          phone: form.phone.value.trim(),
+          address: form.address.value.trim(),
+          items: window.YayaCart.load().items,
+          total_fcfa: window.YayaCart.total(),
+        };
+
+        try{
+          const res = await fetch('api/orders.php?action=create', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ' + tokenFromStorage(),
+            },
+            body: JSON.stringify(body),
+          });
+
+          const data = await res.json();
+          if(!data.ok){
+            msg.textContent = data.error || 'Erreur lors de l’envoi.';
+            return;
+          }
+
+          // clear cart
+          localStorage.setItem('yaya_cart_v1', JSON.stringify({items:[]}));
+          window.location.href = 'client/orders.html';
+        }catch(err){
+          msg.textContent = 'Erreur réseau.';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
+

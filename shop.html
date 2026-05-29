@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YAYRA Nail Shop – Boutique</title>
+  <link rel="stylesheet" href="assets/css/main.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <div id="loader" aria-hidden="true">
+    <div class="loader-inner">
+      <svg viewBox="0 0 100 40" class="loader-logo-svg">
+        <text x="50%" y="70%" text-anchor="middle" class="loader-text-svg">YAYRA</text>
+      </svg>
+      <div class="loader-bar"><div class="loader-fill"></div></div>
+    </div>
+  </div>
+
+  <nav class="navbar" id="navbar">
+    <div class="nav-logo">
+      <a href="index.html"><span class="logo-y">Y</span>AYRA</a>
+    </div>
+    <ul class="nav-links">
+      <li><a href="index.html">Accueil</a></li>
+      <li><a href="shop.html" class="active">Boutique</a></li>
+      <li><a href="services.html">Services</a></li>
+      <li><a href="ateliers.html">Ateliers</a></li>
+      <li><a href="contact.html">Contact</a></li>
+    </ul>
+    <div class="nav-actions">
+      <a href="client/login.html" class="btn-outline">Mon Compte</a>
+      <a href="shop.html#panier" class="btn-cart" aria-label="Panier">
+        <span class="cart-icon">🛍</span>
+        <span id="cart-count">0</span>
+      </a>
+    </div>
+    <button class="menu-toggle" id="menuToggle">☰</button>
+  </nav>
+
+  <section class="page">
+    <div class="container">
+      <div class="section-header">
+        <p class="section-eyebrow">Boutique</p>
+        <h2 class="section-title">Nos Produits</h2>
+        <p class="section-sub">Recherche, catégories et ajout au panier (stockage local).</p>
+      </div>
+
+      <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:16px;">
+        <input id="searchQ" type="text" placeholder="Rechercher..." style="flex:1; min-width:240px; padding:12px 14px; border-radius:16px; border:1px solid rgba(255,255,255,.14); background:rgba(0,0,0,.2); color:var(--text); outline:none;" />
+        <select id="catSelect" style="padding:12px 14px; border-radius:16px; border:1px solid rgba(255,255,255,.14); background:rgba(0,0,0,.2); color:var(--text); outline:none;">
+          <option value="">Toutes catégories</option>
+        </select>
+        <button class="btn-gold" id="searchBtn" type="button">Rechercher</button>
+      </div>
+
+      <div class="products-grid" id="productsGrid"></div>
+
+      <div style="margin-top:34px; border-top:1px solid rgba(255,255,255,.07); padding-top:24px;" id="panier">
+        <h3 style="margin:0 0 10px;">Votre panier</h3>
+        <div id="cartBox"></div>
+        <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:16px;">
+          <button class="btn-ghost" type="button" id="clearCartBtn">Vider</button>
+          <a class="btn-gold" href="checkout.html" style="text-decoration:none; display:inline-flex; align-items:center; justify-content:center; padding:10px 14px; border-radius:999px; font-weight:800;">Finaliser →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-bottom">
+        <p>© 2025 YAYRA Nail Shop — Lomé, Togo</p>
+      </div>
+    </div>
+  </footer>
+
+  <a href="https://wa.me/22897498685?text=Bonjour+YAYRA+Nail+Shop+!" class="whatsapp-float" target="_blank" rel="noopener">
+    <span>💬</span>
+    <div class="wa-tooltip">Commandez sur WhatsApp !</div>
+  </a>
+
+  <script src="assets/js/main.js"></script>
+  <script src="assets/js/cart.js"></script>
+  <script>
+    const currencyFCFA = (n)=> (parseInt(n,10)||0).toLocaleString('fr-FR') + ' FCFA';
+
+    function loadCategories(){
+      const sel = document.getElementById('catSelect');
+      return fetch('api/categories.php?action=list')
+        .then(r=>r.json())
+        .then(d=>{
+          if(!d.ok) return;
+          (d.categories||[]).forEach(c=>{
+            const opt = document.createElement('option');
+            opt.value = c.slug;
+            opt.textContent = c.name;
+            sel.appendChild(opt);
+          })
+        });
+    }
+
+    function loadProducts({q='', category=''}={}){
+      const grid = document.getElementById('productsGrid');
+      grid.innerHTML = '';
+      const params = new URLSearchParams();
+      if(q) params.set('q', q);
+      if(category) params.set('category', category);
+
+      return fetch('api/products.php?' + params.toString())
+        .then(r=>r.json())
+        .then(d=>{
+          const products = d.products || [];
+          if(products.length === 0){
+            grid.innerHTML = '<p style="color:rgba(255,255,255,.7); font-weight:700;">Aucun produit.</p>';
+            return;
+          }
+          products.forEach(p=>{
+            const wrap = document.createElement('div');
+            wrap.className = 'product-card';
+            wrap.innerHTML = `
+              <div class="product-thumb" style="background-image:url('${p.image_url||''}'); background-size:cover; background-position:center;"></div>
+              <div class="product-info" style="flex:1;">
+                <h4>${p.name}</h4>
+                <p>${p.description || ''}</p>
+                <div class="price">${currencyFCFA(p.price_fcfa)}</div>
+                <div class="product-actions">
+                  <button class="small-btn" data-add-to-cart data-product-id="${p.id}" data-product-name="${p.name}" data-product-price="${p.price_fcfa}" data-qty="1">Ajouter au panier</button>
+                  <span style="color:rgba(255,255,255,.6); font-weight:800;">${p.category_slug||''}</span>
+                </div>
+              </div>
+            `;
+            grid.appendChild(wrap);
+          })
+        });
+    }
+
+    function renderCart(){
+      const box = document.getElementById('cartBox');
+      const state = window.YayaCart ? window.YayaCart.load() : {items:[]};
+      const items = state.items || [];
+      if(items.length === 0){
+        box.innerHTML = '<p style="color:rgba(255,255,255,.7); font-weight:700;">Panier vide.</p>';
+        return;
+      }
+      let html = '<div class="table-wrap"><table class="table"><thead><tr><th>Produit</th><th>Qté</th><th>Prix</th><th>Total</th><th></th></tr></thead><tbody>';
+      for(const it of items){
+        const line = currencyFCFA((parseInt(it.price_fcfa,10)||0) * (parseInt(it.qty,10)||0));
+        html += `
+          <tr>
+            <td style="font-weight:900; color:var(--text);">${it.name||''}</td>
+            <td>
+              <input type="number" min="1" value="${it.qty}" style="width:84px; padding:8px 10px; border-radius:14px; border:1px solid rgba(255,255,255,.14); background:rgba(0,0,0,.2); color:var(--text);" data-qty-input data-pid="${it.product_id}" />
+            </td>
+            <td>${currencyFCFA(it.price_fcfa)}</td>
+            <td>${line}</td>
+            <td><button class="small-btn" style="padding:8px 10px;" data-remove data-pid="${it.product_id}">Retirer</button></td>
+          </tr>
+        `;
+      }
+      const total = currencyFCFA(window.YayaCart.total());
+      html += `</tbody></table></div><div style="text-align:right; margin-top:12px; color:var(--text); font-weight:1000;">Total: ${total}</div>`;
+      box.innerHTML = html;
+
+      box.querySelectorAll('[data-remove]').forEach(b=>{
+        b.addEventListener('click', ()=>{
+          const pid = b.getAttribute('data-pid');
+          window.YayaCart.remove(pid);
+          renderCart();
+          window.YayaCart.syncCartCount();
+        });
+      });
+
+      box.querySelectorAll('[data-qty-input]').forEach(inp=>{
+        inp.addEventListener('change', ()=>{
+          const pid = inp.getAttribute('data-pid');
+          window.YayaCart.setQty(pid, inp.value);
+          renderCart();
+          window.YayaCart.syncCartCount();
+        });
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', async ()=>{
+      await loadCategories();
+      await loadProducts();
+      renderCart();
+      window.YayaCart.syncCartCount();
+
+      document.getElementById('searchBtn').addEventListener('click', ()=>{
+        const q = document.getElementById('searchQ').value.trim();
+        const category = document.getElementById('catSelect').value;
+        loadProducts({q, category});
+      });
+
+      document.getElementById('clearCartBtn').addEventListener('click', ()=>{
+        localStorage.setItem('yaya_cart_v1', JSON.stringify({items:[]}));
+        window.YayaCart.syncCartCount();
+        renderCart();
+      });
+    });
+  </script>
+</body>
+</html>
+

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YAYRA – Contact</title>
+  <link rel="stylesheet" href="assets/css/main.css" />
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-logo"><a href="index.html"><span class="logo-y">Y</span>AYRA</a></div>
+    <ul class="nav-links">
+      <li><a href="index.html">Accueil</a></li>
+      <li><a href="shop.html">Boutique</a></li>
+      <li><a href="services.html">Services</a></li>
+      <li><a href="ateliers.html">Ateliers</a></li>
+      <li><a href="contact.html" class="active">Contact</a></li>
+    </ul>
+    <div class="nav-actions">
+      <a href="client/login.html" class="btn-outline">Mon Compte</a>
+      <a href="shop.html#panier" class="btn-cart" aria-label="Panier"><span class="cart-icon">🛍</span><span id="cart-count">0</span></a>
+    </div>
+    <button class="menu-toggle" id="menuToggle">☰</button>
+  </nav>
+
+  <section class="page">
+    <div class="container" style="max-width:860px;">
+      <div class="section-header">
+        <p class="section-eyebrow">Contact</p>
+        <h2 class="section-title">Parlons beauté</h2>
+        <p class="section-sub">Laissez votre message — (démo, pas d’envoi backend pour l’instant).</p>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr; gap:16px;" class="products-grid">
+        <div class="product-card" style="grid-column: span 12; flex-direction:column;">
+          <h3 style="margin:0 0 10px;">Message</h3>
+          <form class="form" onsubmit="event.preventDefault(); alert('Démo : message non envoyé.');">
+            <input name="name" placeholder="Nom" required />
+            <input name="email" type="email" placeholder="Email" required />
+            <textarea name="message" placeholder="Votre message" rows="6" required></textarea>
+            <button class="btn-gold" type="submit" style="border:0; cursor:pointer;">Envoyer</button>
+          </form>
+        </div>
+
+        <div class="product-card" style="grid-column: span 12; flex-direction:column;">
+          <h3 style="margin:0 0 10px;">Coordonnées</h3>
+          <p style="margin:0 0 10px; color:var(--muted); font-weight:750;">📞 +228 97 49 86 85</p>
+          <p style="margin:0 0 10px; color:var(--muted); font-weight:750;">📞 +228 91 01 81 81</p>
+          <p style="margin:0 0 10px; color:var(--muted); font-weight:750;">✉️ yayranailshop146@gmail.com</p>
+          <a class="btn-outline-dark" href="https://wa.me/22897498685" style="text-decoration:none; display:inline-flex; align-items:center; justify-content:center;">WhatsApp</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-bottom"><p>© 2025 YAYRA Nail Shop — Lomé, Togo</p></div>
+    </div>
+  </footer>
+
+  <a href="https://wa.me/22897498685?text=Bonjour+YAYRA+Nail+Shop+!" class="whatsapp-float" target="_blank" rel="noopener">
+    <span>💬</span>
+    <div class="wa-tooltip">Commandez sur WhatsApp !</div>
+  </a>
+
+  <script src="assets/js/main.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YAYRA – Services</title>
+  <link rel="stylesheet" href="assets/css/main.css" />
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-logo"><a href="index.html"><span class="logo-y">Y</span>AYRA</a></div>
+    <ul class="nav-links">
+      <li><a href="index.html">Accueil</a></li>
+      <li><a href="shop.html">Boutique</a></li>
+      <li><a href="services.html" class="active">Services</a></li>
+      <li><a href="ateliers.html">Ateliers</a></li>
+      <li><a href="contact.html">Contact</a></li>
+    </ul>
+    <div class="nav-actions">
+      <a href="client/login.html" class="btn-outline">Mon Compte</a>
+      <a href="shop.html#panier" class="btn-cart" aria-label="Panier"><span class="cart-icon">🛍</span><span id="cart-count">0</span></a>
+    </div>
+    <button class="menu-toggle" id="menuToggle">☰</button>
+  </nav>
+
+  <section class="page">
+    <div class="container">
+      <div class="section-header">
+        <p class="section-eyebrow">Nos Services</p>
+        <h2 class="section-title">Beauté sur mesure</h2>
+        <p class="section-sub">Choisissez votre expérience : onglerie, visage, capillaire.</p>
+      </div>
+
+      <div class="services-grid">
+        <div class="service-card sc-large">
+          <div class="sc-overlay">
+            <span class="sc-cat">ONGLES</span>
+            <h3>Nail Art & Pose</h3>
+            <p>Pose, stylisme et finitions premium pour un rendu élégant.</p>
+            <a href="client/appointments.html" class="sc-link">Réserver →</a>
+          </div>
+        </div>
+        <div class="service-card">
+          <div class="sc-overlay">
+            <span class="sc-cat">VISAGE</span>
+            <h3>Sérums & Soins</h3>
+            <p>Hydratation, éclat et routine adaptée à votre peau.</p>
+            <a href="client/appointments.html" class="sc-link">Réserver →</a>
+          </div>
+        </div>
+        <div class="service-card">
+          <div class="sc-overlay">
+            <span class="sc-cat">CAPILLAIRE</span>
+            <h3>Soins Cheveux</h3>
+            <p>Rituels douceur pour des cheveux plus souples et brillants.</p>
+            <a href="client/appointments.html" class="sc-link">Réserver →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script src="assets/js/main.js"></script>
+  <script src="assets/js/cart.js"></script>
+</body>
+</html>
+

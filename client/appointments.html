@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YAYRA – Rendez-vous</title>
+  <link rel="stylesheet" href="../assets/css/main.css" />
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-logo"><a href="../index.html"><span class="logo-y">Y</span>AYRA</a></div>
+    <div class="nav-actions">
+      <a href="dashboard.html" class="btn-outline">Dashboard</a>
+      <button class="btn-outline" type="button" id="logoutBtn">Se déconnecter</button>
+    </div>
+  </nav>
+
+  <section class="page">
+    <div class="container" style="max-width:980px;">
+      <div class="section-header">
+        <p class="section-eyebrow">Mon Espace</p>
+        <h2 class="section-title">Mes rendez-vous</h2>
+      </div>
+
+      <div class="products-grid" style="grid-template-columns: 1fr; gap:18px;">
+        <div class="product-card" style="flex-direction:column; align-items:stretch;">
+          <h3 style="margin:0 0 10px;">Réserver</h3>
+          <form id="apptForm" class="form" style="max-width:520px;">
+            <input name="full_name" placeholder="Nom complet" required />
+            <input name="phone" placeholder="Téléphone" required />
+            <select name="service" required>
+              <option value="Nail Art">Nail Art</option>
+              <option value="Kit Beauté">Kit Beauté</option>
+              <option value="Soins Visage">Soins Visage</option>
+              <option value="Capillaire">Capillaire</option>
+            </select>
+            <input name="appointment_time" type="datetime-local" required />
+            <textarea name="notes" placeholder="Notes (optionnel)" rows="4"></textarea>
+            <p class="muted" id="apptMsg" aria-live="polite" style="margin:0;"> </p>
+            <button class="btn-gold" type="submit" style="border:0; cursor:pointer;">Créer le rendez-vous</button>
+          </form>
+        </div>
+
+        <div class="product-card" style="flex-direction:column; align-items:stretch;">
+          <h3 style="margin:0 0 10px;">Historique</h3>
+          <div id="apptWrap"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script src="../assets/js/main.js"></script>
+  <script>
+    const token = () => localStorage.getItem('yayra_token') || '';
+    const goLogin = () => window.location.href = 'login.html';
+
+    document.getElementById('logoutBtn').addEventListener('click', ()=>{
+      localStorage.removeItem('yayra_token');
+      goLogin();
+    });
+
+    async function listAppointments(){
+      const wrap = document.getElementById('apptWrap');
+      const t = token();
+      if(!t){ goLogin(); return; }
+
+      wrap.innerHTML = '<p style="color:rgba(255,255,255,.7); font-weight:700;">Chargement...</p>';
+      try{
+        const res = await fetch('../api/appointments.php?action=list', {
+          method: 'GET',
+          headers: { 'Authorization': 'Bearer ' + t }
+        });
+        const data = await res.json();
+        if(!data.ok){
+          wrap.innerHTML = '<p style="color:rgba(255,255,255,.7); font-weight:700;">Erreur session.</p>';
+          return;
+        }
+
+        const items = data.appointments || [];
+        if(items.length === 0){
+          wrap.innerHTML = '<p style="color:rgba(255,255,255,.7); font-weight:700;">Aucun rendez-vous.</p>';
+          return;
+        }
+
+        let html = '<div class="table-wrap"><table class="table"><thead><tr><th>ID</th><th>Service</th><th>Date</th><th>Statut</th></tr></thead><tbody>';
+        for(const a of items){
+          html += `<tr><td>${a.id}</td><td>${a.service}</td><td>${a.appointment_time}</td><td>${a.status}</td></tr>`;
+        }
+        html += '</tbody></table></div>';
+        wrap.innerHTML = html;
+      }catch(e){
+        wrap.innerHTML = '<p style="color:rgba(255,255,255,.7); font-weight:700;">Erreur réseau.</p>';
+      }
+    }
+
+    document.getElementById('apptForm').addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const msg = document.getElementById('apptMsg');
+      msg.textContent = '';
+
+      const t = token();
+      if(!t){ goLogin(); return; }
+
+      const fd = new FormData(e.target);
+      const body = {
+        full_name: fd.get('full_name'),
+        phone: fd.get('phone'),
+        service: fd.get('service'),
+        appointment_time: fd.get('appointment_time'),
+        notes: fd.get('notes'),
+      };
+
+      try{
+        const res = await fetch('../api/appointments.php?action=create', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + t,
+          },
+          body: JSON.stringify(body),
+        });
+        const data = await res.json();
+        if(!data.ok){
+          msg.textContent = data.error || 'Erreur';
+          return;
+        }
+        e.target.reset();
+        msg.textContent = 'Rendez-vous créé ✅';
+        await listAppointments();
+      }catch(err){
+        msg.textContent = 'Erreur réseau.';
+      }
+    });
+
+    document.addEventListener('DOMContentLoaded', listAppointments);
+  </script>
+</body>
+</html>
+

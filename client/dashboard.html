@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YAYRA – Dashboard</title>
+  <link rel="stylesheet" href="../assets/css/main.css" />
+</head>
+<body>
+  <div id="loader" aria-hidden="true">
+    <div class="loader-inner">
+      <svg viewBox="0 0 100 40" class="loader-logo-svg">
+        <text x="50%" y="70%" text-anchor="middle" class="loader-text-svg">YAYRA</text>
+      </svg>
+      <div class="loader-bar"><div class="loader-fill"></div></div>
+    </div>
+  </div>
+
+  <nav class="navbar">
+    <div class="nav-logo"><a href="../index.html"><span class="logo-y">Y</span>AYRA</a></div>
+    <ul class="nav-links">
+      <li><a href="../shop.html">Boutique</a></li>
+      <li><a href="appointments.html" class="active">Rendez-vous</a></li>
+      <li><a href="orders.html">Commandes</a></li>
+    </ul>
+    <div class="nav-actions">
+      <button class="btn-outline" type="button" id="logoutBtn">Se déconnecter</button>
+    </div>
+    <button class="menu-toggle" id="menuToggle">☰</button>
+  </nav>
+
+  <section class="page">
+    <div class="container" style="max-width:900px;">
+      <div class="section-header">
+        <p class="section-eyebrow">Mon Espace</p>
+        <h2 class="section-title">Bonjour 👋</h2>
+        <p class="section-sub">Gérez vos commandes et rendez-vous.</p>
+      </div>
+
+      <div class="products-grid" style="grid-template-columns: repeat(12, 1fr); gap:16px;">
+        <div class="product-card" style="grid-column: span 6; flex-direction:column; align-items:stretch;">
+          <h3 style="margin:0 0 10px;">Commandes</h3>
+          <p style="margin:0 0 14px; color:var(--muted); font-weight:700;">Suivez vos achats passés.</p>
+          <a class="btn-gold" href="orders.html" style="text-decoration:none; display:inline-flex;">Voir mes commandes</a>
+        </div>
+        <div class="product-card" style="grid-column: span 6; flex-direction:column; align-items:stretch;">
+          <h3 style="margin:0 0 10px;">Rendez-vous</h3>
+          <p style="margin:0 0 14px; color:var(--muted); font-weight:700;">Réservez un service beauté.</p>
+          <a class="btn-gold" href="appointments.html" style="text-decoration:none; display:inline-flex;">Réserver</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script src="../assets/js/main.js"></script>
+  <script>
+    document.getElementById('logoutBtn').addEventListener('click', ()=>{
+      localStorage.removeItem('yayra_token');
+      window.location.href = 'login.html';
+    });
+  </script>
+</body>
+</html>
+

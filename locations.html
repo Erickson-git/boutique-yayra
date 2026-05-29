@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YAYRA – Localisation & Livraison</title>
+  <link rel="stylesheet" href="assets/css/main.css" />
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-logo"><a href="index.html"><span class="logo-y">Y</span>AYRA</a></div>
+    <ul class="nav-links">
+      <li><a href="index.html">Accueil</a></li>
+      <li><a href="shop.html">Boutique</a></li>
+      <li><a href="services.html">Services</a></li>
+      <li><a href="ateliers.html">Ateliers</a></li>
+      <li><a href="contact.html">Contact</a></li>
+    </ul>
+    <div class="nav-actions">
+      <a href="client/login.html" class="btn-outline">Mon Compte</a>
+      <a href="shop.html#panier" class="btn-cart" aria-label="Panier"><span class="cart-icon">🛍</span><span id="cart-count">0</span></a>
+    </div>
+    <button class="menu-toggle" id="menuToggle">☰</button>
+  </nav>
+
+  <section class="page">
+    <div class="container" style="max-width:980px;">
+      <div class="section-header">
+        <p class="section-eyebrow">Livraison</p>
+        <h2 class="section-title">Localisation & suivi</h2>
+        <p class="section-sub">Carte (démo) + messages automatiques côté client selon vos commandes.</p>
+      </div>
+
+      <div class="products-grid" style="grid-template-columns: 1fr; gap: 18px;">
+        <div class="product-card" style="flex-direction:column; align-items:stretch;">
+          <h3 style="margin:0 0 12px;">Carte de livraison</h3>
+          <div style="border-radius:18px; overflow:hidden; border:1px solid rgba(255,255,255,.10); background:rgba(255,255,255,.02);">
+            <iframe
+              title="Carte Lomé"
+              width="100%"
+              height="380"
+              style="border:0; display:block;"
+              src="https://www.google.com/maps?q=Lom%C3%A9%20Togo&output=embed"
+              loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade">
+            </iframe>
+          </div>
+          <p class="muted" style="margin-top:12px;">À adapter avec la position exacte du livreur (ou coordonnées) via API future.</p>
+        </div>
+
+        <div class="product-card" style="flex-direction:column; align-items:stretch;">
+          <h3 style="margin:0 0 12px;">Messages automatiques (démo)</h3>
+          <p class="muted" style="margin-top:0;">Ce bloc simule la file d’attente : préparé → en cours → livré.</p>
+          <div id="autoMsgBox" style="display:flex; flex-direction:column; gap:10px;"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-bottom"><p>© 2025 YAYRA Nail Shop — Lomé, Togo</p></div>
+    </div>
+  </footer>
+
+  <a href="https://wa.me/22897498685?text=Bonjour+YAYRA+Nail+Shop+!" class="whatsapp-float" target="_blank" rel="noopener">
+    <span>💬</span>
+    <div class="wa-tooltip">Commandez sur WhatsApp !</div>
+  </a>
+
+  <script src="assets/js/main.js"></script>
+  <script>
+    // Démo : génération de messages selon “statut” local (sera relié à vos commandes + API plus tard)
+    const messages = [
+      {status:'preparing', text:'Commande reçue. Préparation en cours…'},
+      {status:'onway', text:'Votre livreur est en route…'},
+      {status:'delivered', text:'Commande livrée. Merci pour votre confiance ✨'}
+    ];
+
+    function getDemoProgress(){
+      try{
+        const raw = localStorage.getItem('yayra_delivery_demo_progress') || '0';
+        const n = parseInt(raw, 10);
+        return isNaN(n) ? 0 : Math.max(0, Math.min(2, n));
+      }catch(e){
+        return 0;
+      }
+    }
+
+    function setDemoProgress(next){
+      localStorage.setItem('yayra_delivery_demo_progress', String(next));
+    }
+
+    function renderAutoMessages(){
+      const box = document.getElementById('autoMsgBox');
+      if(!box) return;
+      box.innerHTML = '';
+
+      const progress = getDemoProgress();
+      messages.forEach((m, idx)=>{
+        const isActive = idx <= progress;
+        const el = document.createElement('div');
+        el.style.border = '1px solid rgba(255,255,255,.10)';
+        el.style.background = isActive ? 'rgba(212,175,55,.10)' : 'rgba(255,255,255,.03)';
+        el.style.borderRadius = '16px';
+        el.style.padding = '12px 14px';
+        el.style.fontWeight = '900';
+        el.style.color = isActive ? 'var(--gold2)' : 'var(--muted)';
+        el.textContent = (isActive ? '✓ ' : '• ') + m.text;
+        box.appendChild(el);
+      });
+
+      if(progress < 2){
+        const hint = document.createElement('button');
+        hint.className = 'btn-gold';
+        hint.type = 'button';
+        hint.style.marginTop = '6px';
+        hint.textContent = 'Simuler l’avancement (démo)';
+        hint.onclick = ()=>{
+          setDemoProgress(progress + 1);
+          renderAutoMessages();
+        };
+        box.appendChild(hint);
+      }else{
+        const el = document.createElement('div');
+        el.className = 'muted';
+        el.textContent = 'Statut complet (démo).';
+        box.appendChild(el);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', renderAutoMessages);
+  </script>
+</body>
+</html>
+
