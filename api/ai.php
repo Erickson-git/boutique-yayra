@@ -11,8 +11,12 @@ header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 require_method(['POST']);
 
 // SECURITY: never expose any API keys to the client.
-// The AI key is stored ONLY on this server file.
-$AI_API_KEY = 'AQ.Ab8RN6KBRvW7FmCM3JldWyhwUXCq9IHoFMZdNc6FA1gxLvG9bA';
+// The AI key must come from an environment variable on the server.
+$AI_API_KEY = getenv('AI_API_KEY') ?: '';
+if ($AI_API_KEY === '') {
+  json_response(['ok' => false, 'error' => 'AI key not configured']);
+  exit;
+}
 
 $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
 $ua = $_SERVER['HTTP_USER_AGENT'] ?? '';
