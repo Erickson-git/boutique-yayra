@@ -13,7 +13,7 @@ if ($action === 'featured') {
   $limit = (int)($_GET['limit'] ?? 6);
   $limit = max(1, min(50, $limit));
 
-  $stmt = $pdo->prepare('SELECT p.id, p.name, p.description, p.price_fcfa, p.image_url, c.slug AS category_slug, p.is_featured
+  $stmt = $pdo->prepare('SELECT p.id, p.name, p.description, p.price_fcfa, p.image_url, c.slug AS category_slug, p.is_featured, p.stock_qty, p.is_available
     FROM products p
     LEFT JOIN categories c ON c.id = p.category_id
     WHERE p.is_featured = 1
@@ -36,12 +36,13 @@ if ($category !== '') {
   $params[':cat'] = $category;
 }
 
+
 if ($q !== '') {
   $where[] = '(p.name LIKE :q OR p.description LIKE :q)';
   $params[':q'] = '%' . $q . '%';
 }
 
-$sql = 'SELECT p.id, p.name, p.description, p.price_fcfa, p.image_url, c.slug AS category_slug, p.is_featured
+$sql = 'SELECT p.id, p.name, p.description, p.price_fcfa, p.image_url, c.slug AS category_slug, p.is_featured, p.stock_qty, p.is_available
   FROM products p
   LEFT JOIN categories c ON c.id = p.category_id';
 

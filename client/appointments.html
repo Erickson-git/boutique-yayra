@@ -64,7 +64,7 @@
       const t = token();
       if(!t){ goLogin(); return; }
 
-      wrap.innerHTML = '<p style="color:rgba(255,255,255,.7); font-weight:700;">Chargement...</p>';
+      wrap.innerHTML = '<p style="color:var(--muted); font-weight:700;">Chargement...</p>';
       try{
         const res = await fetch('../api/appointments.php?action=list', {
           method: 'GET',
@@ -72,13 +72,13 @@
         });
         const data = await res.json();
         if(!data.ok){
-          wrap.innerHTML = '<p style="color:rgba(255,255,255,.7); font-weight:700;">Erreur session.</p>';
+          wrap.innerHTML = '<p style="color:var(--muted); font-weight:700;">Erreur session.</p>';
           return;
         }
 
         const items = data.appointments || [];
         if(items.length === 0){
-          wrap.innerHTML = '<p style="color:rgba(255,255,255,.7); font-weight:700;">Aucun rendez-vous.</p>';
+          wrap.innerHTML = '<p style="color:var(--muted); font-weight:700;">Aucun rendez-vous.</p>';
           return;
         }
 
@@ -89,7 +89,7 @@
         html += '</tbody></table></div>';
         wrap.innerHTML = html;
       }catch(e){
-        wrap.innerHTML = '<p style="color:rgba(255,255,255,.7); font-weight:700;">Erreur réseau.</p>';
+        wrap.innerHTML = '<p style="color:var(--muted); font-weight:700;">Erreur réseau.</p>';
       }
     }
 

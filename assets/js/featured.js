@@ -23,9 +23,13 @@
       grid.innerHTML = '';
       products.forEach(p => {
         const card = document.createElement('div');
-        card.className = 'product-card';
+        card.className = 'product-card fade-in';
+        const rawImage = p.image_url || 'assets/images/placeholder.jpg';
+        const imageUrl = ('/' + rawImage.replace(/^\/+/, '')).replace(/\/\/+/, '/');
         card.innerHTML = `
-          <div class="product-thumb" style="background-image:url('${p.image_url || ''}'); background-size:cover; background-position:center;"></div>
+          <div class="product-thumb">
+            <img src="${imageUrl}" alt="${(p.name||'Produit').replace(/"/g,'')}" loading="lazy" class="pimg" />
+          </div>
           <div class="product-info" style="flex:1;">
             <h4>${p.name}</h4>
             <p>${p.description || ''}</p>

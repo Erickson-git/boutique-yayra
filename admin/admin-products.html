@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin – Produits</title>
+  <link rel="stylesheet" href="../assets/css/main.css" />
+  <style>
+    .two-col{display:grid; grid-template-columns:1fr; gap:16px;}
+    @media(min-width:980px){.two-col{grid-template-columns:1fr 1fr;}}
+    textarea{min-height:120px; resize:vertical;}
+    .product-row{display:flex; gap:10px; align-items:flex-start; justify-content:space-between; padding:12px 0; border-bottom:1px solid rgba(17,18,23,.04)}
+    .product-meta{flex:1}
+    .danger{border-color:rgba(255,80,80,.4) !important; background:rgba(255,80,80,.08) !important; color:#ff9b9b !important;}
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-logo"><a href="../index.html"><span class="logo-y">Y</span>AYRA</a></div>
+    <div class="nav-actions">
+      <button class="btn-outline" type="button" id="logoutBtn">Se déconnecter</button>
+    </div>
+  </nav>
+
+  <section class="page">
+    <div class="container" style="max-width:1100px;">
+      <div class="section-header">
+        <p class="section-eyebrow">Admin</p>
+        <h2 class="section-title">Produits (CRUD)</h2>
+        <p class="section-sub">Ajouter / modifier / supprimer des articles. (Démo : champs limités)</p>
+      </div>
+
+      <div class="two-col">
+        <div>
+          <div id="msg" class="muted" aria-live="polite" style="margin-bottom:12px;"></div>
+          <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:12px;">
+            <button class="btn-gold" type="button" id="loadBtn">Rafraîchir la liste</button>
+          </div>
+          <div id="listWrap"></div>
+        </div>
+
+        <div>
+          <div class="product-card" style="flex-direction:column; align-items:stretch;">
+            <h3 style="margin:0 0 10px;">Ajouter / Modifier</h3>
+            <form id="productForm" class="form">
+              <input type="hidden" name="id" id="pid" value="" />
+
+              <select name="category_slug" id="categorySlug" required></select>
+              <input name="sku" id="sku" placeholder="SKU" required />
+              <input name="name" id="pname" placeholder="Nom du produit" required />
+              <textarea name="description" id="pdesc" placeholder="Description" required></textarea>
+              <input name="price_fcfa" id="pprice" placeholder="Prix (FCFA)" type="number" required />
+              <input name="image_url" id="pimg" placeholder="URL image" />
+
+              <select name="is_featured" id="pfeat" required>
+                <option value="0">Pas vedette</option>
+                <option value="1">Vedette</option>
+              </select>
+
+              <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                <button class="btn-gold" type="submit" style="border:0; cursor:pointer;">
+                  Enregistrer
+                </button>
+                <button class="btn-ghost" type="button" id="resetBtn">Réinitialiser</button>
+              </div>
+
+              <p class="muted" style="margin:0;">Astuce : les kits IA seront gérés ensuite via validation admin.</p>
+            </form>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <script src="../assets/js/main.js"></script>
+  <script>
+    const token = () => localStorage.getItem('yayra_token') || '';
+    const msg = document.getElementById('msg');
+    const listWrap = document.getElementById('listWrap');
+    const form = document.getElementById('productForm');
+
+    function setFormFromProduct(p){
+      document.getElementById('pid').value = p.id;
+      document.getElementById('categorySlug').value = p.category_slug || '';
+      document.getElementById('sku').value = p.sku || '';
+      document.getElementById('pname').value = p.name || '';
+      document.getElementById('pdesc').value = p.description || '';
+      document.getElementById('pprice').value = p.price_fcfa || 0;
+      document.getElementById('pimg').value = p.image_url || '';
+      document.getElementById('pfeat').value = String(p.is_featured || 0);
+    }
+
+    function resetForm(){
+      document.getElementById('pid').value = '';
+      document.getElementById('sku').value = '';
+      document.getElementById('pname').value = '';
+      document.getElementById('pdesc').value = '';
+      document.getElementById('pprice').value = '';
+      document.getElementById('pimg').value = '';
+      document.getElementById('pfeat').value = '0';
+    }
+
+    document.getElementById('logoutBtn').addEventListener('click', ()=>{
+      localStorage.removeItem('yayra_token');
+      window.location.href = '../client/login.html';
+    });
+
+    async function loadCategoriesIntoSelect(){
+      const res = await fetch('../api/categories.php?action=list');
+      const d = await res.json();
+      const sel = document.getElementById('categorySlug');
+      sel.innerHTML = '';
+      (d.categories || []).forEach(c=>{
+        const opt = document.createElement('option');
+        opt.value = c.slug;
+        opt.textContent = c.name;
+        sel.appendChild(opt);
+      });
+    }
+
+    async function loadProducts(){
+      const t = token();
+      if(!t){ window.location.href = '../client/login.html'; return; }
+      msg.textContent = 'Chargement...';
+      listWrap.innerHTML = '';
+
+      const res = await fetch('../api/admin_products.php?action=list', {
+        method:'GET',
+        headers:{ 'Authorization':'Bearer ' + t }
+      });
+      const data = await res.json();
+      if(!data.ok){ msg.textContent = data.error || 'Erreur'; return; }
+
+      const products = data.products || [];
+      if(products.length === 0){ listWrap.innerHTML = '<p class="muted">Aucun produit.</p>'; msg.textContent=''; return; }
+
+      listWrap.innerHTML = '';
+      products.forEach(p=>{
+        const row = document.createElement('div');
+        row.className = 'product-row';
+        row.innerHTML = `
+          <div class="product-meta">
+            <strong>${p.name}</strong><br/>
+            <span class="muted">Catégorie: ${p.category_slug || ''} · SKU: ${p.sku || ''} · Prix: ${p.price_fcfa} FCFA</span>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:10px; align-items:flex-end;">
+            <button class="small-btn" type="button" data-edit data-id="${p.id}">Modifier</button>
+            <button class="small-btn danger" type="button" data-del data-id="${p.id}">Supprimer</button>
+          </div>
+        `;
+        row.querySelector('[data-edit]').addEventListener('click', ()=>setFormFromProduct(p));
+        row.querySelector('[data-del]').addEventListener('click', async ()=>{
+          if(!confirm('Supprimer ce produit ?')) return;
+          const t = token();
+          const res = await fetch('../api/admin_products.php?action=delete', {
+            method:'POST',
+            headers:{
+              'Content-Type':'application/json',
+              'Authorization':'Bearer ' + t,
+            },
+            body: JSON.stringify({ id: p.id })
+          });
+          const d = await res.json();
+          if(!d.ok){ alert(d.error || 'Erreur'); return; }
+          await loadProducts();
+        });
+        listWrap.appendChild(row);
+      });
+
+      msg.textContent='';
+    }
+
+    form.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const t = token();
+      if(!t){ window.location.href = '../client/login.html'; return; }
+
+      const id = document.getElementById('pid').value;
+      const payload = {
+        id: id ? parseInt(id,10) : null,
+        category_slug: document.getElementById('categorySlug').value,
+        sku: document.getElementById('sku').value.trim(),
+        name: document.getElementById('pname').value.trim(),
+        description: document.getElementById('pdesc').value.trim(),
+        price_fcfa: parseInt(document.getElementById('pprice').value,10) || 0,
+        image_url: document.getElementById('pimg').value.trim(),
+        is_featured: parseInt(document.getElementById('pfeat').value,10) ? 1 : 0,
+      };
+
+      msg.textContent = 'Enregistrement...';
+
+      const res = await fetch('../api/admin_products.php?action=upsert', {
+        method:'POST',
+        headers:{
+          'Content-Type':'application/json',
+          'Authorization':'Bearer ' + t,
+        },
+        body: JSON.stringify(payload)
+      });
+      const d = await res.json();
+      if(!d.ok){ msg.textContent = d.error || 'Erreur'; return; }
+
+      msg.textContent = 'OK !';
+      resetForm();
+      await loadProducts();
+    });
+
+    document.getElementById('resetBtn').addEventListener('click', ()=>{
+      resetForm();
+    });
+
+    document.getElementById('loadBtn').addEventListener('click', loadProducts);
+
+    document.addEventListener('DOMContentLoaded', async ()=>{
+      await loadCategoriesIntoSelect();
+      await loadProducts();
+    });
+  </script>
+</body>
+</html>
+

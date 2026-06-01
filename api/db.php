@@ -1,7 +1,13 @@
 <?php
 declare(strict_types=1);
 
+// Common security headers for API responses
 header('Content-Type: application/json; charset=utf-8');
+header('X-Content-Type-Options: nosniff');
+header('X-Frame-Options: DENY');
+header('Referrer-Policy: no-referrer-when-downgrade');
+header('Permissions-Policy: interest-cohort=()');
+// Note: If you run behind HTTPS, consider enabling HSTS in your webserver configuration.
 
 function db_path(): string {
   // api/db.php is in /api; DB lives in /data/yayra.sqlite

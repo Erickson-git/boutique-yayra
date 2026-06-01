@@ -7,6 +7,7 @@ $action = (string)($_GET['action'] ?? '');
 $method = strtoupper($_SERVER['REQUEST_METHOD'] ?? '');
 
 if ($method !== 'POST') {
+
   json_response(['ok' => false, 'error' => 'Method not allowed'], 405);
   exit;
 }
@@ -17,7 +18,13 @@ $password = (string)($body['password'] ?? '');
 
 $action = $action ?: (string)($body['action'] ?? '');
 
+// fallback: si action vide => exécute le mode login
+if ($action === '') {
+  $action = 'login';
+}
+
 if ($action === 'login') {
+
   if ($email === '' || $password === '') {
     json_response(['ok' => false, 'error' => 'Email et mot de passe requis'], 422);
     exit;

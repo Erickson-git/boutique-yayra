@@ -1,0 +1,19 @@
+# TIA Portal project files (binary, not for VCS)
+*.ap*
+*.zap*
+*.tiap
+*.tmp
+*.bak
+
+# TIA Portal temp folders
+/UserFiles/
+/System/
+/AdditionalFiles/
+
+# VS Code extension temp
+.tia-temp/
+
+# OS
+Thumbs.db
+Desktop.ini
+.DS_Store

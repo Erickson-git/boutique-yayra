@@ -34,7 +34,7 @@
       <div class="products-grid" style="grid-template-columns: 1fr; gap: 18px;">
         <div class="product-card" style="flex-direction:column; align-items:stretch;">
           <h3 style="margin:0 0 12px;">Carte de livraison</h3>
-          <div style="border-radius:18px; overflow:hidden; border:1px solid rgba(255,255,255,.10); background:rgba(255,255,255,.02);">
+          <div style="border-radius:18px; overflow:hidden; border:1px solid rgba(17,18,23,.04); background:var(--soft);">
             <iframe
               title="Carte Lomé"
               width="100%"
@@ -100,8 +100,8 @@
       messages.forEach((m, idx)=>{
         const isActive = idx <= progress;
         const el = document.createElement('div');
-        el.style.border = '1px solid rgba(255,255,255,.10)';
-        el.style.background = isActive ? 'rgba(212,175,55,.10)' : 'rgba(255,255,255,.03)';
+        el.style.border = '1px solid rgba(17,18,23,.04)';
+        el.style.background = isActive ? 'linear-gradient(180deg, rgba(181,134,43,.08), rgba(255,245,224,.02))' : 'var(--soft)';
         el.style.borderRadius = '16px';
         el.style.padding = '12px 14px';
         el.style.fontWeight = '900';

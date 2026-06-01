@@ -109,7 +109,7 @@
       const state = window.YayaCart ? window.YayaCart.load() : {items:[]};
       const items = state.items || [];
       if(items.length === 0){
-        box.innerHTML = '<p style="color:rgba(255,255,255,.7); font-weight:700;">Panier vide.</p>';
+        box.innerHTML = '<p style="color:var(--muted); font-weight:700;'>Panier vide.</p>';
         document.getElementById('grandTotal').textContent = currencyFCFA(0);
         return;
       }

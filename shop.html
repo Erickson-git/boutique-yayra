@@ -48,8 +48,8 @@
       </div>
 
       <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:16px;">
-        <input id="searchQ" type="text" placeholder="Rechercher..." style="flex:1; min-width:240px; padding:12px 14px; border-radius:16px; border:1px solid rgba(255,255,255,.14); background:rgba(0,0,0,.2); color:var(--text); outline:none;" />
-        <select id="catSelect" style="padding:12px 14px; border-radius:16px; border:1px solid rgba(255,255,255,.14); background:rgba(0,0,0,.2); color:var(--text); outline:none;">
+        <input id="searchQ" type="text" placeholder="Rechercher..." style="flex:1; min-width:240px; padding:12px 14px; border-radius:16px; border:1px solid rgba(17,18,23,.06); background:rgba(17,18,23,.04); color:var(--text); outline:none;" />
+        <select id="catSelect" style="padding:12px 14px; border-radius:16px; border:1px solid rgba(17,18,23,.06); background:rgba(17,18,23,.04); color:var(--text); outline:none;">
           <option value="">Toutes catégories</option>
         </select>
         <button class="btn-gold" id="searchBtn" type="button">Rechercher</button>
@@ -57,7 +57,15 @@
 
       <div class="products-grid" id="productsGrid"></div>
 
-      <div style="margin-top:34px; border-top:1px solid rgba(255,255,255,.07); padding-top:24px;" id="panier">
+        <div class="product-card" style="margin-top:16px; flex-direction:column; align-items:stretch;">
+        <h3 style="margin:0 0 10px;">Conseil IA</h3>
+        <p class="muted" style="margin:0 0 10px;">Clique sur « Conseil IA » pour obtenir des explications sur l’article.</p>
+        <p class="muted" id="aiMsg" style="margin:0 0 8px;" aria-live="polite"></p>
+        <div id="aiAnswer" style="color:var(--text); font-weight:650; line-height:1.55; white-space:normal;"></div>
+      </div>
+
+
+      <div style="margin-top:34px; border-top:1px solid rgba(17,18,23,.04); padding-top:24px;" id="panier">
         <h3 style="margin:0 0 10px;">Votre panier</h3>
         <div id="cartBox"></div>
         <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:16px;">
@@ -83,7 +91,7 @@
 
   <script src="assets/js/main.js"></script>
   <script src="assets/js/cart.js"></script>
-  <script>
+<script>
     const currencyFCFA = (n)=> (parseInt(n,10)||0).toLocaleString('fr-FR') + ' FCFA';
 
     function loadCategories(){
@@ -101,6 +109,26 @@
         });
     }
 
+    function aiAskInfoProduct(productId){
+      const msg = document.getElementById('aiMsg');
+      const ans = document.getElementById('aiAnswer');
+      msg.textContent = 'Conseil IA en cours...';
+      ans.textContent = '';
+
+      return fetch('api/ai.php?action=info_product', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ product_id: productId, action: 'info_product', question: '' })
+      })
+      .then(r=>r.json())
+      .then(d=>{
+        if(!d.ok){ msg.textContent = d.error || 'Erreur IA'; return; }
+        msg.textContent = '';
+        ans.innerHTML = d.answer ? d.answer.replace(/\n/g,'<br/>') : '';
+      })
+      .catch(()=>{ msg.textContent = 'Erreur réseau (IA).'; });
+    }
+
     function loadProducts({q='', category=''}={}){
       const grid = document.getElementById('productsGrid');
       grid.innerHTML = '';
@@ -113,7 +141,7 @@
         .then(d=>{
           const products = d.products || [];
           if(products.length === 0){
-            grid.innerHTML = '<p style="color:rgba(255,255,255,.7); font-weight:700;">Aucun produit.</p>';
+            grid.innerHTML = '<p style="color:var(--muted); font-weight:700;">Aucun produit.</p>';
             return;
           }
           products.forEach(p=>{
@@ -125,13 +153,22 @@
                 <h4>${p.name}</h4>
                 <p>${p.description || ''}</p>
                 <div class="price">${currencyFCFA(p.price_fcfa)}</div>
-                <div class="product-actions">
-                  <button class="small-btn" data-add-to-cart data-product-id="${p.id}" data-product-name="${p.name}" data-product-price="${p.price_fcfa}" data-qty="1">Ajouter au panier</button>
-                  <span style="color:rgba(255,255,255,.6); font-weight:800;">${p.category_slug||''}</span>
+                <div class="product-actions" style="flex-wrap:wrap;">
+                  ${(p.is_available && p.stock_qty > 0) ? `<button class="small-btn" data-add-to-cart data-product-id="${p.id}" data-product-name="${p.name}" data-product-price="${p.price_fcfa}" data-qty="1">Ajouter au panier</button>` : `<button class="small-btn" type="button" data-notify-rupture data-pid="${p.id}" data-pname="${p.name}" style="padding:10px 12px;">Alerte rupture</button>`}
+                  <div style="margin-top:6px; color:rgba(17,18,23,.58); font-weight:800;">${(p.is_available && p.stock_qty > 0) ? '' : 'Rupture de stock'}</div>
+
+                  <button class="small-btn" type="button" data-ai-info data-pid="${p.id}" style="padding:10px 12px;">Conseil IA</button>
+                  <span style="color:rgba(17,18,23,.58); font-weight:800;">${p.category_slug||''}</span>
+
                 </div>
               </div>
             `;
             grid.appendChild(wrap);
+
+            const btn = wrap.querySelector('[data-ai-info]');
+            if(btn){
+              btn.addEventListener('click', ()=>aiAskInfoProduct(p.id));
+            }
           })
         });
     }
@@ -141,7 +178,7 @@
       const state = window.YayaCart ? window.YayaCart.load() : {items:[]};
       const items = state.items || [];
       if(items.length === 0){
-        box.innerHTML = '<p style="color:rgba(255,255,255,.7); font-weight:700;">Panier vide.</p>';
+        box.innerHTML = '<p style="color:var(--muted); font-weight:700;">Panier vide.</p>';
         return;
       }
       let html = '<div class="table-wrap"><table class="table"><thead><tr><th>Produit</th><th>Qté</th><th>Prix</th><th>Total</th><th></th></tr></thead><tbody>';
@@ -151,7 +188,7 @@
           <tr>
             <td style="font-weight:900; color:var(--text);">${it.name||''}</td>
             <td>
-              <input type="number" min="1" value="${it.qty}" style="width:84px; padding:8px 10px; border-radius:14px; border:1px solid rgba(255,255,255,.14); background:rgba(0,0,0,.2); color:var(--text);" data-qty-input data-pid="${it.product_id}" />
+              <input type="number" min="1" value="${it.qty}" style="width:84px; padding:8px 10px; border-radius:14px; border:1px solid rgba(17,18,23,.06); background:rgba(17,18,23,.04); color:var(--text);" data-qty-input data-pid="${it.product_id}" />
             </td>
             <td>${currencyFCFA(it.price_fcfa)}</td>
             <td>${line}</td>
@@ -182,11 +219,72 @@
       });
     }
 
+
+
     document.addEventListener('DOMContentLoaded', async ()=>{
       await loadCategories();
       await loadProducts();
       renderCart();
       window.YayaCart.syncCartCount();
+
+      // Rupture notification (public endpoint; client sends position)
+      document.addEventListener('click', async (e)=>{
+        const b = e.target.closest('[data-notify-rupture]');
+        if(!b) return;
+        const pid = b.getAttribute('data-pid');
+        const pname = b.getAttribute('data-pname') || '';
+        if(!confirm('Le produit semble indisponible. Recevoir une notification pour "' + pname + '" ?')) return;
+
+        const email = prompt('Email (pour recevoir la notification) :');
+        if(!email) return;
+        const fullName = prompt('Nom complet :');
+        if(!fullName) return;
+        const phone = prompt('Téléphone (optionnel) :') || '';
+
+        let positionLabel = '';
+        let lat = null;
+        let lng = null;
+
+        const manual = prompt('Position (ville/quartier) — optionnel :') || '';
+        positionLabel = manual.trim();
+
+        if(navigator.geolocation){
+          const coords = await new Promise((resolve)=>{
+            navigator.geolocation.getCurrentPosition(
+              (pos)=>resolve({lat:pos.coords.latitude, lng:pos.coords.longitude}),
+              ()=>resolve(null),
+              {timeout:5000}
+            );
+          });
+          if(coords){ lat = coords.lat; lng = coords.lng; }
+        }
+
+        b.disabled = true;
+        b.textContent = 'En cours...';
+
+        const res = await fetch('api/stock.php?action=notify', {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({
+            product_id: parseInt(pid,10),
+            full_name: fullName,
+            email: email,
+            phone: phone,
+            position_label: positionLabel,
+            lat, lng,
+          })
+        });
+
+        const d = await res.json().catch(()=>({}));
+        if(d.ok){
+          alert('Demande envoyée ✅. Dès que le produit revient, nous vous contacterons.');
+        }else{
+          alert(d.error || 'Erreur lors de l’envoi');
+        }
+
+        b.disabled = false;
+        b.textContent = 'Alerte rupture';
+      });
 
       document.getElementById('searchBtn').addEventListener('click', ()=>{
         const q = document.getElementById('searchQ').value.trim();
@@ -203,4 +301,5 @@
   </script>
 </body>
 </html>
+
 

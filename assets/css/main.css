@@ -1,29 +1,51 @@
 /* Styles compactes : à compléter/ajuster si besoin. */
 :root{
-  --bg:#0b0b12;
-  --card:#121223;
-  --text:#f3f3f7;
-  --muted:rgba(255,255,255,.7);
-  --gold:#d4af37;
-  --gold2:#f1d27a;
+  /* Marketing / Luxe (light) palette */
+  --bg: #fffaf6; /* warm ivory */
+  --card: #ffffff;
+  --text: #111217; /* near-black for text */
+  --muted: rgba(17,18,23,.62);
+  --gold: #b5862b;
+  --gold2: #ffd580;
+  --accent: #d14a6a; /* rose accent for CTAs */
+  --soft: rgba(17,18,23,0.04); /* subtle surfaces */
+  --glass: rgba(255,255,255,0.86);
 }
 *{box-sizing:border-box}
-body{margin:0;font-family:'Jost',system-ui,Arial; background:linear-gradient(180deg,#070710, var(--bg)); color:var(--text); overflow-x:hidden}
+body{margin:0;font-family:'Jost',system-ui,Arial; background:linear-gradient(180deg,#fffaf6,#fff5ee); color:var(--text); overflow-x:hidden}
+
+/* Teinte luxe blanc : le site est pensé pour des fonds sombres, donc on force les éléments clés */
+.navbar{background:var(--glass); border-bottom:1px solid rgba(17,18,23,.06)}
+.nav-links a{color:rgba(17,18,23,.68)}
+.nav-links a.active{color:var(--text)}
+.btn-outline{border-color:rgba(17,18,23,.12)}
+.btn-outline-dark{background:var(--soft)}
+.page{padding:34px 0}
+.product-card,.service-card,.product-card,.loc-card,.newsletter-box,.tesm-card{background:var(--soft); border-color:rgba(17,18,23,.06)}
+.muted{color:var(--muted) !important}
+.table th,.table td{color:rgba(17,18,23,.72) !important}
+.small-btn{background:rgba(17,18,23,.04)}
+.price{color:var(--gold) !important}
 .container{width:min(1100px, calc(100% - 32px)); margin:0 auto}
 .mt-4{margin-top:1rem}
 .text-center{text-align:center}
-.navbar{position:sticky; top:0; z-index:50; display:flex; align-items:center; justify-content:space-between; gap:16px; padding:14px 18px; background:rgba(9,9,16,.72); backdrop-filter: blur(12px); border-bottom:1px solid rgba(255,255,255,.06)}
+.navbar{position:sticky; top:0; z-index:50; display:flex; align-items:center; justify-content:space-between; gap:16px; padding:14px 18px; backdrop-filter: blur(6px);}
 .nav-logo a{color:var(--text); text-decoration:none; font-weight:700; letter-spacing:.5px; font-size:18px}
 .logo-y{color:var(--gold)}
 .nav-links{list-style:none; display:flex; gap:18px; padding:0; margin:0}
 .nav-links a{color:var(--muted); text-decoration:none; font-weight:500}
 .nav-links a.active{color:var(--text)}
 .nav-actions{display:flex; align-items:center; gap:12px}
-.btn-outline{color:var(--text); text-decoration:none; padding:10px 14px; border:1px solid rgba(255,255,255,.18); border-radius:999px; font-weight:600}
-.btn-outline-dark{color:var(--text); text-decoration:none; padding:10px 14px; border:1px solid rgba(0,0,0,.35); border-radius:999px; font-weight:600; background:rgba(255,255,255,.06)}
+.btn-outline{color:var(--text); text-decoration:none; padding:10px 14px; border:1px solid rgba(17,18,23,.08); border-radius:999px; font-weight:600}
+.btn-outline-dark{color:var(--text); text-decoration:none; padding:10px 14px; border:1px solid rgba(17,18,23,.12); border-radius:999px; font-weight:600; background:var(--soft)}
 .btn-gold{color:#1a1406; background:linear-gradient(135deg,var(--gold), var(--gold2)); text-decoration:none; padding:10px 14px; border-radius:999px; font-weight:800}
-.btn-ghost{color:var(--text); text-decoration:none; padding:10px 14px; border-radius:999px; font-weight:700; border:1px solid rgba(255,255,255,.14); background:rgba(255,255,255,.04)}
-.btn-cart{display:flex; gap:10px; align-items:center; color:var(--text); text-decoration:none; padding:10px 14px; border-radius:999px; border:1px solid rgba(255,255,255,.14); background:rgba(255,255,255,.04); font-weight:800}
+.btn-gold:hover{filter:brightness(.98) saturate(1.05); transform:translateY(-2px)}
+.btn-gold:focus-visible{outline:3px solid rgba(181,134,43,.14); outline-offset:4px}
+.btn-outline:hover{background:rgba(17,18,23,.02)}
+.btn-outline:focus-visible{outline:3px solid rgba(17,18,23,.06); outline-offset:4px}
+.btn-ghost:hover{background:rgba(17,18,23,.06)}
+.btn-ghost{color:var(--text); text-decoration:none; padding:10px 14px; border-radius:999px; font-weight:700; border:1px solid rgba(17,18,23,.06); background:var(--soft)}
+.btn-cart{display:flex; gap:10px; align-items:center; color:var(--text); text-decoration:none; padding:10px 14px; border-radius:999px; border:1px solid rgba(17,18,23,.06); background:var(--soft); font-weight:800}
 .cart-icon{font-size:18px}
 .menu-toggle{display:none; background:transparent; border:0; color:var(--text); font-size:22px}
 @media (max-width:860px){.nav-links{display:none}.menu-toggle{display:block}}
@@ -31,13 +53,16 @@ body{margin:0;font-family:'Jost',system-ui,Arial; background:linear-gradient(180
 #loader{position:fixed; inset:0; background:rgba(0,0,0,.6); display:flex; align-items:center; justify-content:center; z-index:9999}
 #loader.hidden{display:none}
 .loader-inner{display:flex; flex-direction:column; align-items:center; gap:14px}
-.loader-bar{width:240px; height:10px; background:rgba(255,255,255,.08); border-radius:999px; overflow:hidden}
+.loader-bar{width:240px; height:10px; background:var(--soft); border-radius:999px; overflow:hidden}
 .loader-fill{height:100%; width:40%; background:linear-gradient(90deg,var(--gold),var(--gold2)); animation:load 1.2s infinite}
 @keyframes load{0%{transform:translateX(-120%)} 100%{transform:translateX(220%)}}
 
 .hero{position:relative; padding:70px 0 30px}
 .hero-bg{position:absolute; inset:0; overflow:hidden; pointer-events:none}
-.hero-shape{position:absolute; width:520px; height:520px; border-radius:40px; filter:blur(20px); opacity:.12; border:1px solid rgba(255,255,255,.08)}
+.hero-shape{position:absolute; width:520px; height:520px; border-radius:40px; filter:blur(20px); opacity:.12; border:1px solid rgba(17,18,23,.04)}
+
+/* Rose & Blanc (thème premium) */
+.hero-bg::before{content:""; position:absolute; inset:-40px; background-image:url('../assets/images/Make-up cosmetic product, beauty products and cosmetics swatch sample flatlay, various m.jpg'); background-size:cover; background-position:center; opacity:.22; filter:saturate(1.2) contrast(1.05); transform:scale(1.02)}
 .shape1{top:-160px; left:-160px; background:linear-gradient(135deg, rgba(212,175,55,.8), rgba(80,80,255,.2))}
 .shape2{top:40px; right:-240px; background:linear-gradient(135deg, rgba(80,80,255,.45), rgba(212,175,55,.18))}
 .shape3{bottom:-260px; left:30%; background:linear-gradient(135deg, rgba(212,175,55,.25), rgba(0,255,200,.12))}
@@ -51,9 +76,9 @@ body{margin:0;font-family:'Jost',system-ui,Arial; background:linear-gradient(180
 .stat{display:flex; gap:10px; align-items:baseline}
 .stat strong{font-size:26px; color:var(--text)}
 .stat span{color:var(--muted)}
-.stat-sep{width:1px; height:34px; background:rgba(255,255,255,.08)}
+.stat-sep{width:1px; height:34px; background:rgba(17,18,23,.06)}
 .hero-visual{position:relative; z-index:2; margin-top:26px}
-.hero-card{background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius:26px; padding:18px; max-width:360px; box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.hero-card{background:var(--card); border:1px solid rgba(17,18,23,.06); border-radius:26px; padding:18px; max-width:360px; box-shadow:0 18px 40px rgba(17,18,23,.06)}
 .floating{animation:floating 3.2s ease-in-out infinite}
 @keyframes floating{0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)}}
 .hcard-img{height:120px; border-radius:18px; background:linear-gradient(135deg, rgba(212,175,55,.35), rgba(140,80,255,.15))}
@@ -61,7 +86,7 @@ body{margin:0;font-family:'Jost',system-ui,Arial; background:linear-gradient(180
 .hcard-tag{color:var(--gold2); font-weight:800; font-size:12px; letter-spacing:.6px; text-transform:uppercase}
 .hcard-name{margin:0; font-size:18px; font-weight:900}
 .hcard-price{margin:0; color:var(--muted); font-weight:700}
-.hero-badge{position:absolute; top:40px; right:0; width:150px; height:150px; border-radius:999px; border:1px solid rgba(255,255,255,.1); display:flex; align-items:center; justify-content:center}
+.hero-badge{position:absolute; top:40px; right:0; width:150px; height:150px; border-radius:999px; border:1px solid rgba(17,18,23,.06); display:flex; align-items:center; justify-content:center}
 .badge-ring{position:absolute; inset:14px; border-radius:999px; border:1px solid rgba(212,175,55,.35); animation:ring 2.6s linear infinite}
 @keyframes ring{from{transform:rotate(0)} to{transform:rotate(360deg)}}
 .badge-inner{position:relative; z-index:2; display:flex; flex-direction:column; align-items:center; gap:6px; font-weight:900}
@@ -69,9 +94,9 @@ body{margin:0;font-family:'Jost',system-ui,Arial; background:linear-gradient(180
 
 @media (min-width:980px){.hero{display:grid; grid-template-columns:1.2fr .8fr; align-items:start}}
 
-.marquee-band{margin:26px 0; border-top:1px solid rgba(255,255,255,.07); border-bottom:1px solid rgba(255,255,255,.07); overflow:hidden}
+.marquee-band{margin:26px 0; border-top:1px solid rgba(17,18,23,.04); border-bottom:1px solid rgba(17,18,23,.04); overflow:hidden}
 .marquee-track{display:flex; gap:30px; padding:14px 0; width:max-content; animation:marquee 24s linear infinite}
-.marquee-track span{color:rgba(255,255,255,.75); font-weight:800}
+.marquee-track span{color:rgba(17,18,23,.64); font-weight:800}
 @keyframes marquee{from{transform:translateX(0)} to{transform:translateX(-50%)} }
 
 .section-header{text-align:left; margin-bottom:22px}
@@ -80,7 +105,7 @@ body{margin:0;font-family:'Jost',system-ui,Arial; background:linear-gradient(180
 .section-sub{color:var(--muted); max-width:600px}
 
 .services-grid{display:grid; grid-template-columns:repeat(12, 1fr); gap:16px}
-.service-card{grid-column:span 6; position:relative; min-height:220px; border-radius:24px; overflow:hidden; border:1px solid rgba(255,255,255,.08); background:rgba(255,255,255,.03)}
+.service-card{grid-column:span 6; position:relative; min-height:220px; border-radius:24px; overflow:hidden; border:1px solid rgba(17,18,23,.04); background:var(--soft)}
 .sc-large{grid-column:span 12; min-height:260px}
 .sc-wide{grid-column:span 12}
 @media (min-width:900px){.service-card:not(.sc-large):not(.sc-wide){grid-column:span 4}}
@@ -92,31 +117,45 @@ body{margin:0;font-family:'Jost',system-ui,Arial; background:linear-gradient(180
 .sc-link{margin-top:auto; color:var(--text); text-decoration:none; font-weight:900}
 
 .products-grid{display:grid; grid-template-columns:repeat(12,1fr); gap:16px}
-.product-card{grid-column:span 12; border:1px solid rgba(255,255,255,.08); background:rgba(255,255,255,.03); border-radius:22px; padding:16px; display:flex; gap:14px; align-items:flex-start}
+.product-card{grid-column:span 12; border:1px solid rgba(17,18,23,.04); background:var(--card); border-radius:22px; padding:16px; display:flex; gap:14px; align-items:flex-start}
 @media (min-width:740px){.product-card{grid-column:span 4; flex-direction:column}}
-.product-thumb{width:80px; height:80px; border-radius:18px; background:linear-gradient(135deg, rgba(212,175,55,.35), rgba(120,80,255,.1))}
+.product-thumb{width:80px; height:80px; border-radius:18px; background:linear-gradient(135deg, rgba(212,175,55,.35), rgba(120,80,255,.1)); background-size:cover; background-position:center; background-repeat:no-repeat; overflow:hidden; transform:translateZ(0)}
 @media (min-width:740px){.product-thumb{width:100%; height:120px}}
 .product-info h4{margin:0 0 8px; font-size:16px}
 .product-info p{margin:0 0 12px; color:var(--muted); font-weight:700}
 .price{font-weight:1000; color:var(--gold2); margin:0 0 12px}
 .product-actions{display:flex; gap:10px; align-items:center}
-.small-btn{border:1px solid rgba(255,255,255,.14); background:rgba(255,255,255,.04); color:var(--text); padding:10px 12px; border-radius:999px; font-weight:900; cursor:pointer}
+.small-btn{border:1px solid rgba(17,18,23,.06); background:var(--soft); color:var(--text); padding:10px 12px; border-radius:999px; font-weight:900; cursor:pointer}
+
+/* Luxury micro-interactions */
+.product-card{transition:transform .28s cubic-bezier(.2,.9,.2,1), box-shadow .28s ease, opacity .4s ease; will-change:transform}
+.product-card:hover{transform:translateY(-8px) scale(1.02); box-shadow:0 30px 80px rgba(0,0,0,.48)}
+.product-thumb img{width:100%; height:100%; object-fit:cover; display:block; border-radius:14px; transition:transform .45s ease}
+.product-card:hover .product-thumb img{transform:scale(1.06)}
+.fade-in{opacity:0; transform:translateY(8px); animation:fadeInUp .6s forwards}
+@keyframes fadeInUp{0%{opacity:0; transform:translateY(8px)} 100%{opacity:1; transform:translateY(0)}}
+.pimg{display:block; width:100%; height:100%}
+
+/* cart bump animation */
+.bump{animation:cartBump .36s ease}
+@keyframes cartBump{0%{transform:scale(1)}50%{transform:scale(1.28)}100%{transform:scale(1)}}
+.small-btn.added{transform:translateY(-2px); box-shadow:0 12px 28px rgba(0,0,0,.32)}
 
 .why-grid{display:grid; grid-template-columns:1fr; gap:18px}
 @media (min-width:920px){.why-grid{grid-template-columns:1.1fr .9fr}}
 .why-features{display:grid; grid-template-columns:1fr 1fr; gap:14px}
-.wf-item{display:flex; gap:12px; align-items:flex-start; padding:14px; border:1px solid rgba(255,255,255,.08); background:rgba(255,255,255,.03); border-radius:18px}
+.wf-item{display:flex; gap:12px; align-items:flex-start; padding:14px; border:1px solid rgba(17,18,23,.04); background:var(--soft); border-radius:18px}
 .wf-icon{width:34px; height:34px; border-radius:12px; display:flex; align-items:center; justify-content:center; background:rgba(212,175,55,.12)}
 .wf-item h4{margin:0 0 6px}
 .wf-item p{margin:0; color:var(--muted); font-weight:650}
 
-.why-img-frame{position:relative; height:320px; border-radius:26px; border:1px solid rgba(255,255,255,.08); background:rgba(255,255,255,.03); overflow:hidden}
+.why-img-frame{position:relative; height:320px; border-radius:26px; border:1px solid rgba(17,18,23,.04); background:var(--card); overflow:hidden}
 .why-img-inner{position:absolute; inset:0; background:linear-gradient(135deg, rgba(212,175,55,.25), rgba(0,255,200,.08))}
-.why-img-badge{position:absolute; bottom:18px; left:18px; background:rgba(0,0,0,.35); border:1px solid rgba(255,255,255,.1); border-radius:20px; padding:12px 16px}
+.why-img-badge{position:absolute; bottom:18px; left:18px; background:rgba(255,250,246,.86); border:1px solid rgba(17,18,23,.04); border-radius:20px; padding:12px 16px}
 
 .testimonials-section{padding:30px 0}
 .tesm-track{display:flex; gap:16px; overflow:hidden}
-.tesm-card{min-width:320px; border:1px solid rgba(255,255,255,.08); background:rgba(255,255,255,.03); border-radius:22px; padding:18px}
+.tesm-card{min-width:320px; border:1px solid rgba(17,18,23,.04); background:var(--soft); border-radius:22px; padding:18px}
 .tesm-stars{color:var(--gold2); font-weight:900}
 .tesm-card p{color:var(--muted); font-weight:650}
 .tesm-author{display:flex; gap:12px; align-items:center; margin-top:14px}
@@ -124,25 +163,25 @@ body{margin:0;font-family:'Jost',system-ui,Arial; background:linear-gradient(180
 
 .locations-grid{display:grid; grid-template-columns:1fr; gap:16px}
 @media (min-width:900px){.locations-grid{grid-template-columns:1fr 1fr}}
-.loc-card{border:1px solid rgba(255,255,255,.08); background:rgba(255,255,255,.03); border-radius:24px; padding:18px}
+.loc-card{border:1px solid rgba(17,18,23,.04); background:var(--card); border-radius:24px; padding:18px}
 .loc-number{color:var(--gold2); font-weight:1000; font-size:18px}
 .loc-card h3{margin:8px 0}
 .loc-info{margin:12px 0 16px}
 .loc-row{display:flex; gap:10px; color:var(--muted); font-weight:700; margin:8px 0}
-.lc-gold{background:linear-gradient(180deg, rgba(212,175,55,.10), rgba(255,255,255,.03))}
+.lc-gold{background:linear-gradient(180deg, rgba(181,134,43,.08), rgba(255,245,224,.02))}
 
-.newsletter-box{border:1px solid rgba(255,255,255,.08); background:rgba(255,255,255,.03); border-radius:26px; padding:22px; position:relative; overflow:hidden}
+.newsletter-box{border:1px solid rgba(17,18,23,.04); background:var(--card); border-radius:26px; padding:22px; position:relative; overflow:hidden}
 .nl-content h2{margin:0 0 10px}
 .nl-form{display:flex; gap:12px; flex-wrap:wrap}
-.nl-form input{flex:1; min-width:240px; padding:12px 14px; border-radius:999px; border:1px solid rgba(255,255,255,.14); background:rgba(0,0,0,.2); color:var(--text); outline:none}
+.nl-form input{flex:1; min-width:240px; padding:12px 14px; border-radius:999px; border:1px solid rgba(17,18,23,.06); background:rgba(17,18,23,.04); color:var(--text); outline:none}
 .muted{color:var(--muted); font-weight:700; margin-top:8px}
 
-.footer{margin-top:40px; border-top:1px solid rgba(255,255,255,.07); padding:34px 0}
+.footer{margin-top:40px; border-top:1px solid rgba(17,18,23,.04); padding:34px 0}
 .footer-grid{display:grid; grid-template-columns:1fr; gap:18px}
 @media (min-width:900px){.footer-grid{grid-template-columns:1.3fr 1fr 1fr 1fr}}
 .footer-logo{font-weight:1000}
 .footer-social{display:flex; gap:12px; margin-top:10px}
-.social-link{color:var(--text); text-decoration:none; padding:8px 10px; border:1px solid rgba(255,255,255,.12); border-radius:14px; background:rgba(255,255,255,.03)}
+.social-link{color:var(--text); text-decoration:none; padding:8px 10px; border:1px solid rgba(17,18,23,.06); border-radius:14px; background:var(--soft)}
 .footer-col ul{list-style:none; padding:0; margin:0}
 .footer-col li{margin:8px 0}
 .footer-col a{color:var(--muted); text-decoration:none; font-weight:700}
@@ -158,8 +197,8 @@ body{margin:0;font-family:'Jost',system-ui,Arial; background:linear-gradient(180
 .page{padding:34px 0}
 .breadcrumb{color:var(--muted); font-weight:700; margin-bottom:18px}
 .table{width:100%; border-collapse:collapse}
-.table th,.table td{border-bottom:1px solid rgba(255,255,255,.08); padding:10px; text-align:left; color:var(--muted); font-weight:700}
+.table th,.table td{border-bottom:1px solid rgba(17,18,23,.04); padding:10px; text-align:left; color:var(--muted); font-weight:700}
 .table th{color:var(--text)}
 .form{display:flex; flex-direction:column; gap:12px}
-.form input,.form select,.form textarea{padding:12px 14px; border-radius:16px; border:1px solid rgba(255,255,255,.14); background:rgba(0,0,0,.2); color:var(--text); outline:none}
+.form input,.form select,.form textarea{padding:12px 14px; border-radius:16px; border:1px solid rgba(17,18,23,.06); background:rgba(17,18,23,.04); color:var(--text); outline:none}
 
