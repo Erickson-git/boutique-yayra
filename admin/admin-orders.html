@@ -15,14 +15,20 @@
   </nav>
 
   <section class="page">
-    <div class="container" style="max-width:1000px;">
+    <div class="container" style="max-width:1200px;">
       <div class="section-header">
         <p class="section-eyebrow">Admin</p>
         <h2 class="section-title">Commandes</h2>
+        <p class="section-sub">Gérer les commandes et mettre à jour les statuts</p>
       </div>
 
       <div id="msg" class="muted" aria-live="polite" style="margin-bottom:14px;"></div>
-      <div id="ordersWrap"></div>
+      
+      <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:12px;">
+        <button class="btn-gold" type="button" id="loadBtn">Rafraîchir la liste</button>
+      </div>
+
+      <div id="ordersWrap" style="overflow-x:auto;"></div>
     </div>
   </section>
 
@@ -37,6 +43,33 @@
       window.location.href = '../client/login.html';
     });
 
+    document.getElementById('loadBtn').addEventListener('click', loadOrders);
+
+    async function updateOrderStatus(orderId, newStatus) {
+      const t = token();
+      if (!t) { window.location.href = '../client/login.html'; return; }
+
+      try {
+        const res = await fetch('../api/admin_orders.php?action=update_status', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + t
+          },
+          body: JSON.stringify({ id: orderId, status: newStatus })
+        });
+        const data = await res.json();
+        if (!data.ok) {
+          alert(data.error || 'Erreur');
+          return;
+        }
+        msg.textContent = '✓ Statut mis à jour';
+        await loadOrders();
+      } catch (e) {
+        msg.textContent = 'Erreur réseau';
+      }
+    }
+
     async function loadOrders(){
       const t = token();
       if(!t){ window.location.href = '../client/login.html'; return; }
@@ -44,7 +77,7 @@
       wrap.innerHTML = '';
 
       try{
-        const res = await fetch('../api/orders.php?action=list', {
+        const res = await fetch('../api/admin_orders.php?action=list', {
           method: 'GET',
           headers: { 'Authorization': 'Bearer ' + t }
         });
@@ -61,11 +94,19 @@
           return;
         }
 
-        let html = '<div class="table-wrap"><table class="table"><thead><tr><th>ID</th><th>Client</th><th>Total</th><th>Statut</th><th>Date</th></tr></thead><tbody>';
+        let html = '<table class="table" style="width:100%; border-collapse:collapse;"><thead style="background:rgba(17,18,23,.02);"><tr style="border-bottom:2px solid rgba(17,18,23,.08);"><th style="padding:12px; text-align:left; font-weight:700;">ID</th><th style="padding:12px; text-align:left; font-weight:700;">Client</th><th style="padding:12px; text-align:left; font-weight:700;">Téléphone</th><th style="padding:12px; text-align:left; font-weight:700;">Adresse</th><th style="padding:12px; text-align:left; font-weight:700;">Articles</th><th style="padding:12px; text-align:left; font-weight:700;">Total</th><th style="padding:12px; text-align:left; font-weight:700;">Statut</th><th style="padding:12px; text-align:left; font-weight:700;">Date</th></tr></thead><tbody>';
+        
         for(const o of orders){
-          html += `<tr><td>${o.id}</td><td>${o.full_name || ''}<br/><span style="color:var(--muted); font-weight:700;">${o.phone || ''}</span></td><td>${(parseInt(o.total_fcfa,10)||0).toLocaleString('fr-FR')} FCFA</td><td>${o.status}</td><td>${o.created_at || ''}</td></tr>`;
+          const statusOptions = ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'];
+          let statusHtml = '<select style="padding:6px; border:1px solid rgba(17,18,23,.08); border-radius:4px; background:#fff; cursor:pointer;" onchange="updateOrderStatus(' + o.id + ', this.value)">';
+          for (const s of statusOptions) {
+            statusHtml += '<option value="' + s + '"' + (o.status === s ? ' selected' : '') + '>' + s + '</option>';
+          }
+          statusHtml += '</select>';
+
+          html += '<tr style="border-bottom:1px solid rgba(17,18,23,.04);"><td style="padding:12px;">' + o.id + '</td><td style="padding:12px;">' + (o.full_name || '') + '</td><td style="padding:12px;">' + (o.phone || '') + '</td><td style="padding:12px; font-size:12px; color:var(--muted);">' + (o.address || '') + '</td><td style="padding:12px;">' + (o.items_count || 0) + ' article(s)</td><td style="padding:12px; font-weight:700;">' + (parseInt(o.total_fcfa,10)||0).toLocaleString('fr-FR') + ' FCFA</td><td style="padding:12px;">' + statusHtml + '</td><td style="padding:12px; font-size:12px; color:var(--muted);">' + (o.created_at || '') + '</td></tr>';
         }
-        html += '</tbody></table></div>';
+        html += '</tbody></table>';
         wrap.innerHTML = html;
         msg.textContent = '';
       }catch(e){
