@@ -44,20 +44,13 @@
             <h3 style="margin:0 0 10px;">Ajouter / Modifier</h3>
             <form id="productForm" class="form">
               <input type="hidden" name="id" id="pid" value="" />
-              <input type="hidden" name="image_url" id="pimg" value="" />
 
               <select name="category_slug" id="categorySlug" required></select>
               <input name="sku" id="sku" placeholder="SKU" required />
               <input name="name" id="pname" placeholder="Nom du produit" required />
               <textarea name="description" id="pdesc" placeholder="Description" required></textarea>
               <input name="price_fcfa" id="pprice" placeholder="Prix (FCFA)" type="number" required />
-              
-              <div style="border:1px solid rgba(17,18,23,.08); border-radius:8px; padding:12px; background:rgba(17,18,23,.02);">
-                <label style="display:block; margin-bottom:8px; font-weight:600; font-size:14px;">Upload image</label>
-                <input type="file" id="imageInput" accept="image/*" style="display:block; margin-bottom:8px; padding:8px; border:1px solid rgba(17,18,23,.08); border-radius:4px; width:100%;" />
-                <img id="imgPreview" style="max-width:100%; height:auto; border-radius:4px; display:none;" alt="Aperçu" />
-                <p id="uploadStatus" class="muted" style="margin:0; font-size:12px;"></p>
-              </div>
+              <input name="image_url" id="pimg" placeholder="URL image" />
 
               <select name="is_featured" id="pfeat" required>
                 <option value="0">Pas vedette</option>
@@ -86,9 +79,6 @@
     const msg = document.getElementById('msg');
     const listWrap = document.getElementById('listWrap');
     const form = document.getElementById('productForm');
-    const imageInput = document.getElementById('imageInput');
-    const imgPreview = document.getElementById('imgPreview');
-    const uploadStatus = document.getElementById('uploadStatus');
 
     function setFormFromProduct(p){
       document.getElementById('pid').value = p.id;
@@ -99,14 +89,6 @@
       document.getElementById('pprice').value = p.price_fcfa || 0;
       document.getElementById('pimg').value = p.image_url || '';
       document.getElementById('pfeat').value = String(p.is_featured || 0);
-      
-      // Show preview if image_url exists
-      if (p.image_url) {
-        imgPreview.src = p.image_url;
-        imgPreview.style.display = 'block';
-      } else {
-        imgPreview.style.display = 'none';
-      }
     }
 
     function resetForm(){
@@ -117,47 +99,7 @@
       document.getElementById('pprice').value = '';
       document.getElementById('pimg').value = '';
       document.getElementById('pfeat').value = '0';
-      imageInput.value = '';
-      imgPreview.style.display = 'none';
-      uploadStatus.textContent = '';
     }
-
-    // File input change handler: upload to server
-    imageInput.addEventListener('change', async (e)=>{
-      const files = e.target.files;
-      if (!files || files.length === 0) return;
-
-      const file = files[0];
-      const formData = new FormData();
-      formData.append('image', file);
-
-      uploadStatus.textContent = 'Upload en cours...';
-      
-      try {
-        const res = await fetch('../api/upload.php', {
-          method: 'POST',
-          headers: { 'Authorization': 'Bearer ' + token() },
-          body: formData
-        });
-        const data = await res.json();
-        
-        if (!data.ok) {
-          uploadStatus.textContent = 'Erreur : ' + (data.error || 'Upload échoué');
-          return;
-        }
-
-        // Set hidden image_url field
-        document.getElementById('pimg').value = data.image_url;
-        
-        // Show preview
-        imgPreview.src = data.image_url;
-        imgPreview.style.display = 'block';
-        
-        uploadStatus.textContent = '✓ Image uploadée : ' + data.filename;
-      } catch (err) {
-        uploadStatus.textContent = 'Erreur réseau lors de l\'upload';
-      }
-    });
 
     document.getElementById('logoutBtn').addEventListener('click', ()=>{
       localStorage.removeItem('yayra_token');

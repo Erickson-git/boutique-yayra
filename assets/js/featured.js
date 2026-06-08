@@ -24,7 +24,7 @@
       products.forEach(p => {
         const card = document.createElement('div');
         card.className = 'product-card fade-in';
-        const rawImage = p.image_url || 'assets/images/placeholder.jpg';
+        const rawImage = p.image_url || 'assets/images/beauty-flatlay.jpg';
         const imageUrl = ('/' + rawImage.replace(/^\/+/, '')).replace(/\/\/+/, '/');
         card.innerHTML = `
           <div class="product-thumb">

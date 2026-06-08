@@ -1,10 +1,8 @@
 services:
-  - type: web_service
+  - type: web
     name: yayra-nail-shop
     env: docker
     plan: free
     dockerfilePath: Dockerfile
-    branch: master
+    branch: main
     autoDeploy: true
-    buildCommand: ''
-    startCommand: ''
