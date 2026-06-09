@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YAYRA Nail Shop — Administration</title>
+  <meta name="theme-color" content="#1c140b">
+  <link rel="stylesheet" href="../assets/css/main.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <nav class="navbar" id="navbar">
+    <div class="nav-logo"><a href="../index.html"><span class="logo-y">Y</span>AYRA <span class="logo-sub">Nail Shop</span></a></div>
+    <ul class="nav-links">
+      <li><a href="index.html" class="active">Tableau de bord</a></li>
+      <li><a href="admin-products.html">Produits</a></li>
+      <li><a href="admin-orders.html">Commandes</a></li>
+      <li><a href="admin-kits.html">Kits</a></li>
+      <li><a href="admin-appointments.html">Rendez-vous</a></li>
+      <li><a href="admin-staff.html">Employés</a></li>
+    </ul>
+    <div class="nav-actions">
+      <button class="btn-outline" type="button" id="logoutBtn">Se déconnecter</button>
+    </div>
+    <button class="menu-toggle" id="menuToggle" aria-label="Menu"><svg class="ic" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
+  </nav>
+
+  <header class="page-hero">
+    <div class="ph-media" style="background-image:url('../assets/images/net-makeup-marble.jpg')"></div>
+    <div class="container">
+      <p class="section-eyebrow">Administration</p>
+      <h1 id="welcome">Tableau de bord</h1>
+      <p>Pilotez la boutique : produits, commandes, kits, rendez-vous, live et équipe.</p>
+    </div>
+  </header>
+
+  <section class="page">
+    <div class="container" style="max-width:1100px;">
+      <div class="stat-cards">
+        <div class="stat-card"><div class="sc-ico"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 4h12l3 5-9 11L3 9z"/></svg></div><b id="stProducts">—</b><span>Produits en ligne</span></div>
+        <div class="stat-card"><div class="sc-ico"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3l2 6 6 2-6 2-2 6-2-6-6-2 6-2z"/></svg></div><b id="stKitsPending">0</b><span>Kits à valider</span></div>
+        <div class="stat-card"><div class="sc-ico"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 13l4 4L19 7"/></svg></div><b id="stKitsPub">0</b><span>Kits publiés</span></div>
+        <div class="stat-card live"><div class="sc-ico" style="color:#e23744; background:rgba(226,55,68,.1)"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></div><b id="stLive">—</b><span>Statut du live</span></div>
+      </div>
+
+      <div class="admin-tiles">
+        <a class="admin-tile" href="admin-products.html"><span class="at-ico"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 4h12l3 5-9 11L3 9z"/></svg></span><div><h4>Produits</h4><p>Ajouter, modifier, retirer des articles et coffrets.</p></div></a>
+        <a class="admin-tile" href="admin-orders.html"><span class="at-ico"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 8h12l1 12H5L6 8Z"/><path d="M9 8a3 3 0 0 1 6 0"/></svg></span><div><h4>Commandes</h4><p>Suivre et traiter les commandes clientes.</p></div></a>
+        <a class="admin-tile" href="admin-kits.html"><span class="at-ico"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3l2 6 6 2-6 2-2 6-2-6-6-2 6-2z"/></svg></span><div><h4>Kits & Coffrets</h4><p>Valider les kits composés (−5%) avant publication.</p></div></a>
+        <a class="admin-tile" href="admin-appointments.html"><span class="at-ico"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3.5" y="4.5" width="17" height="16" rx="2"/><path d="M3.5 9h17M8 3v3M16 3v3"/></svg></span><div><h4>Rendez-vous</h4><p>Consulter et gérer les réservations de services.</p></div></a>
+        <a class="admin-tile" href="../client/studio.html"><span class="at-ico" style="color:#e23744; border-color:rgba(226,55,68,.4)"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></span><div><h4>Studio Live</h4><p>Passer en direct depuis votre caméra.</p></div></a>
+        <a class="admin-tile" href="admin-staff.html" id="staffTile"><span class="at-ico"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0M16 6a3 3 0 0 1 0 6M15 20a6 6 0 0 1 6-0"/></svg></span><div><h4>Employés</h4><p>Créer et gérer les comptes de l'équipe.</p></div></a>
+      </div>
+    </div>
+  </section>
+
+  <script src="../assets/js/catalog.js"></script>
+  <script src="../assets/js/kits.js"></script>
+  <script src="../assets/js/staff.js"></script>
+  <script src="../assets/js/firebase-config.js"></script>
+  <script src="../assets/js/main.js"></script>
+  <script>
+    if(!localStorage.getItem('yayra_token')) window.location.href = '../client/login.html';
+    document.getElementById('logoutBtn').addEventListener('click', ()=>{ localStorage.removeItem('yayra_token'); if(window.YAYRA_STAFF) YAYRA_STAFF.clearSession(); window.location.href = '../client/login.html'; });
+
+    document.addEventListener('DOMContentLoaded', ()=>{
+      const s = window.YAYRA_STAFF && YAYRA_STAFF.session();
+      if(s && s.name) document.getElementById('welcome').textContent = 'Bonjour, ' + s.name;
+      // Masquer la tuile Employés pour les non-admins
+      if(window.YAYRA_STAFF && !YAYRA_STAFF.canManageStaff()){ const t=document.getElementById('staffTile'); if(t) t.style.display='none'; }
+
+      document.getElementById('stProducts').textContent = (window.YAYRA_CATALOG ? window.YAYRA_CATALOG.products.length : '—');
+      if(window.YAYRA_KITS){
+        document.getElementById('stKitsPending').textContent = YAYRA_KITS.pending().length;
+        document.getElementById('stKitsPub').textContent = YAYRA_KITS.published().length;
+      }
+      const liveEl = document.getElementById('stLive');
+      if(window.FIREBASE_READY){
+        const base = window.FIREBASE_CONFIG.databaseURL.replace(/\/$/, '');
+        fetch(base + '/live/active.json').then(r=>r.json()).then(v=>{ liveEl.textContent = (v===true) ? 'EN DIRECT' : 'Hors ligne'; }).catch(()=>{ liveEl.textContent='Hors ligne'; });
+      } else { liveEl.textContent = 'À config.'; liveEl.style.fontSize='20px'; }
+    });
+  </script>
+  <script src="../assets/js/livebadge.js"></script>
+</body>
+</html>

@@ -31,17 +31,17 @@
       <div class="auth-card">
         <p class="section-eyebrow">Espace de gestion</p>
         <h1 class="section-title">Connexion</h1>
-        <p class="muted">Accédez au tableau de bord de la boutique ou à l'espace administrateur.</p>
+        <p class="muted">Connectez-vous à l'espace de gestion. Propriétaire et employés : utilisez l'identifiant fourni.</p>
 
         <form class="form" id="loginForm">
           <input name="email" id="email" type="text" placeholder="Identifiant" value="komi" autocomplete="username" required />
           <input name="password" id="password" type="password" placeholder="Mot de passe" value="saxo2180" autocomplete="current-password" required />
           <p class="muted" id="loginMsg" aria-live="polite" style="margin:0;"></p>
-          <button class="btn-gold" type="submit">Tableau de bord boutique</button>
-          <button class="btn-outline" type="button" id="adminBtn" style="justify-content:center;">Espace administrateur</button>
+          <button class="btn-gold" type="submit">Se connecter</button>
+          <button class="btn-outline" type="button" id="adminBtn" style="justify-content:center;">Espace client</button>
         </form>
 
-        <p class="auth-alt">Identifiants par défaut : <strong>komi</strong> / <strong>saxo2180</strong></p>
+        <p class="auth-alt">Propriétaire (admin suprême) : <strong>komi</strong> / <strong>saxo2180</strong></p>
         <p class="auth-alt" style="margin-top:6px;">Nouvelle cliente ? <a href="register.html">Créer un compte</a></p>
       </div>
     </div>
@@ -56,44 +56,56 @@
     </div>
   </footer>
 
+  <script src="../assets/js/staff.js"></script>
   <script src="../assets/js/main.js"></script>
   <script>
     const msg = document.getElementById('loginMsg');
-    const DEFAULT_USER = 'komi', DEFAULT_PASS = 'saxo2180';
+    const ADMIN_ROLES = ['admin','manager','vendeur'];
+
+    function go(role){ window.location.href = ADMIN_ROLES.indexOf(role) > -1 ? '../admin/index.html' : './dashboard.html'; }
 
     async function access(target){
-      const email = document.getElementById('email').value.trim();
+      const id = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
       msg.style.color = ''; msg.textContent = 'Connexion en cours...';
 
-      // 1) Tentative via le backend (si disponible)
+      // 1) Backend (si déployé)
       try{
         const res = await fetch('../api/auth.php?action=login', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password }),
+          body: JSON.stringify({ email: id, password }),
         });
         const data = await res.json();
         if(data.ok && data.token){
           localStorage.setItem('yayra_token', data.token);
           localStorage.setItem('yayra_role', data.role || 'client');
-          window.location.href = (target === 'admin' || data.role === 'admin') ? '../admin/admin-orders.html' : './dashboard.html';
+          YAYRA_STAFF.setSession({ name: id, username: id, role: data.role || 'client' });
+          if(target === 'admin') go(data.role === 'admin' ? 'admin' : 'client');
+          else window.location.href = './dashboard.html';
           return;
         }
-      }catch(e){ /* pas de backend : on bascule en mode démonstration */ }
+      }catch(e){ /* pas de backend : comptes locaux */ }
 
-      // 2) Mode démonstration (site statique) : identifiants par défaut
-      if(email === DEFAULT_USER && password === DEFAULT_PASS){
-        localStorage.setItem('yayra_token', 'demo-' + target);
-        localStorage.setItem('yayra_role', target === 'admin' ? 'admin' : 'client');
-        window.location.href = (target === 'admin') ? '../admin/admin-orders.html' : './dashboard.html';
-      }else{
+      // 2) Comptes du personnel (propriétaire + employés)
+      const s = YAYRA_STAFF.auth(id, password);
+      if(s){
+        localStorage.setItem('yayra_token', 'staff-' + s.role);
+        localStorage.setItem('yayra_role', s.role);
+        YAYRA_STAFF.setSession(s);
+        if(target === 'admin'){
+          if(ADMIN_ROLES.indexOf(s.role) > -1) window.location.href = '../admin/index.html';
+          else { msg.style.color = 'var(--rose)'; msg.textContent = "Ce compte n'a pas d'accès à la gestion."; }
+        } else {
+          window.location.href = './dashboard.html';
+        }
+      } else {
         msg.style.color = 'var(--rose)';
-        msg.textContent = 'Identifiants incorrects. Utilisez komi / saxo2180.';
+        msg.textContent = 'Identifiants incorrects.';
       }
     }
 
-    document.getElementById('loginForm').addEventListener('submit', (e)=>{ e.preventDefault(); access('client'); });
-    document.getElementById('adminBtn').addEventListener('click', ()=> access('admin'));
+    document.getElementById('loginForm').addEventListener('submit', (e)=>{ e.preventDefault(); access('admin'); });
+    document.getElementById('adminBtn').addEventListener('click', ()=> access('client'));
   </script>
   <script src="../assets/js/firebase-config.js"></script>
   <script src="../assets/js/livebadge.js"></script>

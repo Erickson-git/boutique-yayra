@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YAYRA Nail Shop — Employés</title>
+  <meta name="theme-color" content="#1c140b">
+  <link rel="stylesheet" href="../assets/css/main.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <nav class="navbar" id="navbar">
+    <div class="nav-logo"><a href="../index.html"><span class="logo-y">Y</span>AYRA <span class="logo-sub">Nail Shop</span></a></div>
+    <ul class="nav-links">
+      <li><a href="index.html">Tableau de bord</a></li>
+      <li><a href="admin-products.html">Produits</a></li>
+      <li><a href="admin-orders.html">Commandes</a></li>
+      <li><a href="admin-kits.html">Kits</a></li>
+      <li><a href="admin-appointments.html">Rendez-vous</a></li>
+      <li><a href="admin-staff.html" class="active">Employés</a></li>
+    </ul>
+    <div class="nav-actions">
+      <button class="btn-outline" type="button" id="logoutBtn">Se déconnecter</button>
+    </div>
+    <button class="menu-toggle" id="menuToggle" aria-label="Menu"><svg class="ic" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
+  </nav>
+
+  <header class="page-hero">
+    <div class="ph-media" style="background-image:url('../assets/images/net-skincare-flatlay.jpg')"></div>
+    <div class="container">
+      <p class="section-eyebrow">Administration</p>
+      <h1>Comptes de l'équipe</h1>
+      <p>Créez et gérez les accès de vos employés. Chaque employé reçoit son identifiant et son mot de passe.</p>
+    </div>
+  </header>
+
+  <section class="page">
+    <div class="container" style="max-width:1000px;">
+      <div id="denied" class="product-card" style="display:none;">
+        <div class="product-info"><h4>Accès réservé</h4><p class="muted">Seul l'administrateur peut gérer les comptes du personnel.</p></div>
+      </div>
+
+      <div id="staffArea" style="display:none;">
+        <div class="admin-grid">
+          <div>
+            <div class="product-card">
+              <div class="product-info">
+                <h4 style="font-size:20px;">Créer un compte employé</h4>
+                <form class="staff-form" id="staffForm" style="margin-top:10px;">
+                  <input class="full" name="name" id="sfName" placeholder="Nom complet" required />
+                  <input name="username" id="sfUser" placeholder="Identifiant (ex : ama)" required autocomplete="off" />
+                  <input name="password" id="sfPass" placeholder="Mot de passe" required autocomplete="new-password" />
+                  <select name="role" id="sfRole" class="full">
+                    <option value="vendeur">Vendeur — produits, commandes, rendez-vous</option>
+                    <option value="manager">Gérant — tout sauf la gestion des comptes</option>
+                    <option value="admin">Administrateur — accès total</option>
+                  </select>
+                  <button class="btn-gold full" type="submit">Créer le compte</button>
+                </form>
+                <p class="muted" id="sfMsg" style="margin:10px 0 0;" aria-live="polite"></p>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="product-card">
+              <div class="product-info">
+                <h4 style="font-size:20px;">Comptes existants</h4>
+                <div id="staffList" style="margin-top:8px;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script src="../assets/js/staff.js"></script>
+  <script src="../assets/js/firebase-config.js"></script>
+  <script src="../assets/js/main.js"></script>
+  <script>
+    if(!localStorage.getItem('yayra_token')) window.location.href = '../client/login.html';
+    document.getElementById('logoutBtn').addEventListener('click', ()=>{ localStorage.removeItem('yayra_token'); YAYRA_STAFF.clearSession(); window.location.href = '../client/login.html'; });
+
+    const canManage = YAYRA_STAFF.canManageStaff();
+    document.getElementById(canManage ? 'staffArea' : 'denied').style.display = canManage ? '' : '';
+    if(!canManage){ document.getElementById('denied').style.display=''; }
+
+    function esc(s){ return String(s||'').replace(/[<>&"]/g, c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c])); }
+
+    function renderList(){
+      const wrap = document.getElementById('staffList');
+      const all = YAYRA_STAFF.all();
+      wrap.innerHTML = all.map(e=>{
+        const supreme = !!e.supreme;
+        const actions = supreme ? '<span class="muted" style="font-size:12px;">Compte propriétaire</span>'
+          : '<button class="small-btn" data-pass="'+e.id+'">Mot de passe</button> <button class="small-btn" data-role="'+e.id+'">Rôle</button> <button class="small-btn danger" data-del="'+e.id+'">Supprimer</button>';
+        return '<div class="product-row"><div style="flex:1;"><strong>'+esc(e.name)+'</strong> <span class="role-badge '+e.role+'">'+YAYRA_STAFF.roleLabel(e.role)+'</span><br/><span class="muted" style="font-size:13px;">Identifiant : '+esc(e.username)+'</span></div><div style="display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;">'+actions+'</div></div>';
+      }).join('');
+      wrap.querySelectorAll('[data-del]').forEach(b=> b.addEventListener('click', ()=>{ if(confirm('Supprimer ce compte ?')){ YAYRA_STAFF.remove(b.getAttribute('data-del')); renderList(); } }));
+      wrap.querySelectorAll('[data-pass]').forEach(b=> b.addEventListener('click', ()=>{ const p=prompt('Nouveau mot de passe :'); if(p){ YAYRA_STAFF.update(b.getAttribute('data-pass'), {password:p}); alert('Mot de passe mis à jour.'); } }));
+      wrap.querySelectorAll('[data-role]').forEach(b=> b.addEventListener('click', ()=>{ const r=prompt('Rôle (admin / manager / vendeur) :'); if(r && ['admin','manager','vendeur'].indexOf(r)>-1){ YAYRA_STAFF.update(b.getAttribute('data-role'), {role:r}); renderList(); } else if(r){ alert('Rôle invalide.'); } }));
+    }
+
+    if(canManage){
+      document.getElementById('staffForm').addEventListener('submit', (e)=>{
+        e.preventDefault();
+        const msg = document.getElementById('sfMsg');
+        const res = YAYRA_STAFF.add({
+          name: document.getElementById('sfName').value.trim(),
+          username: document.getElementById('sfUser').value.trim().toLowerCase(),
+          password: document.getElementById('sfPass').value,
+          role: document.getElementById('sfRole').value
+        });
+        if(res.error){ msg.style.color='var(--rose)'; msg.textContent = res.error; return; }
+        msg.style.color='var(--gold)'; msg.textContent = 'Compte créé. L\'employé peut se connecter avec son identifiant.';
+        e.target.reset(); renderList();
+      });
+      document.addEventListener('DOMContentLoaded', renderList);
+      renderList();
+    }
+  </script>
+  <script src="../assets/js/livebadge.js"></script>
+</body>
+</html>
