@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Page introuvable — YAYRA Nail Shop</title>
+  <meta name="theme-color" content="#1c140b">
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+  <style>
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;
+      font-family:'Jost',system-ui,Arial,sans-serif;background:#f7f0e6;color:#251b11;text-align:center;padding:24px}
+    .box{max-width:480px}
+    .logo{font-family:Georgia,'Cormorant Garamond',serif;font-size:30px;letter-spacing:.14em;margin-bottom:6px}
+    .logo b{color:#b1813a}
+    .code{font-family:Georgia,serif;font-size:84px;line-height:1;color:#cda35d;margin:10px 0}
+    h1{font-family:Georgia,serif;font-weight:500;font-size:28px;margin:0 0 10px}
+    p{color:rgba(37,27,17,.62);font-weight:300;line-height:1.6;margin:0 0 26px}
+    .btns{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+    a{display:inline-flex;align-items:center;text-decoration:none;font-weight:600;font-size:14px;
+      padding:13px 24px;border-radius:999px}
+    .gold{background:linear-gradient(135deg,#b1813a,#cda35d);color:#1a1206}
+    .ghost{border:1px solid rgba(37,27,17,.16);color:#251b11}
+  </style>
+</head>
+<body>
+  <div class="box">
+    <div class="logo"><b>Y</b>AYRA Nail Shop</div>
+    <div class="code">404</div>
+    <h1>Page introuvable</h1>
+    <p>La page que vous cherchez n'existe pas ou a été déplacée. Pas d'inquiétude — revenez à l'accueil ou explorez la boutique.</p>
+    <div class="btns">
+      <a class="gold" id="home" href="/">Retour à l'accueil</a>
+      <a class="ghost" id="shop" href="/shop.html">Voir la boutique</a>
+    </div>
+  </div>
+  <script>
+    // Calcule la base du site (fonctionne sur GitHub Pages /boutique-yayra/ comme à la racine)
+    var parts = location.pathname.split('/');
+    var base = (parts.length > 2 && parts[1]) ? ('/' + parts[1] + '/') : '/';
+    document.getElementById('home').href = base;
+    document.getElementById('shop').href = base + 'shop.html';
+    var ic = document.querySelector('link[rel=icon]'); if(ic) ic.href = base + 'assets/favicon.svg';
+  </script>
+</body>
+</html>

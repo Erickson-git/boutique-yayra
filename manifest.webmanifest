@@ -1,0 +1,15 @@
+{
+  "name": "YAYRA Nail Shop",
+  "short_name": "YAYRA",
+  "description": "Cosmétiques, onglerie, soins et mobilier professionnel à Lomé. Livraison 24h, paiement à la livraison.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#1c140b",
+  "theme_color": "#1c140b",
+  "lang": "fr",
+  "icons": [
+    { "src": "assets/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

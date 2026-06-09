@@ -37,3 +37,30 @@ signalisation et l'état « en direct » partagé : **Firebase Realtime Database
   on pourra brancher un service pro (Mux/LiveKit/Agora) plus tard.
 - Pense à restreindre les règles de la Realtime Database après les tests
   (limiter l'écriture de `live/active` au compte propriétaire).
+
+## ⚠️ IMPORTANT — Règles Firebase à ne pas oublier (sinon le live casse)
+
+Le « mode test » de la Realtime Database **expire automatiquement** (par défaut au
+bout de 30 jours, ici le 9 juillet 2026). **À cette date, le live, le badge, les
+vidéos, les contacts et l'historique cesseront de fonctionner** tant que les règles
+ne sont pas mises à jour.
+
+Pour éviter ça, va dans **Firebase → Realtime Database → Règles**, remplace tout par
+ceci (règles permanentes, sans date d'expiration), puis **Publier** :
+
+```json
+{
+  "rules": {
+    "live":         { ".read": true, ".write": true },
+    "videos":       { ".read": true, ".write": true },
+    "contacts":     { ".read": true, ".write": true },
+    "live_history": { ".read": true, ".write": true }
+  }
+}
+```
+
+Ces règles n'expirent jamais et le site continue de fonctionner. Pour une sécurité
+renforcée plus tard (empêcher n'importe qui d'écrire), on ajoutera l'authentification
+Firebase et on restreindra l'écriture de `live/active`, `videos`, `contacts` et
+`live_history` au compte propriétaire — dis-le-moi quand tu voudras passer à cette étape.
+

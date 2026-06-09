@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /client/
+Disallow: /api/
+
+Sitemap: https://erickson-git.github.io/boutique-yayra/sitemap.xml

@@ -21,7 +21,7 @@
   const fmtK = (n)=> n >= 1000 ? (n/1000).toFixed(1).replace('.0','') + 'k' : String(n);
   const esc = (s)=> String(s||'').replace(/[<>&"]/g, c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
 
-  let pc=null, viewerId=null, sigRef=null, commonOn=false, lastLikes=0, feedBuilt=false, mode='', discTimer=null;
+  let pc=null, viewerId=null, sigRef=null, commonOn=false, lastLikes=0, feedBuilt=false, mode='', discTimer=null, joinTimer=null, gotStream=false;
 
   function hideAllLive(){ remoteVideo.style.display='none'; liveInfo.style.display='none'; actions.style.display='none'; compose.style.display='none'; unmute.style.display='none'; chatBox.style.display='none'; if(reactionsBar) reactionsBar.style.display='none'; }
 
@@ -151,7 +151,10 @@
     viewerId = signals.push().key; sigRef = signals.child(viewerId);
     sigRef.child('active').set(true); sigRef.onDisconnect().remove();
     pc = new RTCPeerConnection(LIVE.ICE);
-    pc.ontrack = (e)=>{ if(e.streams&&e.streams[0]){ remoteVideo.srcObject=e.streams[0]; tryPlay(); } };
+    gotStream = false; title.textContent = 'Connexion au direct…';
+    clearTimeout(joinTimer);
+    joinTimer = setTimeout(()=>{ if(!gotStream && mode === 'live') rejoinLive(); }, 18000);
+    pc.ontrack = (e)=>{ if(e.streams&&e.streams[0]){ gotStream=true; clearTimeout(joinTimer); title.textContent='Live'; remoteVideo.srcObject=e.streams[0]; tryPlay(); } };
     pc.onicecandidate = (e)=>{ if(e.candidate) sigRef.child('viewerCandidates').push(e.candidate.toJSON()); };
     pc.onconnectionstatechange = ()=>{
       const st = pc ? pc.connectionState : '';
@@ -183,7 +186,7 @@
     leaveLive();
     setTimeout(()=>{ if(mode === 'live') joinLive(); }, 1000);
   }
-  function leaveLive(){ clearTimeout(discTimer); if(sigRef){ sigRef.off(); sigRef.remove(); sigRef=null; } if(pc){ try{pc.close();}catch(e){} pc=null; } if(remoteVideo) remoteVideo.srcObject=null; }
+  function leaveLive(){ clearTimeout(discTimer); clearTimeout(joinTimer); if(sigRef){ sigRef.off(); sigRef.remove(); sigRef=null; } if(pc){ try{pc.close();}catch(e){} pc=null; } if(remoteVideo) remoteVideo.srcObject=null; }
   function showLive(){
     if(mode==='live') return; mode='live';
     feed.style.display='none'; empty.style.display='none';
