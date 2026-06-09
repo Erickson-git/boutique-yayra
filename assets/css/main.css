@@ -86,8 +86,11 @@ h1,h2,h3,h4{margin:0; font-weight:500}
 .navbar{position:sticky; top:0; z-index:50; display:flex; align-items:center; justify-content:space-between;
   gap:18px; padding:18px clamp(20px,4vw,48px); background:rgba(247,240,230,.82);
   backdrop-filter:saturate(1.2) blur(12px); border-bottom:1px solid var(--line)}
-.nav-logo a{font-family:var(--serif); font-weight:600; font-size:24px; letter-spacing:.14em; text-decoration:none; color:var(--ink)}
+.nav-logo a{font-family:var(--serif); font-weight:600; font-size:24px; letter-spacing:.14em; text-decoration:none; color:var(--ink); display:inline-flex; align-items:baseline; gap:8px}
 .logo-y{color:var(--gold)}
+.logo-sub{font-family:var(--sans); font-size:11px; font-weight:500; letter-spacing:.22em; text-transform:uppercase; color:var(--ink-soft)}
+.footer-logo .logo-sub{color:var(--gold-3)}
+@media(max-width:520px){.logo-sub{display:none}}
 .nav-links{list-style:none; display:flex; gap:30px; padding:0; margin:0}
 .nav-links a{position:relative; color:var(--ink-soft); text-decoration:none; font-size:13px; font-weight:500; letter-spacing:.08em; text-transform:uppercase; padding:4px 0; transition:color .3s}
 .nav-links a::after{content:""; position:absolute; left:0; bottom:-3px; width:0; height:1px; background:var(--gold); transition:width .35s ease}
@@ -335,7 +338,7 @@ h1,h2,h3,h4{margin:0; font-weight:500}
 .footer{background:var(--espresso); color:rgba(255,255,255,.7); padding:clamp(56px,7vw,90px) 0 36px}
 .footer-grid{display:grid; grid-template-columns:1fr; gap:40px}
 @media(min-width:860px){.footer-grid{grid-template-columns:1.6fr 1fr 1fr 1.2fr}}
-.footer-logo{font-family:var(--serif); font-size:26px; letter-spacing:.12em; color:#fff; margin-bottom:16px}
+.footer-logo{font-family:var(--serif); font-size:26px; letter-spacing:.12em; color:#fff; margin-bottom:16px; display:inline-flex; align-items:baseline; gap:8px}
 .footer-brand p{max-width:320px; font-weight:300; font-size:14px; line-height:1.7}
 .footer-social{display:flex; gap:12px; margin-top:22px}
 .social-link{width:42px; height:42px; border-radius:50%; border:1px solid rgba(255,255,255,.16); display:flex; align-items:center; justify-content:center; color:#fff; text-decoration:none; transition:all .3s}
