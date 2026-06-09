@@ -387,6 +387,42 @@ h1,h2,h3,h4{margin:0; font-weight:500}
 .shop-toolbar input{flex:1; min-width:240px}
 .shop-toolbar input:focus,.shop-toolbar select:focus{border-color:var(--gold)}
 
+/* ---------- Authentification (login / register) ---------- */
+.auth{display:grid; grid-template-columns:1fr; min-height:calc(100vh - 110px)}
+@media(min-width:920px){.auth{grid-template-columns:1.05fr .95fr}}
+.auth-media{position:relative; display:none}
+@media(min-width:920px){.auth-media{display:block}}
+.auth-media .am-img{position:absolute; inset:0; background-size:cover; background-position:center}
+.auth-media::after{content:""; position:absolute; inset:0; background:linear-gradient(180deg, rgba(20,14,8,.28), rgba(20,14,8,.62))}
+.auth-quote{position:absolute; left:48px; right:48px; bottom:48px; z-index:2; color:#fff}
+.auth-quote .section-eyebrow{color:var(--gold-3)}
+.auth-quote p{font-family:var(--serif); font-style:italic; font-size:26px; line-height:1.4; margin:8px 0 0}
+.auth-form-wrap{display:flex; align-items:center; justify-content:center; padding:clamp(40px,6vw,72px) clamp(22px,5vw,60px)}
+.auth-card{width:100%; max-width:420px}
+.auth-card .section-title{font-size:clamp(30px,4vw,42px); margin:6px 0 6px}
+.auth-card .form{margin-top:22px}
+.auth-alt{margin-top:20px; font-size:14px; color:var(--ink-soft)}
+.auth-alt a{color:var(--gold); text-decoration:none; font-weight:500}
+
+/* ---------- Tableau de bord / cartes compactes ---------- */
+.dash-grid{display:grid; grid-template-columns:1fr; gap:20px; margin-top:8px}
+@media(min-width:720px){.dash-grid{grid-template-columns:1fr 1fr}}
+.dash-card{background:var(--paper); border:1px solid var(--line); border-radius:var(--r-lg); padding:30px; display:flex; flex-direction:column; gap:12px}
+.dash-card .dash-ico{width:48px; height:48px; border-radius:50%; color:var(--gold); display:flex; align-items:center; justify-content:center; border:1px solid var(--line-2)}
+.dash-card .dash-ico .ic{width:22px; height:22px}
+.dash-card h3{font-family:var(--serif); font-size:24px; font-weight:500}
+.dash-card p{margin:0; color:var(--ink-soft); font-size:14px; flex:1}
+
+/* ---------- Lignes admin ---------- */
+.admin-grid{display:grid; grid-template-columns:1fr; gap:24px}
+@media(min-width:980px){.admin-grid{grid-template-columns:1fr 1fr}}
+.product-row{display:flex; gap:12px; align-items:flex-start; justify-content:space-between; padding:16px 0; border-bottom:1px solid var(--line)}
+.product-row strong{font-weight:600}
+.danger{border-color:rgba(190,60,40,.4) !important; background:rgba(190,60,40,.06) !important; color:#b53c28 !important}
+.danger:hover{background:#b53c28 !important; color:#fff !important; border-color:#b53c28 !important}
+.slim-footer{background:var(--espresso); color:rgba(255,255,255,.7); padding:26px 0}
+.slim-footer .footer-bottom{margin:0; padding:0; border:0}
+
 /* ---------- Révélation au scroll ---------- */
 [data-reveal]{opacity:0; transform:translateY(28px); transition:opacity .9s ease, transform .9s cubic-bezier(.2,.8,.2,1)}
 [data-reveal].in{opacity:1; transform:none}

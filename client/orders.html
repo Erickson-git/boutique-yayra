@@ -3,79 +3,87 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>YAYRA – Mes commandes</title>
+  <title>YAYRA — Mes commandes</title>
+  <meta name="theme-color" content="#1c140b">
   <link rel="stylesheet" href="../assets/css/main.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
 </head>
 <body>
-  <nav class="navbar">
+  <nav class="navbar" id="navbar">
     <div class="nav-logo"><a href="../index.html"><span class="logo-y">Y</span>AYRA</a></div>
+    <ul class="nav-links">
+      <li><a href="../shop.html">Boutique</a></li>
+      <li><a href="dashboard.html">Mon espace</a></li>
+      <li><a href="appointments.html">Rendez-vous</a></li>
+      <li><a href="orders.html" class="active">Commandes</a></li>
+    </ul>
     <div class="nav-actions">
-      <a href="dashboard.html" class="btn-outline">Dashboard</a>
       <button class="btn-outline" type="button" id="logoutBtn">Se déconnecter</button>
     </div>
+    <button class="menu-toggle" id="menuToggle" aria-label="Menu"><svg class="ic" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
   </nav>
+
+  <header class="page-hero">
+    <div class="ph-media" style="background-image:url('../assets/images/net-serums-luxe.jpg')"></div>
+    <div class="container">
+      <p class="section-eyebrow">Mon espace</p>
+      <h1>Mes commandes</h1>
+      <p>L'historique de vos achats et leur statut de livraison.</p>
+    </div>
+  </header>
 
   <section class="page">
     <div class="container" style="max-width:980px;">
-      <div class="section-header">
-        <p class="section-eyebrow">Mon Espace</p>
-        <h2 class="section-title">Mes commandes</h2>
+      <div class="product-card" style="grid-column:span 12;">
+        <div class="product-info">
+          <div id="ordersWrap"></div>
+        </div>
       </div>
-      <div id="ordersWrap"></div>
     </div>
   </section>
+
+  <footer class="slim-footer">
+    <div class="container">
+      <div class="footer-bottom">
+        <p>© 2026 YAYRA — Lomé, Togo</p>
+        <div class="footer-legal"><a href="../index.html">Accueil</a><a href="../shop.html">Boutique</a></div>
+      </div>
+    </div>
+  </footer>
+
+  <a href="https://wa.me/22897498685?text=Bonjour+YAYRA+!" class="whatsapp-float" target="_blank" rel="noopener" aria-label="WhatsApp">
+    <svg class="ic" viewBox="0 0 24 24"><path d="M20.5 11.5a8.5 8.5 0 0 1-12.7 7.4L3.5 20l1.1-4.2a8.5 8.5 0 1 1 15.9-4.3Z"/><path d="M8.5 8.8c0 4 2.7 6.7 6.7 6.7"/></svg>
+    <span class="wa-tooltip">Commander sur WhatsApp</span>
+  </a>
 
   <script src="../assets/js/main.js"></script>
   <script>
     const token = () => localStorage.getItem('yayra_token') || '';
-
-    function goLogin(){
-      window.location.href = 'login.html';
-    }
-
-    document.getElementById('logoutBtn').addEventListener('click', ()=>{
-      localStorage.removeItem('yayra_token');
-      goLogin();
-    });
+    const goLogin = () => { window.location.href = 'login.html'; };
+    document.getElementById('logoutBtn').addEventListener('click', ()=>{ localStorage.removeItem('yayra_token'); goLogin(); });
 
     async function loadOrders(){
       const wrap = document.getElementById('ordersWrap');
       const t = token();
       if(!t){ goLogin(); return; }
-
-      wrap.innerHTML = '<p style="color:var(--ink-soft); font-weight:700;">Chargement...</p>';
-
+      wrap.innerHTML = '<p class="muted">Chargement...</p>';
       try{
-        const res = await fetch('../api/orders.php?action=list', {
-          method: 'GET',
-          headers: { 'Authorization': 'Bearer ' + t }
-        });
+        const res = await fetch('../api/orders.php?action=list', { method: 'GET', headers: { 'Authorization': 'Bearer ' + t } });
         const data = await res.json();
-        if(!data.ok){
-          wrap.innerHTML = '<p style="color:var(--ink-soft); font-weight:700;">Erreur / session expirée.</p>';
-          return;
-        }
-
+        if(!data.ok){ wrap.innerHTML = '<p class="muted">Session expirée. Veuillez vous reconnecter.</p>'; return; }
         const orders = data.orders || [];
-        if(orders.length === 0){
-          wrap.innerHTML = '<p style="color:var(--ink-soft); font-weight:700;">Aucune commande.</p>';
-          return;
-        }
-
-        let html = '<div class="table-wrap"><table class="table"><thead><tr><th>ID</th><th>Statut</th><th>Total</th><th>Date</th></tr></thead><tbody>';
+        if(orders.length === 0){ wrap.innerHTML = '<p class="muted">Vous n\'avez pas encore de commande. <a href="../shop.html" style="color:var(--gold)">Découvrir la boutique</a></p>'; return; }
+        let html = '<div class="table-wrap"><table class="table"><thead><tr><th>N°</th><th>Statut</th><th>Total</th><th>Date</th></tr></thead><tbody>';
         for(const o of orders){
-          html += `<tr><td>${o.id}</td><td>${o.status}</td><td>${(parseInt(o.total_fcfa,10)||0).toLocaleString('fr-FR')} FCFA</td><td>${o.created_at || ''}</td></tr>`;
+          html += `<tr><td>#${o.id}</td><td>${o.status}</td><td>${(parseInt(o.total_fcfa,10)||0).toLocaleString('fr-FR')} FCFA</td><td>${o.created_at || ''}</td></tr>`;
         }
         html += '</tbody></table></div>';
         wrap.innerHTML = html;
-
-      }catch(e){
-        wrap.innerHTML = '<p style="color:var(--ink-soft); font-weight:700;">Erreur réseau.</p>';
-      }
+      }catch(e){ wrap.innerHTML = '<p class="muted">Erreur réseau.</p>'; }
     }
-
     document.addEventListener('DOMContentLoaded', loadOrders);
   </script>
 </body>
 </html>
-

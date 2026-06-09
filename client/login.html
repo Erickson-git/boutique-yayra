@@ -3,79 +3,74 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>YAYRA – Connexion</title>
+  <title>YAYRA — Connexion</title>
+  <meta name="theme-color" content="#1c140b">
   <link rel="stylesheet" href="../assets/css/main.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
 </head>
 <body>
-  <div id="loader" aria-hidden="true">
-    <div class="loader-inner">
-      <svg viewBox="0 0 100 40" class="loader-logo-svg">
-        <text x="50%" y="70%" text-anchor="middle" class="loader-text-svg">YAYRA</text>
-      </svg>
-      <div class="loader-bar"><div class="loader-fill"></div></div>
+  <nav class="navbar" id="navbar">
+    <div class="nav-logo"><a href="../index.html"><span class="logo-y">Y</span>AYRA</a></div>
+    <div class="nav-actions">
+      <a href="../shop.html" class="btn-outline">Boutique</a>
+      <a href="register.html" class="btn-gold">Créer un compte</a>
+    </div>
+  </nav>
+
+  <div class="auth">
+    <div class="auth-media">
+      <div class="am-img" style="background-image:url('../assets/images/net-facial-spa.jpg')"></div>
+      <div class="auth-quote">
+        <p class="section-eyebrow">Maison de beauté · Lomé</p>
+        <p>« La beauté commence au moment où vous décidez d'être vous-même. »</p>
+      </div>
+    </div>
+    <div class="auth-form-wrap">
+      <div class="auth-card">
+        <p class="section-eyebrow">Mon compte</p>
+        <h1 class="section-title">Bon retour</h1>
+        <p class="muted">Connectez-vous pour suivre vos commandes et rendez-vous.</p>
+        <form class="form" id="loginForm">
+          <input name="email" type="email" placeholder="Adresse email" required />
+          <input name="password" type="password" placeholder="Mot de passe" required />
+          <p class="muted" id="loginMsg" aria-live="polite" style="margin:0;"></p>
+          <button class="btn-gold" type="submit">Se connecter</button>
+        </form>
+        <p class="auth-alt">Pas encore de compte ? <a href="register.html">Créer un compte</a></p>
+      </div>
     </div>
   </div>
 
-  <nav class="navbar">
-    <div class="nav-logo"><a href="../index.html"><span class="logo-y">Y</span>AYRA</a></div>
-    <div class="nav-actions">
-      <a href="register.html" class="btn-outline">Créer un compte</a>
-    </div>
-    <button class="menu-toggle" id="menuToggle"aria-label="Menu"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
-  </nav>
-
-  <section class="page">
-    <div class="container" style="max-width:520px;">
-      <div class="section-header">
-        <p class="section-eyebrow">Mon Compte</p>
-        <h2 class="section-title">Connexion</h2>
-        <p class="section-sub">Démo locale : client123 / admin123</p>
-      </div>
-
-      <form class="form" id="loginForm">
-        <input name="email" type="email" placeholder="Email" required />
-        <input name="password" type="password" placeholder="Mot de passe" required />
-        <p class="muted" id="loginMsg" aria-live="polite"></p>
-        <button class="btn-gold" type="submit" style="border:0; cursor:pointer;">Se connecter</button>
-      </form>
-
-      <div style="margin-top:14px; color:var(--ink-soft); font-weight:700;">
-        Token stocké dans <code>localStorage</code>.
+  <footer class="slim-footer">
+    <div class="container">
+      <div class="footer-bottom">
+        <p>© 2026 YAYRA — Lomé, Togo</p>
+        <div class="footer-legal"><a href="../index.html">Accueil</a><a href="../shop.html">Boutique</a></div>
       </div>
     </div>
-  </section>
+  </footer>
 
   <script src="../assets/js/main.js"></script>
   <script>
     const form = document.getElementById('loginForm');
     const msg = document.getElementById('loginMsg');
-
     form.addEventListener('submit', async (e)=>{
       e.preventDefault();
       msg.textContent = '';
       const fd = new FormData(form);
-      const email = fd.get('email');
-      const password = fd.get('password');
-
       try{
-const res = await fetch('../api/auth.php?action=login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password }),
+        const res = await fetch('../api/auth.php?action=login', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: fd.get('email'), password: fd.get('password') }),
         });
         const data = await res.json();
-        if(!data.ok){
-          msg.textContent = data.error || 'Erreur.';
-          return;
-        }
+        if(!data.ok){ msg.textContent = data.error || 'Identifiants incorrects.'; return; }
         localStorage.setItem('yayra_token', data.token);
-        if(data.role === 'admin') window.location.href = '../admin/admin-orders.html';
-        else window.location.href = './dashboard.html';
-      }catch(err){
-        msg.textContent = 'Erreur réseau.';
-      }
+        window.location.href = (data.role === 'admin') ? '../admin/admin-orders.html' : './dashboard.html';
+      }catch(err){ msg.textContent = 'Erreur réseau.'; }
     });
   </script>
 </body>
 </html>
-

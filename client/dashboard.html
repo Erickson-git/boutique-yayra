@@ -3,57 +3,85 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>YAYRA – Dashboard</title>
+  <title>YAYRA — Mon espace</title>
+  <meta name="theme-color" content="#1c140b">
   <link rel="stylesheet" href="../assets/css/main.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
 </head>
 <body>
-  <div id="loader" aria-hidden="true">
-    <div class="loader-inner">
-      <svg viewBox="0 0 100 40" class="loader-logo-svg">
-        <text x="50%" y="70%" text-anchor="middle" class="loader-text-svg">YAYRA</text>
-      </svg>
-      <div class="loader-bar"><div class="loader-fill"></div></div>
-    </div>
-  </div>
-
-  <nav class="navbar">
+  <nav class="navbar" id="navbar">
     <div class="nav-logo"><a href="../index.html"><span class="logo-y">Y</span>AYRA</a></div>
     <ul class="nav-links">
       <li><a href="../shop.html">Boutique</a></li>
-      <li><a href="appointments.html" class="active">Rendez-vous</a></li>
+      <li><a href="dashboard.html" class="active">Mon espace</a></li>
+      <li><a href="appointments.html">Rendez-vous</a></li>
       <li><a href="orders.html">Commandes</a></li>
     </ul>
     <div class="nav-actions">
       <button class="btn-outline" type="button" id="logoutBtn">Se déconnecter</button>
     </div>
-    <button class="menu-toggle" id="menuToggle"aria-label="Menu"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
+    <button class="menu-toggle" id="menuToggle" aria-label="Menu"><svg class="ic" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
   </nav>
 
-  <section class="page">
-    <div class="container" style="max-width:900px;">
-      <div class="section-header">
-        <p class="section-eyebrow">Mon Espace</p>
-        <h2 class="section-title">Bonjour</h2>
-        <p class="section-sub">Gérez vos commandes et rendez-vous.</p>
-      </div>
+  <header class="page-hero">
+    <div class="ph-media" style="background-image:url('../assets/images/net-makeup-marble.jpg')"></div>
+    <div class="container">
+      <p class="section-eyebrow">Mon espace</p>
+      <h1>Bienvenue chez YAYRA</h1>
+      <p>Retrouvez vos commandes, vos rendez-vous et gérez votre compte en toute simplicité.</p>
+    </div>
+  </header>
 
-      <div class="products-grid" style="grid-template-columns: repeat(12, 1fr); gap:16px;">
-        <div class="product-card" style="grid-column: span 6; flex-direction:column; align-items:stretch;">
-          <h3 style="margin:0 0 10px;">Commandes</h3>
-          <p style="margin:0 0 14px; color:var(--ink-soft); font-weight:700;">Suivez vos achats passés.</p>
-          <a class="btn-gold" href="orders.html" style="text-decoration:none; display:inline-flex;">Voir mes commandes</a>
+  <section class="page">
+    <div class="container" style="max-width:980px;">
+      <div class="dash-grid">
+        <div class="dash-card">
+          <span class="dash-ico"><svg class="ic" viewBox="0 0 24 24"><path d="M6 8h12l1 12H5L6 8Z"/><path d="M9 8a3 3 0 0 1 6 0"/></svg></span>
+          <h3>Mes commandes</h3>
+          <p>Suivez vos achats et leur statut de livraison.</p>
+          <a class="btn-gold" href="orders.html">Voir mes commandes <svg class="ic" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
         </div>
-        <div class="product-card" style="grid-column: span 6; flex-direction:column; align-items:stretch;">
-          <h3 style="margin:0 0 10px;">Rendez-vous</h3>
-          <p style="margin:0 0 14px; color:var(--ink-soft); font-weight:700;">Réservez un service beauté.</p>
-          <a class="btn-gold" href="appointments.html" style="text-decoration:none; display:inline-flex;">Réserver</a>
+        <div class="dash-card">
+          <span class="dash-ico"><svg class="ic" viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="16" rx="2"/><path d="M3.5 9h17M8 3v3M16 3v3"/></svg></span>
+          <h3>Mes rendez-vous</h3>
+          <p>Réservez un service beauté et consultez votre historique.</p>
+          <a class="btn-gold" href="appointments.html">Prendre rendez-vous <svg class="ic" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </div>
+        <div class="dash-card">
+          <span class="dash-ico"><svg class="ic" viewBox="0 0 24 24"><path d="M6 4h12l3 5-9 11L3 9z"/><path d="M3 9h18M9 4l3 16 3-16"/></svg></span>
+          <h3>La boutique</h3>
+          <p>Cosmétiques, onglerie, soins et mobilier professionnel.</p>
+          <a class="btn-outline" href="../shop.html">Explorer la boutique <svg class="ic" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </div>
+        <div class="dash-card">
+          <span class="dash-ico"><svg class="ic" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.5 7.2L4 20l1-4.8A8 8 0 1 1 21 12Z"/></svg></span>
+          <h3>Besoin d'aide ?</h3>
+          <p>Notre équipe vous répond rapidement sur WhatsApp.</p>
+          <a class="btn-outline" href="https://wa.me/22897498685?text=Bonjour+YAYRA+!" target="_blank" rel="noopener">Nous écrire <svg class="ic" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
         </div>
       </div>
     </div>
   </section>
 
+  <footer class="slim-footer">
+    <div class="container">
+      <div class="footer-bottom">
+        <p>© 2026 YAYRA — Lomé, Togo</p>
+        <div class="footer-legal"><a href="../index.html">Accueil</a><a href="../shop.html">Boutique</a></div>
+      </div>
+    </div>
+  </footer>
+
+  <a href="https://wa.me/22897498685?text=Bonjour+YAYRA+!" class="whatsapp-float" target="_blank" rel="noopener" aria-label="WhatsApp">
+    <svg class="ic" viewBox="0 0 24 24"><path d="M20.5 11.5a8.5 8.5 0 0 1-12.7 7.4L3.5 20l1.1-4.2a8.5 8.5 0 1 1 15.9-4.3Z"/><path d="M8.5 8.8c0 4 2.7 6.7 6.7 6.7"/></svg>
+    <span class="wa-tooltip">Commander sur WhatsApp</span>
+  </a>
+
   <script src="../assets/js/main.js"></script>
   <script>
+    if(!localStorage.getItem('yayra_token')) window.location.href = 'login.html';
     document.getElementById('logoutBtn').addEventListener('click', ()=>{
       localStorage.removeItem('yayra_token');
       window.location.href = 'login.html';
@@ -61,4 +89,3 @@
   </script>
 </body>
 </html>
-
