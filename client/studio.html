@@ -112,6 +112,7 @@
     } else {
       const preview = $('preview');
       let localStream = null, live = false, facing = 'user', micOn = true;
+      let liveStartLocal = 0, peakViewers = 0;
       const pcs = {};
       const signalsRef = LIVE.ref('live/signals');
 
@@ -177,7 +178,10 @@
         try{ msg.textContent = 'Activation de la caméra…'; await startStream(); }
         catch(e){ msg.textContent = "Accès caméra refusé. Autorisez la caméra et le micro."; return; }
         msg.textContent = '';
+        // Nouvelle session : on repart d'un direct vierge (indépendant du précédent)
         await signalsRef.remove();
+        ['live/chat','live/likes','live/reactions','live/boost'].forEach(p=> LIVE.ref(p).remove());
+        liveStartLocal = Date.now(); peakViewers = 0;
         LIVE.ref('live/active').set(true);
         LIVE.ref('live/startedAt').set(LIVE.now());
         LIVE.ref('live/boost').set(0);
@@ -186,13 +190,24 @@
         signalsRef.on('child_removed', (s)=> dropViewer(s.key));
         live = true; setUI();
       }
-      function stopLive(){
+      async function archiveLive(){
+        const endedAt = Date.now();
+        const started = liveStartLocal || endedAt;
+        let likes = 0, comments = 0;
+        try{ likes = (await LIVE.ref('live/likes').once('value')).val() || 0; }catch(e){}
+        try{ const cs = await LIVE.ref('live/chat').once('value'); comments = cs.numChildren(); }catch(e){}
+        const rec = { startedAt: started, endedAt: endedAt, duration: Math.max(0, Math.round((endedAt - started)/1000)), peak: peakViewers, likes: likes, comments: comments, ts: LIVE.now() };
+        try{ await LIVE.ref('live_history').push(rec); }catch(e){}
+        // Réinitialisation de la session live (les directs restent indépendants)
+        ['live/chat','live/likes','live/reactions','live/signals','live/boost','live/startedAt'].forEach(p=> LIVE.ref(p).remove());
+      }
+      async function stopLive(){
         LIVE.ref('live/active').set(false);
         signalsRef.off();
         Object.keys(pcs).forEach(dropViewer);
-        signalsRef.remove();
+        if(liveStartLocal) await archiveLive(); else signalsRef.remove();
         if(localStream){ localStream.getTracks().forEach(t=>t.stop()); localStream = null; }
-        preview.srcObject = null; live = false; setUI();
+        preview.srcObject = null; live = false; liveStartLocal = 0; setUI();
       }
 
       $('goLiveBtn').addEventListener('click', goLive);
@@ -225,7 +240,7 @@
       // Stats temps réel : réel (admin) + affiché aux clientes (factice croissant)
       let sReal = 0, sBoost = 0, sStart = Date.now();
       function recountShown(){ const g = Math.floor((Date.now() - sStart) / 7000); const v = sBoost + sReal + g; $('stShown').textContent = v.toLocaleString('fr-FR'); }
-      signalsRef.on('value', (s)=>{ let c=0; s.forEach(ch=>{ if(ch.child('active').val()===true) c++; }); sReal=c; $('stViewers').textContent=c; $('stReal').textContent=c; recountShown(); });
+      signalsRef.on('value', (s)=>{ let c=0; s.forEach(ch=>{ if(ch.child('active').val()===true) c++; }); sReal=c; if(c>peakViewers) peakViewers=c; $('stViewers').textContent=c; $('stReal').textContent=c; recountShown(); });
       LIVE.ref('live/boost').on('value', (s)=>{ sBoost = parseInt(s.val(),10) || 0; recountShown(); });
       LIVE.ref('live/startedAt').on('value', (s)=>{ const t = Number(s.val()); if(t) sStart = t; recountShown(); });
       setInterval(recountShown, 5000);

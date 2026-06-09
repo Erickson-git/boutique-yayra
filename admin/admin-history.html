@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>YAYRA Nail Shop — Rendez-vous</title>
+  <title>YAYRA Nail Shop — Historique des directs</title>
   <meta name="theme-color" content="#1c140b">
   <link rel="stylesheet" href="../assets/css/main.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -19,9 +19,8 @@
       <li><a href="admin-orders.html">Commandes</a></li>
       <li><a href="admin-kits.html">Kits</a></li>
       <li><a href="admin-videos.html">Vidéos</a></li>
-      <li><a href="admin-history.html">Directs</a></li>
+      <li><a href="admin-history.html" class="active">Directs</a></li>
       <li><a href="admin-contacts.html">Contacts</a></li>
-      <li><a href="admin-appointments.html" class="active">Rendez-vous</a></li>
       <li><a href="admin-staff.html">Employés</a></li>
     </ul>
     <div class="nav-actions">
@@ -31,11 +30,11 @@
   </nav>
 
   <header class="page-hero">
-    <div class="ph-media" style="background-image:url('../assets/images/net-nailart-amber.jpg')"></div>
+    <div class="ph-media" style="background-image:url('../assets/images/net-makeup-marble.jpg')"></div>
     <div class="container">
       <p class="section-eyebrow">Administration</p>
-      <h1>Rendez-vous</h1>
-      <p>Les réservations de services prises par vos clientes.</p>
+      <h1>Historique des directs</h1>
+      <p>Chaque direct terminé est enregistré automatiquement avec ses statistiques. Les directs sont indépendants les uns des autres.</p>
     </div>
   </header>
 
@@ -43,33 +42,40 @@
     <div class="container" style="max-width:1000px;">
       <div id="msg" class="muted" aria-live="polite" style="margin-bottom:16px;"></div>
       <div class="product-card" style="grid-column:span 12;">
-        <div class="product-info"><div id="apptWrap"></div></div>
+        <div class="product-info"><div id="histWrap"></div></div>
       </div>
     </div>
   </section>
 
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
   <script src="../assets/js/firebase-config.js"></script>
+  <script src="../assets/js/live-core.js"></script>
   <script src="../assets/js/main.js"></script>
   <script>
     if(!localStorage.getItem('yayra_token')) window.location.href = '../client/login.html';
     document.getElementById('logoutBtn').addEventListener('click', ()=>{ localStorage.removeItem('yayra_token'); window.location.href = '../client/login.html'; });
-    const token = () => localStorage.getItem('yayra_token') || '';
-    const wrap = document.getElementById('apptWrap');
+    const wrap = document.getElementById('histWrap');
     const msg = document.getElementById('msg');
+    const ready = (window.FIREBASE_READY && LIVE.init());
+
+    function dur(s){ s = parseInt(s,10)||0; const m = Math.floor(s/60), r = s%60; return (m>0 ? m+' min ' : '') + r + ' s'; }
+    function dateFr(ms){ try{ return new Date(Number(ms)).toLocaleString('fr-FR'); }catch(e){ return ''; } }
 
     async function load(){
+      if(!ready){ wrap.innerHTML = '<p class="muted">Configurez le live (Firebase) pour enregistrer l\'historique des directs.</p>'; return; }
       msg.textContent = 'Chargement...';
       try{
-        const res = await fetch('../api/appointments.php?action=list', { method:'GET', headers:{ 'Authorization':'Bearer ' + token() } });
-        const data = await res.json();
-        if(!data.ok){ wrap.innerHTML = '<p class="muted">Mode démonstration — connectez le backend pour voir les rendez-vous réels.</p>'; msg.textContent=''; return; }
-        const items = data.appointments || [];
-        if(items.length === 0){ wrap.innerHTML = '<p class="muted">Aucun rendez-vous pour le moment.</p>'; msg.textContent=''; return; }
-        let html = '<div class="table-wrap"><table class="table"><thead><tr><th>N°</th><th>Cliente</th><th>Service</th><th>Date</th><th>Statut</th></tr></thead><tbody>';
-        for(const a of items){ html += '<tr><td>#'+a.id+'</td><td>'+(a.full_name||'')+'<br/><span class="muted">'+(a.phone||'')+'</span></td><td>'+a.service+'</td><td>'+a.appointment_time+'</td><td>'+a.status+'</td></tr>'; }
+        const snap = await LIVE.ref('live_history').once('value');
+        const v = snap.val() || {};
+        const list = Object.keys(v).map(k=> Object.assign({ _id:k }, v[k])).sort((a,b)=> (b.endedAt||0) - (a.endedAt||0));
+        msg.textContent = '';
+        if(!list.length){ wrap.innerHTML = '<p class="muted">Aucun direct enregistré pour le moment. Lancez puis arrêtez un direct depuis le Studio.</p>'; return; }
+        let html = '<div class="table-wrap"><table class="table"><thead><tr><th>Date</th><th>Durée</th><th>Spectateurs (pic)</th><th>J\'aime</th><th>Commentaires</th></tr></thead><tbody>';
+        list.forEach(d=>{ html += '<tr><td>'+dateFr(d.startedAt)+'</td><td>'+dur(d.duration)+'</td><td>'+(d.peak||0)+'</td><td>'+(d.likes||0)+'</td><td>'+(d.comments||0)+'</td></tr>'; });
         html += '</tbody></table></div>';
-        wrap.innerHTML = html; msg.textContent='';
-      }catch(e){ wrap.innerHTML = '<p class="muted">Mode démonstration — connectez le backend pour voir les rendez-vous réels.</p>'; msg.textContent=''; }
+        wrap.innerHTML = html;
+      }catch(e){ wrap.innerHTML = '<p class="muted">Impossible de charger l\'historique.</p>'; msg.textContent=''; }
     }
     document.addEventListener('DOMContentLoaded', load);
   </script>
