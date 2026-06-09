@@ -21,7 +21,7 @@
   const fmtK = (n)=> n >= 1000 ? (n/1000).toFixed(1).replace('.0','') + 'k' : String(n);
   const esc = (s)=> String(s||'').replace(/[<>&"]/g, c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
 
-  let pc=null, viewerId=null, sigRef=null, commonOn=false, lastLikes=0, feedBuilt=false, mode='';
+  let pc=null, viewerId=null, sigRef=null, commonOn=false, lastLikes=0, feedBuilt=false, mode='', discTimer=null;
 
   function hideAllLive(){ remoteVideo.style.display='none'; liveInfo.style.display='none'; actions.style.display='none'; compose.style.display='none'; unmute.style.display='none'; chatBox.style.display='none'; if(reactionsBar) reactionsBar.style.display='none'; }
 
@@ -153,10 +153,22 @@
     pc = new RTCPeerConnection(LIVE.ICE);
     pc.ontrack = (e)=>{ if(e.streams&&e.streams[0]){ remoteVideo.srcObject=e.streams[0]; tryPlay(); } };
     pc.onicecandidate = (e)=>{ if(e.candidate) sigRef.child('viewerCandidates').push(e.candidate.toJSON()); };
+    pc.onconnectionstatechange = ()=>{
+      const st = pc ? pc.connectionState : '';
+      if(st === 'connected'){ clearTimeout(discTimer); title.textContent='Live'; }
+      else if(st === 'failed'){ rejoinLive(); }
+      else if(st === 'disconnected'){ title.textContent='Reconnexion…'; clearTimeout(discTimer); discTimer = setTimeout(()=>{ if(pc && pc.connectionState !== 'connected') rejoinLive(); }, 5000); }
+    };
     sigRef.child('offer').on('value', async (snap)=>{ const offer=snap.val(); if(!offer||(pc.currentRemoteDescription&&pc.currentRemoteDescription.sdp)) return; try{ await pc.setRemoteDescription(new RTCSessionDescription(offer)); const a=await pc.createAnswer(); await pc.setLocalDescription(a); sigRef.child('answer').set({type:a.type,sdp:a.sdp}); }catch(e){} });
     sigRef.child('hostCandidates').on('child_added', (snap)=>{ const c=snap.val(); if(c) pc.addIceCandidate(new RTCIceCandidate(c)).catch(()=>{}); });
   }
-  function leaveLive(){ if(sigRef){ sigRef.off(); sigRef.remove(); sigRef=null; } if(pc){ try{pc.close();}catch(e){} pc=null; } remoteVideo.srcObject=null; }
+  function rejoinLive(){
+    if(mode !== 'live') return;
+    title.textContent = 'Reconnexion…';
+    leaveLive();
+    setTimeout(()=>{ if(mode === 'live') joinLive(); }, 1000);
+  }
+  function leaveLive(){ clearTimeout(discTimer); if(sigRef){ sigRef.off(); sigRef.remove(); sigRef=null; } if(pc){ try{pc.close();}catch(e){} pc=null; } if(remoteVideo) remoteVideo.srcObject=null; }
   function showLive(){
     if(mode==='live') return; mode='live';
     feed.style.display='none'; empty.style.display='none';

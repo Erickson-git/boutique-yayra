@@ -130,17 +130,25 @@
 
       async function startStream(){
         if(localStream) localStream.getTracks().forEach(t=>t.stop());
-        localStream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode: facing }, audio:true });
-        preview.srcObject = localStream; preview.play().catch(()=>{});
+        const videoC = Object.assign({ facingMode: facing }, LIVE.VIDEO_CONSTRAINTS);
+        localStream = await navigator.mediaDevices.getUserMedia({ video: videoC, audio: { echoCancellation:true, noiseSuppression:true } });
+        preview.srcObject = localStream; preview.muted = true; preview.play().catch(()=>{});
+      }
+      function capBitrate(pc){
+        const v = pc.getSenders().find(s=> s.track && s.track.kind === 'video');
+        if(!v) return;
+        try{ const p = v.getParameters(); p.encodings = (p.encodings && p.encodings.length) ? p.encodings : [{}]; p.encodings[0].maxBitrate = LIVE.MAX_BITRATE; p.encodings[0].maxFramerate = 24; v.setParameters(p); }catch(e){}
       }
 
       async function handleViewer(vid){
         if(pcs[vid] || !localStream) return;
         const pc = new RTCPeerConnection(LIVE.ICE); pcs[vid] = pc;
         localStream.getTracks().forEach(t=> pc.addTrack(t, localStream));
+        capBitrate(pc);
         const sref = LIVE.ref('live/signals/' + vid);
         pc.onicecandidate = (e)=>{ if(e.candidate) sref.child('hostCandidates').push(e.candidate.toJSON()); };
-        pc.onconnectionstatechange = ()=>{ if(['failed','closed','disconnected'].indexOf(pc.connectionState) > -1) dropViewer(vid); };
+        // On ne coupe que sur échec/fermeture réels ; « disconnected » est souvent transitoire et se rétablit seul.
+        pc.onconnectionstatechange = ()=>{ const st = pc.connectionState; if(st === 'failed' || st === 'closed') dropViewer(vid); };
         sref.child('answer').on('value', async (s)=>{ const a = s.val(); if(a && !(pc.currentRemoteDescription && pc.currentRemoteDescription.sdp)){ try{ await pc.setRemoteDescription(new RTCSessionDescription(a)); }catch(e){} } });
         sref.child('viewerCandidates').on('child_added', (s)=>{ const c = s.val(); if(c) pc.addIceCandidate(new RTCIceCandidate(c)).catch(()=>{}); });
         try{
