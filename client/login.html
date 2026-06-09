@@ -32,19 +32,18 @@
     </div>
     <div class="auth-form-wrap">
       <div class="auth-card">
-        <p class="section-eyebrow">Espace de gestion</p>
+        <p class="section-eyebrow">Votre compte</p>
         <h1 class="section-title">Connexion</h1>
-        <p class="muted">Connectez-vous à l'espace de gestion. Propriétaire et employés : utilisez l'identifiant fourni.</p>
+        <p class="muted">Clientes, employés et administrateur. Entrez votre email (ou identifiant) et votre mot de passe.</p>
 
         <form class="form" id="loginForm">
-          <input name="email" id="email" type="text" placeholder="Identifiant" autocomplete="username" required />
+          <input name="email" id="email" type="text" placeholder="Email ou identifiant" autocomplete="username" required />
           <input name="password" id="password" type="password" placeholder="Mot de passe" autocomplete="current-password" required />
           <p class="muted" id="loginMsg" aria-live="polite" style="margin:0;"></p>
           <button class="btn-gold" type="submit">Se connecter</button>
-          <button class="btn-outline" type="button" id="adminBtn" style="justify-content:center;">Espace client</button>
         </form>
 
-        <p class="auth-alt" style="margin-top:6px;">Nouvelle cliente ? <a href="register.html">Créer un compte</a></p>
+        <p class="auth-alt" style="margin-top:14px;">Nouvelle cliente ? <a href="register.html">Créer un compte</a></p>
       </div>
     </div>
   </div>
@@ -59,14 +58,13 @@
   </footer>
 
   <script src="../assets/js/staff.js"></script>
+  <script src="../assets/js/clients.js"></script>
   <script src="../assets/js/main.js"></script>
   <script>
     const msg = document.getElementById('loginMsg');
     const ADMIN_ROLES = ['admin','manager','vendeur'];
 
-    function go(role){ window.location.href = ADMIN_ROLES.indexOf(role) > -1 ? '../admin/index.html' : './dashboard.html'; }
-
-    async function access(target){
+    async function access(){
       const id = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
       msg.style.color = ''; msg.textContent = 'Connexion en cours...';
@@ -81,33 +79,39 @@
         if(data.ok && data.token){
           localStorage.setItem('yayra_token', data.token);
           localStorage.setItem('yayra_role', data.role || 'client');
-          YAYRA_STAFF.setSession({ name: id, username: id, role: data.role || 'client' });
-          if(target === 'admin') go(data.role === 'admin' ? 'admin' : 'client');
-          else window.location.href = './dashboard.html';
+          if(ADMIN_ROLES.indexOf(data.role) > -1){ YAYRA_STAFF.setSession({ name:id, username:id, role:data.role }); window.location.href = '../admin/index.html'; }
+          else { window.location.href = './dashboard.html'; }
           return;
         }
       }catch(e){ /* pas de backend : comptes locaux */ }
 
-      // 2) Comptes du personnel (propriétaire + employés)
+      // 2) Comptes du personnel (propriétaire / employés)
       const s = YAYRA_STAFF.auth(id, password);
       if(s){
         localStorage.setItem('yayra_token', 'staff-' + s.role);
         localStorage.setItem('yayra_role', s.role);
         YAYRA_STAFF.setSession(s);
-        if(target === 'admin'){
-          if(ADMIN_ROLES.indexOf(s.role) > -1) window.location.href = '../admin/index.html';
-          else { msg.style.color = 'var(--rose)'; msg.textContent = "Ce compte n'a pas d'accès à la gestion."; }
-        } else {
-          window.location.href = './dashboard.html';
-        }
-      } else {
-        msg.style.color = 'var(--rose)';
-        msg.textContent = 'Identifiants incorrects.';
+        window.location.href = (ADMIN_ROLES.indexOf(s.role) > -1) ? '../admin/index.html' : './dashboard.html';
+        return;
       }
+
+      // 3) Comptes clientes
+      const c = window.YAYRA_CLIENTS && YAYRA_CLIENTS.auth(id, password);
+      if(c){
+        localStorage.setItem('yayra_token', 'client-' + c.id);
+        localStorage.setItem('yayra_role', 'client');
+        YAYRA_CLIENTS.setSession(c);
+        window.location.href = './dashboard.html';
+        return;
+      }
+
+      // 4) Échec
+      msg.style.color = 'var(--rose)';
+      msg.textContent = 'Identifiants incorrects. Vérifiez votre email (ou identifiant) et votre mot de passe.';
     }
 
-    document.getElementById('loginForm').addEventListener('submit', (e)=>{ e.preventDefault(); access('admin'); });
-    document.getElementById('adminBtn').addEventListener('click', ()=> access('client'));
+    document.getElementById('loginForm').addEventListener('submit', (e)=>{ e.preventDefault(); access(); });
+    var ab = document.getElementById('adminBtn'); if(ab) ab.addEventListener('click', (e)=>{ e.preventDefault(); access(); });
   </script>
   <script src="../assets/js/firebase-config.js"></script>
   <script src="../assets/js/livebadge.js"></script>
