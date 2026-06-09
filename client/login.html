@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>YAYRA — Connexion</title>
+  <title>YAYRA Nail Shop — Connexion</title>
   <meta name="theme-color" content="#1c140b">
   <link rel="stylesheet" href="../assets/css/main.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -29,16 +29,20 @@
     </div>
     <div class="auth-form-wrap">
       <div class="auth-card">
-        <p class="section-eyebrow">Mon compte</p>
-        <h1 class="section-title">Bon retour</h1>
-        <p class="muted">Connectez-vous pour suivre vos commandes et rendez-vous.</p>
+        <p class="section-eyebrow">Espace de gestion</p>
+        <h1 class="section-title">Connexion</h1>
+        <p class="muted">Accédez au tableau de bord de la boutique ou à l'espace administrateur.</p>
+
         <form class="form" id="loginForm">
-          <input name="email" type="email" placeholder="Adresse email" required />
-          <input name="password" type="password" placeholder="Mot de passe" required />
+          <input name="email" id="email" type="text" placeholder="Identifiant" value="komi" autocomplete="username" required />
+          <input name="password" id="password" type="password" placeholder="Mot de passe" value="saxo2180" autocomplete="current-password" required />
           <p class="muted" id="loginMsg" aria-live="polite" style="margin:0;"></p>
-          <button class="btn-gold" type="submit">Se connecter</button>
+          <button class="btn-gold" type="submit">Tableau de bord boutique</button>
+          <button class="btn-outline" type="button" id="adminBtn" style="justify-content:center;">Espace administrateur</button>
         </form>
-        <p class="auth-alt">Pas encore de compte ? <a href="register.html">Créer un compte</a></p>
+
+        <p class="auth-alt">Identifiants par défaut : <strong>komi</strong> / <strong>saxo2180</strong></p>
+        <p class="auth-alt" style="margin-top:6px;">Nouvelle cliente ? <a href="register.html">Créer un compte</a></p>
       </div>
     </div>
   </div>
@@ -46,7 +50,7 @@
   <footer class="slim-footer">
     <div class="container">
       <div class="footer-bottom">
-        <p>© 2026 YAYRA — Lomé, Togo</p>
+        <p>© 2026 YAYRA Nail Shop — Lomé, Togo</p>
         <div class="footer-legal"><a href="../index.html">Accueil</a><a href="../shop.html">Boutique</a></div>
       </div>
     </div>
@@ -54,23 +58,42 @@
 
   <script src="../assets/js/main.js"></script>
   <script>
-    const form = document.getElementById('loginForm');
     const msg = document.getElementById('loginMsg');
-    form.addEventListener('submit', async (e)=>{
-      e.preventDefault();
-      msg.textContent = '';
-      const fd = new FormData(form);
+    const DEFAULT_USER = 'komi', DEFAULT_PASS = 'saxo2180';
+
+    async function access(target){
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      msg.style.color = ''; msg.textContent = 'Connexion en cours...';
+
+      // 1) Tentative via le backend (si disponible)
       try{
         const res = await fetch('../api/auth.php?action=login', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: fd.get('email'), password: fd.get('password') }),
+          body: JSON.stringify({ email, password }),
         });
         const data = await res.json();
-        if(!data.ok){ msg.textContent = data.error || 'Identifiants incorrects.'; return; }
-        localStorage.setItem('yayra_token', data.token);
-        window.location.href = (data.role === 'admin') ? '../admin/admin-orders.html' : './dashboard.html';
-      }catch(err){ msg.textContent = 'Erreur réseau.'; }
-    });
+        if(data.ok && data.token){
+          localStorage.setItem('yayra_token', data.token);
+          localStorage.setItem('yayra_role', data.role || 'client');
+          window.location.href = (target === 'admin' || data.role === 'admin') ? '../admin/admin-orders.html' : './dashboard.html';
+          return;
+        }
+      }catch(e){ /* pas de backend : on bascule en mode démonstration */ }
+
+      // 2) Mode démonstration (site statique) : identifiants par défaut
+      if(email === DEFAULT_USER && password === DEFAULT_PASS){
+        localStorage.setItem('yayra_token', 'demo-' + target);
+        localStorage.setItem('yayra_role', target === 'admin' ? 'admin' : 'client');
+        window.location.href = (target === 'admin') ? '../admin/admin-orders.html' : './dashboard.html';
+      }else{
+        msg.style.color = 'var(--rose)';
+        msg.textContent = 'Identifiants incorrects. Utilisez komi / saxo2180.';
+      }
+    }
+
+    document.getElementById('loginForm').addEventListener('submit', (e)=>{ e.preventDefault(); access('client'); });
+    document.getElementById('adminBtn').addEventListener('click', ()=> access('admin'));
   </script>
 </body>
 </html>

@@ -21,6 +21,7 @@
     <ul class="nav-links">
       <li><a href="index.html">Accueil</a></li>
       <li><a href="shop.html" class="active">Boutique</a></li>
+      <li><a href="live.html">Live</a></li>
       <li><a href="services.html">Services</a></li>
       <li><a href="ateliers.html">Ateliers</a></li>
       <li><a href="locations.html">Adresses</a></li>
@@ -128,11 +129,76 @@
     <span class="wa-tooltip">Commander sur WhatsApp</span>
   </a>
 
+  <div class="pd-modal" id="pdModal" aria-hidden="true">
+    <div class="pd-sheet" role="dialog" aria-modal="true">
+      <button class="pd-close" id="pdClose" aria-label="Fermer"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      <div class="pd-grid">
+        <div class="pd-media"><img id="pdImg" src="" alt="" /></div>
+        <div class="pd-body">
+          <span class="pd-cat" id="pdCat"></span>
+          <h2 class="pd-title" id="pdTitle"></h2>
+          <div class="pd-price" id="pdPrice"></div>
+          <div class="pd-stock"><span class="dotg"></span> <span id="pdStock"></span></div>
+          <p class="pd-desc" id="pdDesc"></p>
+          <div class="pd-meta" id="pdMeta"></div>
+          <div class="pd-qty">
+            <button type="button" id="pdMinus" aria-label="Moins">−</button>
+            <input id="pdQty" type="number" min="1" value="1" />
+            <button type="button" id="pdPlus" aria-label="Plus">+</button>
+          </div>
+          <div class="pd-actions">
+            <button class="btn-gold" id="pdAdd" type="button">Ajouter au panier</button>
+            <a class="btn-wa" id="pdWa" target="_blank" rel="noopener"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M20.5 11.5a8.5 8.5 0 0 1-12.7 7.4L3.5 20l1.1-4.2a8.5 8.5 0 1 1 15.9-4.3Z"/><path d="M8.5 8.8c0 4 2.7 6.7 6.7 6.7"/></svg> Commander</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="assets/js/catalog.js"></script>
   <script src="assets/js/main.js"></script>
   <script src="assets/js/cart.js"></script>
   <script>
     const currencyFCFA = (n)=> (parseInt(n,10)||0).toLocaleString('fr-FR') + ' FCFA';
+
+    const pdModal = document.getElementById('pdModal');
+    let pdCurrent = null;
+    function openDetail(p){
+      pdCurrent = p;
+      document.getElementById('pdImg').src = (p.image_url||'').replace(/'/g,'');
+      document.getElementById('pdImg').alt = p.name || '';
+      document.getElementById('pdCat').textContent = p.category_slug || '';
+      document.getElementById('pdTitle').textContent = p.name || '';
+      document.getElementById('pdPrice').innerHTML = currencyFCFA(p.price_fcfa) + '<small>TTC · paiement à la livraison</small>';
+      const inStock = p.is_available && p.stock_qty > 0;
+      document.getElementById('pdStock').textContent = inStock ? ('En stock (' + p.stock_qty + ' disponibles)') : 'Bientôt de retour';
+      document.getElementById('pdDesc').textContent = p.description || '';
+      document.getElementById('pdMeta').innerHTML = '<span>Réf : <b>' + (p.sku||'—') + '</b></span><span>Catégorie : <b>' + (p.category_slug||'—') + '</b></span><span>Livraison : <b>24h à Lomé</b></span>';
+      document.getElementById('pdQty').value = 1;
+      const wa = document.getElementById('pdWa');
+      wa.href = 'https://wa.me/22897498685?text=' + encodeURIComponent('Bonjour YAYRA ! Je souhaite commander : ' + (p.name||'') + ' (' + currencyFCFA(p.price_fcfa) + ').');
+      const add = document.getElementById('pdAdd');
+      add.style.display = inStock ? '' : 'none';
+      pdModal.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeDetail(){ pdModal.classList.remove('open'); document.body.style.overflow=''; }
+    document.getElementById('pdClose').addEventListener('click', closeDetail);
+    pdModal.addEventListener('click', (e)=>{ if(e.target===pdModal) closeDetail(); });
+    document.addEventListener('keydown', (e)=>{ if(e.key==='Escape' && pdModal.classList.contains('open')) closeDetail(); });
+    document.getElementById('pdMinus').addEventListener('click', ()=>{ const q=document.getElementById('pdQty'); q.value=Math.max(1,(parseInt(q.value,10)||1)-1); });
+    document.getElementById('pdPlus').addEventListener('click', ()=>{ const q=document.getElementById('pdQty'); q.value=(parseInt(q.value,10)||1)+1; });
+    document.getElementById('pdAdd').addEventListener('click', ()=>{
+      if(!pdCurrent) return;
+      const qty = Math.max(1, parseInt(document.getElementById('pdQty').value,10)||1);
+      if(window.YayaCart && window.YayaCart.add){
+        window.YayaCart.add({ product_id: pdCurrent.id, name: pdCurrent.name, price_fcfa: pdCurrent.price_fcfa, qty });
+      }
+      const btn = document.getElementById('pdAdd');
+      btn.textContent = 'Ajouté ✓'; setTimeout(()=>{ btn.textContent='Ajouter au panier'; }, 1100);
+      if(window.YayaCart) window.YayaCart.syncCartCount();
+      if(typeof renderCart==='function') renderCart();
+    });
 
     function fillCategories(cats){
       const sel = document.getElementById('catSelect');
@@ -205,7 +271,8 @@
             </div>`;
           grid.appendChild(wrap);
           const btn = wrap.querySelector('[data-ai-info]');
-          if(btn) btn.addEventListener('click', ()=>aiAskInfoProduct(p.id));
+          if(btn) btn.addEventListener('click', (e)=>{ e.stopPropagation(); aiAskInfoProduct(p.id); });
+          wrap.addEventListener('click', (e)=>{ if(e.target.closest('button,a')) return; openDetail(p); });
         });
       });
     }

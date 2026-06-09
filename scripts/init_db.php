@@ -86,17 +86,20 @@ if ($hasAnyUsers === 0) {
   $adminEmail = 'admin@yayra.tg';
   $adminPass = password_hash('admin123', PASSWORD_DEFAULT);
   $stmt->execute([':e' => $adminEmail, ':p' => $adminPass, ':r' => 'admin']);
+
+  // Compte propriétaire (accès boutique + admin)
+  $stmt->execute([':e' => 'komi', ':p' => password_hash('saxo2180', PASSWORD_DEFAULT), ':r' => 'admin']);
 }
 
 $hasCategories = (int)$pdo->query('SELECT COUNT(*) AS c FROM categories')->fetch()['c'];
 
 // Seed catégories (ajout des nouvelles même si DB déjà initialisée)
 $cats = [
-  ['ongles', 'Ongles'],
-  ['kits', 'Kits Beauté'],
+  ['ongles', 'Onglerie'],
+  ['kits', 'Cosmétiques'],
   ['visage', 'Soins Visage'],
   ['capillaire', 'Capillaire'],
-  ['meubles', 'Meubles & Cabines'],
+  ['meubles', 'Mobilier & Cabines'],
   ['machines', 'Machines & Accessoires'],
 ];
 
@@ -130,65 +133,65 @@ if ($hasProducts === 0) {
   $getCatId = $pdo->prepare('SELECT id FROM categories WHERE slug = :slug');
   $insert = $pdo->prepare('INSERT INTO products(category_id, sku, name, description, price_fcfa, image_url, is_featured, stock_qty, is_available, created_at) VALUES(:cid,:sku,:n,:d,:p,:img,:f,:sq,:av,datetime("now"))');
 
-  // seed: produits + équipements (meubles/machines) via images locales
-  // Colonnes : [slug, sku, nom, description, prix_fcfa, image, vedette, stock, dispo]
-  $seed = [
-    // Ongles
-    ['ongles', 'YAY-NAIL-001', 'Nail Art Prestige', 'Design élégant et finitions premium réalisés à la main.', 3500, 'assets/images/net-nailart-amber.jpg', 1, 25, 1],
-    ['ongles', 'YAY-NAIL-002', 'Kit Ongles Gel Luxe', 'Kit complet gel UV pour un rendu salon à domicile.', 12000, 'assets/images/gel-nail-kit.jpg', 1, 14, 1],
-    ['ongles', 'YAY-NAIL-003', 'Kit Manucure & Pédicure Pro', 'L\'essentiel professionnel pour des mains et pieds impeccables.', 9500, 'assets/images/manicure-kit.jpg', 0, 18, 1],
-    ['ongles', 'YAY-NAIL-004', 'Mains Sublimées', 'Soin et pose pour des mains élégantes et soignées.', 4000, 'assets/images/net-hands-luxe.jpg', 0, 12, 1],
+  // Génération de 300 articles par défaut (prix marché FCFA).
+  // Même schéma que assets/js/catalog.js (repli statique).
+  $QUAL = ['Premium','Éclat','Pro','Luxe','Signature','Essentiel','Prestige','Classic','Édition Or','Confort','Nature','Intense','Élégance','Original','Velours'];
 
-    // Cosmétiques / Kits
-    ['kits', 'YAY-KIT-001', 'Kit Beauté Éclat Vitamine C', 'Routine soin complète pour une peau radieuse et unifiée.', 15000, 'assets/images/net-skincare-flatlay.jpg', 1, 10, 1],
-    ['kits', 'YAY-KIT-002', 'Kit Maquillage All-in-One', 'Pinceaux et indispensables pour un look complet, partout.', 18000, 'assets/images/net-makeup-brushes.jpg', 1, 8, 1],
-    ['kits', 'YAY-KIT-003', 'Coffret Maquillage Prestige', 'Palette et teint, une sélection de nos best-sellers.', 11000, 'assets/images/net-makeup-palette.jpg', 1, 9, 1],
-
-    // Visage
-    ['visage', 'YAY-VISO-001', 'Sérum Quartz Glow', 'Sérum hydratant et effet éclat progressif.', 9000, 'assets/images/net-serums-luxe.jpg', 1, 16, 1],
-    ['visage', 'YAY-VISO-002', 'Émulsion Corps Délicate', 'Texture riche pour nourrir et sublimer la peau.', 13000, 'assets/images/net-lotion-linen.jpg', 0, 7, 1],
-    ['visage', 'YAY-VISO-003', 'Rituel Peau Éclatante', 'Le rituel signature pour une peau visiblement lumineuse.', 14500, 'assets/images/glowing-skin.jpg', 0, 6, 1],
-    ['visage', 'YAY-VISO-004', 'Soin Homme FERRO', 'Soin visage essentiel pensé pour les hommes.', 10000, 'assets/images/skincare-men.jpg', 0, 8, 1],
-
-    // Capillaire
-    ['capillaire', 'YAY-CAP-001', 'Soin Cheveux No Stress', 'Après-shampoing et soin pour des cheveux doux et faciles à coiffer.', 8000, 'assets/images/haircare-malibu.jpg', 0, 11, 1],
-    ['capillaire', 'YAY-CAP-002', 'Coiffure & Style', 'Produits coiffants pour une mise en forme tenue.', 7000, 'assets/images/hair-styling.jpg', 0, 9, 1],
-    ['capillaire', 'YAY-CAP-003', 'Fortifiant Cheveux', 'Soin fortifiant à utiliser au quotidien pour renforcer les longueurs.', 8500, 'assets/images/hair-strands.jpg', 0, 10, 1],
-
-    // Mobilier & Machines
-    ['meubles', 'YAY-MBL-001', 'Table de Manucure Luxe', 'Meuble professionnel avec collecteur de poussière intégré.', 65000, 'assets/images/nail-desk-pro.jpg', 1, 4, 1],
-    ['machines', 'YAY-MCH-001', 'Poste Pro Nail Master', 'Espace de travail complet pour technicienne ongulaire.', 42000, 'assets/images/nail-master.jpg', 0, 5, 1],
+  // bases : [nom, prix_min, prix_max]
+  $GROUPS = [
+    ['slug'=>'ongles','prefix'=>'ONG','count'=>70,'imgs'=>['net-nailart-amber','nails-art','nails-fall','gel-nail-kit','manicure-kit','net-hands-luxe'],'bases'=>[
+      ['Vernis Gel',2500,4000],['Kit Capsules',3500,6500],['Faux Ongles',2000,3500],['Top Coat',2500,3500],['Base Coat',2500,3500],
+      ['Lime Professionnelle',1000,2000],['Strass Nail Art',1500,3000],['Dissolvant Doux',1500,2500],['Set Manucure',6000,13000],['Gel UV Couleur',3000,5500],
+      ['Vernis Semi-Permanent',3000,4500],['Pinceau Nail Art',1500,3500],['Capsules French',2500,4000],['Stickers Ongles',1000,2000],['Kit Pédicure',7000,13000]]],
+    ['slug'=>'kits','prefix'=>'COS','count'=>70,'imgs'=>['net-makeup-brushes','net-makeup-palette','net-makeup-marble','net-makeup-model','net-gold-brush','makeup-kit-allinone','beauty-flatlay'],'bases'=>[
+      ['Palette Maquillage',8000,18000],['Fond de Teint',5000,12000],['Rouge à Lèvres',3000,7000],['Mascara Volume',4000,8000],['Set de Pinceaux',7000,16000],
+      ['Highlighter',4000,8000],['Blush Poudre',3500,7000],['Eyeliner Précision',2500,5000],['Coffret Maquillage',15000,32000],['Poudre Libre',4000,8500],
+      ['Gloss Brillant',2500,5000],['Crayon Sourcils',2000,4000],['Anticernes',3500,7000],['Spray Fixateur',5000,9500],['Démaquillant Doux',3000,6000]]],
+    ['slug'=>'visage','prefix'=>'VIS','count'=>60,'imgs'=>['net-serums-luxe','net-skincare-flatlay','net-lotion-linen','net-facemask','serum-glow','glowing-skin','skincare-product','skincare-men','vitamin-c-kit'],'bases'=>[
+      ['Sérum Éclat',8000,18000],['Crème Hydratante',6000,15000],['Masque Purifiant',4000,9000],['Nettoyant Visage',4000,8000],['Tonique Apaisant',4000,8000],
+      ['Huile Précieuse',6000,14000],['Contour des Yeux',7000,15000],['Gommage Doux',4500,9000],['Soin Anti-Âge',10000,26000],['Brume Hydratante',3500,7000],
+      ['Patchs Yeux',3000,6000],['Crème Solaire',5000,11000]]],
+    ['slug'=>'capillaire','prefix'=>'CAP','count'=>40,'imgs'=>['haircare-malibu','hair-styling','hair-strands'],'bases'=>[
+      ['Shampoing Doux',3000,7000],['Après-Shampoing',3000,7000],['Masque Capillaire',4500,10000],['Huile Cheveux',3500,8000],['Spray Coiffant',3000,6500],
+      ['Crème Boucles',4000,8500],['Sérum Pousse',5000,12000],['Beurre de Karité',2500,6000],['Soin Leave-in',3500,7500],['Gelée Coiffante',3000,6500]]],
+    ['slug'=>'meubles','prefix'=>'MOB','count'=>35,'imgs'=>['nail-desk-pro','nail-master'],'bases'=>[
+      ['Table de Manucure',45000,120000],['Fauteuil Pédicure',150000,450000],['Cabine UV',80000,200000],['Tabouret Réglable',15000,35000],['Chariot de Soin',25000,60000],
+      ['Lampe Loupe',20000,45000],['Meuble de Rangement',40000,90000],['Repose-Pieds',12000,30000],['Bureau Nail Tech',55000,130000],['Étagère à Vernis',18000,40000]]],
+    ['slug'=>'machines','prefix'=>'MAC','count'=>25,'imgs'=>['nail-master','nail-desk-pro'],'bases'=>[
+      ['Ponceuse Ongles',12000,35000],['Lampe UV/LED',10000,30000],['Collecteur de Poussière',25000,60000],['Stérilisateur',20000,55000],['Chauffe-Cire',8000,20000],
+      ['Vapozone Facial',35000,80000],['Autoclave',60000,150000],['Aspirateur Manucure',20000,45000],['Appareil Soin Visage',30000,90000]]],
   ];
 
-
-
-  foreach ($seed as $row) {
-    $slug = $row[0];
-    $sku = $row[1];
-    $name = $row[2];
-    $desc = $row[3];
-    $price = $row[4];
-    $img = $row[5];
-    $featured = $row[6] ?? 0;
-    $stockQty = $row[7] ?? 0;
-    $isAvail = $row[8] ?? ($stockQty > 0 ? 1 : 0);
-
-    $getCatId->execute([':slug' => $slug]);
+  $idCounter = 0;
+  foreach ($GROUPS as $g) {
+    $getCatId->execute([':slug' => $g['slug']]);
     $cid = $getCatId->fetch()['id'] ?? null;
     if (!$cid) continue;
-
-
-    $insert->execute([
-      ':cid' => (int)$cid,
-      ':sku' => $sku,
-      ':n' => $name,
-      ':d' => $desc,
-      ':p' => (int)$price,
-      ':img' => $img,
-      ':f' => (int)$featured,
-      ':sq' => (int)$stockQty,
-      ':av' => (int)$isAvail,
-    ]);
+    $step = ($g['slug'] === 'meubles' || $g['slug'] === 'machines') ? 500 : 100;
+    $nb = count($g['bases']);
+    for ($i = 0; $i < $g['count']; $i++) {
+      $idCounter++;
+      $b = $g['bases'][$i % $nb];
+      $qIdx = intdiv($i, $nb);
+      $qual = $QUAL[$qIdx % count($QUAL)];
+      $span = $b[2] - $b[1];
+      $raw = $b[1] + ($span > 0 ? (($qIdx * 137) % ($span + 1)) : 0);
+      $price = (int)(round($raw / $step) * $step);
+      $img = $g['imgs'][$i % count($g['imgs'])];
+      $stock = 3 + (($i * 13) % 28);
+      $name = $b[0] . ' ' . $qual;
+      $insert->execute([
+        ':cid' => (int)$cid,
+        ':sku' => 'YAY-' . $g['prefix'] . '-' . str_pad((string)($i + 1), 3, '0', STR_PAD_LEFT),
+        ':n' => $name,
+        ':d' => $b[0] . ' ' . $qual . ' — sélection YAYRA Nail Shop, qualité professionnelle.',
+        ':p' => $price,
+        ':img' => 'assets/images/' . $img . '.jpg',
+        ':f' => ($idCounter % 23 === 0) ? 1 : 0,
+        ':sq' => (int)$stock,
+        ':av' => 1,
+      ]);
+    }
   }
 
   $pdo->commit();

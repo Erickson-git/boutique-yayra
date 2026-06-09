@@ -59,7 +59,7 @@
       try{
         const res = await fetch('../api/orders.php?action=list', { method: 'GET', headers: { 'Authorization': 'Bearer ' + t } });
         const data = await res.json();
-        if(!data.ok){ msg.textContent = data.error || 'Erreur de session.'; return; }
+        if(!data.ok){ wrap.innerHTML = '<p class="muted">Mode démonstration — connectez le backend pour voir les commandes réelles.</p>'; msg.textContent = ''; return; }
         const orders = data.orders || [];
         if(orders.length === 0){ wrap.innerHTML = '<p class="muted">Aucune commande pour le moment.</p>'; msg.textContent = ''; return; }
         let html = '<div class="table-wrap"><table class="table"><thead><tr><th>N°</th><th>Client</th><th>Total</th><th>Statut</th><th>Date</th></tr></thead><tbody>';
@@ -69,7 +69,7 @@
         html += '</tbody></table></div>';
         wrap.innerHTML = html;
         msg.textContent = '';
-      }catch(e){ msg.textContent = 'Erreur réseau.'; }
+      }catch(e){ wrap.innerHTML = '<p class="muted">Mode démonstration — connectez le backend pour voir les commandes réelles.</p>'; msg.textContent = ''; }
     }
     document.addEventListener('DOMContentLoaded', loadOrders);
   </script>

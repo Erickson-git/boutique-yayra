@@ -74,9 +74,11 @@
     </div>
   </section>
 
+  <script src="../assets/js/catalog.js"></script>
   <script src="../assets/js/main.js"></script>
   <script>
     const token = () => localStorage.getItem('yayra_token') || '';
+    const isDemo = () => (localStorage.getItem('yayra_token')||'').indexOf('demo') === 0;
     const msg = document.getElementById('msg');
     const listWrap = document.getElementById('listWrap');
     const form = document.getElementById('productForm');
@@ -98,12 +100,19 @@
     }
     document.getElementById('logoutBtn').addEventListener('click', ()=>{ localStorage.removeItem('yayra_token'); window.location.href = '../client/login.html'; });
 
+    function catCats(){ return (window.YAYRA_CATALOG ? window.YAYRA_CATALOG.categories : []); }
+    function catProducts(){ return (window.YAYRA_CATALOG ? window.YAYRA_CATALOG.products.slice() : []); }
+
     async function loadCategoriesIntoSelect(){
-      const res = await fetch('../api/categories.php?action=list');
-      const d = await res.json();
       const sel = document.getElementById('categorySlug');
+      let cats = [];
+      try{
+        const res = await fetch('../api/categories.php?action=list');
+        const d = await res.json();
+        cats = (d && d.categories && d.categories.length) ? d.categories : catCats();
+      }catch(e){ cats = catCats(); }
       sel.innerHTML = '';
-      (d.categories || []).forEach(c=>{ const opt = document.createElement('option'); opt.value = c.slug; opt.textContent = c.name; sel.appendChild(opt); });
+      cats.forEach(c=>{ const opt = document.createElement('option'); opt.value = c.slug; opt.textContent = c.name; sel.appendChild(opt); });
     }
 
     async function loadProducts(){
@@ -111,11 +120,14 @@
       if(!t){ window.location.href = '../client/login.html'; return; }
       msg.textContent = 'Chargement...';
       listWrap.innerHTML = '';
-      const res = await fetch('../api/admin_products.php?action=list', { method:'GET', headers:{ 'Authorization':'Bearer ' + t } });
-      const data = await res.json();
-      if(!data.ok){ msg.textContent = data.error || 'Erreur'; return; }
-      const products = data.products || [];
+      let products = [];
+      try{
+        const res = await fetch('../api/admin_products.php?action=list', { method:'GET', headers:{ 'Authorization':'Bearer ' + t } });
+        const data = await res.json();
+        products = (data && data.ok && data.products) ? data.products : catProducts();
+      }catch(e){ products = catProducts(); }
       if(products.length === 0){ listWrap.innerHTML = '<p class="muted">Aucun produit.</p>'; msg.textContent=''; return; }
+      if(isDemo()){ msg.innerHTML = '<span style="color:var(--gold)">Mode démonstration — catalogue en lecture seule.</span>'; } else { msg.textContent=''; }
       listWrap.innerHTML = '';
       products.forEach(p=>{
         const row = document.createElement('div');
@@ -131,6 +143,7 @@
           </div>`;
         row.querySelector('[data-edit]').addEventListener('click', ()=>setFormFromProduct(p));
         row.querySelector('[data-del]').addEventListener('click', async ()=>{
+          if(isDemo()){ alert('Mode démonstration : la suppression est désactivée (backend requis).'); return; }
           if(!confirm('Supprimer ce produit ?')) return;
           const res = await fetch('../api/admin_products.php?action=delete', {
             method:'POST', headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer ' + token() },
@@ -142,7 +155,7 @@
         });
         listWrap.appendChild(row);
       });
-      msg.textContent='';
+      if(!isDemo()) msg.textContent='';
     }
 
     form.addEventListener('submit', async (e)=>{

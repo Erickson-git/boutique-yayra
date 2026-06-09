@@ -94,14 +94,14 @@
       try{
         const res = await fetch('../api/appointments.php?action=list', { method: 'GET', headers: { 'Authorization': 'Bearer ' + t } });
         const data = await res.json();
-        if(!data.ok){ wrap.innerHTML = '<p class="muted">Session expirée.</p>'; return; }
+        if(!data.ok){ wrap.innerHTML = '<p class="muted">Aucun rendez-vous pour le moment.</p>'; return; }
         const items = data.appointments || [];
         if(items.length === 0){ wrap.innerHTML = '<p class="muted">Aucun rendez-vous pour le moment.</p>'; return; }
         let html = '<div class="table-wrap"><table class="table"><thead><tr><th>N°</th><th>Service</th><th>Date</th><th>Statut</th></tr></thead><tbody>';
         for(const a of items){ html += `<tr><td>#${a.id}</td><td>${a.service}</td><td>${a.appointment_time}</td><td>${a.status}</td></tr>`; }
         html += '</tbody></table></div>';
         wrap.innerHTML = html;
-      }catch(e){ wrap.innerHTML = '<p class="muted">Erreur réseau.</p>'; }
+      }catch(e){ wrap.innerHTML = '<p class="muted">Aucun rendez-vous pour le moment.</p>'; }
     }
 
     document.getElementById('apptForm').addEventListener('submit', async (e)=>{
@@ -110,6 +110,12 @@
       msg.textContent = '';
       const t = token();
       if(!t){ goLogin(); return; }
+      if(t.indexOf('demo') === 0){
+        msg.style.color = 'var(--gold)';
+        msg.innerHTML = 'Mode démonstration. Pour réserver tout de suite, écrivez-nous sur <a href="https://wa.me/22897498685?text=Bonjour+YAYRA+!+Je+souhaite+un+rendez-vous." style="color:var(--gold)" target="_blank" rel="noopener">WhatsApp</a>.';
+        e.target.reset();
+        return;
+      }
       const fd = new FormData(e.target);
       const body = {
         full_name: fd.get('full_name'), phone: fd.get('phone'), service: fd.get('service'),

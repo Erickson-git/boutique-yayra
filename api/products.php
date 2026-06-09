@@ -50,7 +50,7 @@ if ($where) {
   $sql .= ' WHERE ' . implode(' AND ', $where);
 }
 
-$sql .= ' ORDER BY p.id DESC LIMIT 200';
+$sql .= ' ORDER BY p.id DESC LIMIT 500';
 
 $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
