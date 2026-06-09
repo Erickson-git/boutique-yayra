@@ -128,23 +128,26 @@
     <span class="wa-tooltip">Commander sur WhatsApp</span>
   </a>
 
+  <script src="assets/js/catalog.js"></script>
   <script src="assets/js/main.js"></script>
   <script src="assets/js/cart.js"></script>
   <script>
     const currencyFCFA = (n)=> (parseInt(n,10)||0).toLocaleString('fr-FR') + ' FCFA';
 
-    function loadCategories(){
+    function fillCategories(cats){
       const sel = document.getElementById('catSelect');
-      return fetch('api/categories.php?action=list').then(r=>r.json()).then(d=>{
-        if(!d.ok) return;
-        (d.categories||[]).forEach(c=>{
-          const opt = document.createElement('option');
-          opt.value = c.slug; opt.textContent = c.name; sel.appendChild(opt);
-        });
-        const params = new URLSearchParams(location.search);
-        const pre = params.get('cat');
-        if(pre){ sel.value = pre; }
+      (cats||[]).forEach(c=>{
+        const opt = document.createElement('option');
+        opt.value = c.slug; opt.textContent = c.name; sel.appendChild(opt);
       });
+      const pre = new URLSearchParams(location.search).get('cat');
+      if(pre){ sel.value = pre; }
+    }
+    function loadCategories(){
+      return fetch('api/categories.php?action=list').then(r=>r.json()).then(d=>{
+        if(!d.ok || !d.categories || !d.categories.length) throw 0;
+        fillCategories(d.categories);
+      }).catch(()=> fillCategories(window.YAYRA_CATALOG ? window.YAYRA_CATALOG.categories : []));
     }
 
     function aiAskInfoProduct(productId){
@@ -157,10 +160,13 @@
         method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({ product_id: productId, action: 'info_product', question: '' })
       }).then(r=>r.json()).then(d=>{
-        if(!d.ok){ msg.textContent = d.error || 'Conseil indisponible pour le moment.'; return; }
+        if(!d.ok || !d.answer) throw 0;
         msg.textContent = '';
-        ans.innerHTML = d.answer ? d.answer.replace(/\n/g,'<br/>') : '';
-      }).catch(()=>{ msg.textContent = 'Erreur réseau.'; });
+        ans.innerHTML = d.answer.replace(/\n/g,'<br/>');
+      }).catch(()=>{
+        msg.textContent = '';
+        ans.innerHTML = 'Pour un conseil personnalisé sur ce produit, écrivez-nous sur <a href="https://wa.me/22897498685?text=Bonjour+YAYRA+!+J%27ai+une+question+sur+un+produit." style="color:var(--gold)" target="_blank" rel="noopener">WhatsApp</a> — réponse rapide et gratuite.';
+      });
     }
 
     function loadProducts({q='', category=''}={}){
@@ -169,8 +175,11 @@
       const params = new URLSearchParams();
       if(q) params.set('q', q);
       if(category) params.set('category', category);
-      return fetch('api/products.php?' + params.toString()).then(r=>r.json()).then(d=>{
-        const products = d.products || [];
+      const fb = ()=> (window.YAYRA_CATALOG ? window.YAYRA_CATALOG.filter({q, category}) : []);
+      return fetch('api/products.php?' + params.toString())
+        .then(r=>r.json()).then(d=> (d && d.ok && d.products) ? d.products : fb())
+        .catch(()=> fb())
+        .then(products=>{
         if(products.length === 0){
           grid.innerHTML = '<p class="muted">Aucun produit ne correspond à votre recherche.</p>';
           return;

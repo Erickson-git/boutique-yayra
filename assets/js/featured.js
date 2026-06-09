@@ -1,11 +1,14 @@
 (function(){
+  function fallback(){
+    return (window.YAYRA_CATALOG ? window.YAYRA_CATALOG.featured(8) : []);
+  }
   async function fetchFeatured(){
     try{
       const res = await fetch('api/products.php?action=featured&limit=8');
       const data = await res.json();
-      if(!data.ok) return [];
-      return data.products || [];
-    }catch(e){ return []; }
+      if(!data.ok || !data.products || !data.products.length) return fallback();
+      return data.products;
+    }catch(e){ return fallback(); }
   }
 
   const currencyFCFA = (n)=> (parseInt(n,10)||0).toLocaleString('fr-FR') + ' FCFA';
