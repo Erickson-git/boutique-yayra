@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YAYRA Nail Shop — Studio Live</title>
+  <meta name="theme-color" content="#1c140b">
+  <link rel="stylesheet" href="../assets/css/main.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <nav class="navbar" id="navbar">
+    <div class="nav-logo"><a href="../index.html"><span class="logo-y">Y</span>AYRA <span class="logo-sub">Nail Shop</span></a></div>
+    <ul class="nav-links">
+      <li><a href="../shop.html">Boutique</a></li>
+      <li><a href="dashboard.html">Mon espace</a></li>
+      <li><a href="studio.html" class="active">Studio Live</a></li>
+    </ul>
+    <div class="nav-actions">
+      <button class="btn-outline" type="button" id="logoutBtn">Se déconnecter</button>
+    </div>
+    <button class="menu-toggle" id="menuToggle" aria-label="Menu"><svg class="ic" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
+  </nav>
+
+  <section class="page">
+    <div class="studio-wrap">
+      <div class="section-header" style="margin-bottom:18px;">
+        <p class="section-eyebrow">Studio</p>
+        <h2 class="section-title">Passer en direct</h2>
+        <p class="section-sub">Diffusez en direct depuis votre caméra. Dès que vous démarrez, le badge « EN DIRECT » apparaît sur tout le site et vos clientes peuvent regarder et commenter en temps réel.</p>
+      </div>
+
+      <div id="cfgWarn" class="product-card" style="display:none; margin-bottom:18px;">
+        <div class="product-info">
+          <h4 style="color:#b53c28;">Configuration requise</h4>
+          <p class="muted">Le live nécessite une configuration Firebase gratuite (une seule fois). Ouvrez le fichier <code>assets/js/firebase-config.js</code> et suivez les étapes indiquées, puis republiez. Tout fonctionnera ensuite automatiquement.</p>
+        </div>
+      </div>
+
+      <div class="studio-prev">
+        <video id="preview" playsinline muted></video>
+        <span class="badge-on" id="onAir" style="display:none;">EN DIRECT</span>
+      </div>
+
+      <div class="studio-stat">
+        <div><b id="stViewers">0</b><span>Spectateurs</span></div>
+        <div><b id="stLikes">0</b><span>J'aime</span></div>
+        <div><b id="stStatus">Hors ligne</b><span>Statut</span></div>
+      </div>
+
+      <div style="display:flex; gap:12px; flex-wrap:wrap;">
+        <button class="btn-gold" id="goLiveBtn" type="button">Passer en direct</button>
+        <button class="btn-outline" id="stopLiveBtn" type="button" style="display:none;">Arrêter le live</button>
+        <button class="btn-ghost" id="flipBtn" type="button" style="display:none;">Caméra avant/arrière</button>
+        <a class="btn-ghost" href="../live.html" target="_blank" rel="noopener">Voir la page live</a>
+      </div>
+      <p class="muted" id="studioMsg" style="margin-top:12px;" aria-live="polite"></p>
+
+      <div class="product-card" style="margin-top:22px;">
+        <div class="product-info">
+          <h4 style="font-size:18px;">Commentaires en direct</h4>
+          <div id="hostChat" style="display:flex; flex-direction:column; gap:8px; max-height:240px; overflow-y:auto; margin:6px 0 12px;"></div>
+          <form id="hostCompose" style="display:flex; gap:8px;">
+            <input id="hostInput" placeholder="Répondre en direct…" maxlength="160" style="flex:1; padding:11px 14px; border-radius:999px; border:1px solid var(--line-2); background:var(--paper); color:var(--ink);" />
+            <button class="btn-gold" type="submit">Envoyer</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <script src="../assets/js/firebase-config.js"></script>
+  <script src="../assets/js/live-core.js"></script>
+  <script>
+    if(!localStorage.getItem('yayra_token')) window.location.href = 'login.html';
+    document.getElementById('logoutBtn').addEventListener('click', ()=>{ localStorage.removeItem('yayra_token'); window.location.href='login.html'; });
+    const $ = (id)=> document.getElementById(id);
+    const msg = $('studioMsg');
+
+    if(!window.FIREBASE_READY || !LIVE.init()){
+      $('cfgWarn').style.display = '';
+      $('goLiveBtn').disabled = true;
+    } else {
+      const preview = $('preview');
+      let localStream = null, live = false, facing = 'user';
+      const pcs = {};
+      const signalsRef = LIVE.ref('live/signals');
+
+      function setUI(){
+        $('onAir').style.display = live ? '' : 'none';
+        $('stStatus').textContent = live ? 'EN DIRECT' : 'Hors ligne';
+        $('stStatus').style.color = live ? '#e23744' : '';
+        $('goLiveBtn').style.display = live ? 'none' : '';
+        $('stopLiveBtn').style.display = live ? '' : 'none';
+        $('flipBtn').style.display = live ? '' : 'none';
+      }
+
+      async function startStream(){
+        if(localStream) localStream.getTracks().forEach(t=>t.stop());
+        localStream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode: facing }, audio:true });
+        preview.srcObject = localStream; preview.play().catch(()=>{});
+      }
+
+      async function handleViewer(vid){
+        if(pcs[vid] || !localStream) return;
+        const pc = new RTCPeerConnection(LIVE.ICE); pcs[vid] = pc;
+        localStream.getTracks().forEach(t=> pc.addTrack(t, localStream));
+        const sref = LIVE.ref('live/signals/' + vid);
+        pc.onicecandidate = (e)=>{ if(e.candidate) sref.child('hostCandidates').push(e.candidate.toJSON()); };
+        pc.onconnectionstatechange = ()=>{ if(['failed','closed','disconnected'].indexOf(pc.connectionState) > -1) dropViewer(vid); };
+        sref.child('answer').on('value', async (s)=>{ const a = s.val(); if(a && !(pc.currentRemoteDescription && pc.currentRemoteDescription.sdp)){ try{ await pc.setRemoteDescription(new RTCSessionDescription(a)); }catch(e){} } });
+        sref.child('viewerCandidates').on('child_added', (s)=>{ const c = s.val(); if(c) pc.addIceCandidate(new RTCIceCandidate(c)).catch(()=>{}); });
+        try{
+          const offer = await pc.createOffer();
+          await pc.setLocalDescription(offer);
+          sref.child('offer').set({ type: offer.type, sdp: offer.sdp });
+        }catch(e){}
+      }
+      function dropViewer(vid){ const pc = pcs[vid]; if(pc){ try{ pc.close(); }catch(e){} delete pcs[vid]; } }
+
+      async function goLive(){
+        try{ msg.textContent = 'Activation de la caméra…'; await startStream(); }
+        catch(e){ msg.textContent = "Accès caméra refusé. Autorisez la caméra et le micro."; return; }
+        msg.textContent = '';
+        await signalsRef.remove();
+        LIVE.ref('live/active').set(true);
+        LIVE.ref('live/startedAt').set(LIVE.now());
+        LIVE.ref('live/active').onDisconnect().set(false);
+        signalsRef.on('child_added', (s)=> handleViewer(s.key));
+        signalsRef.on('child_removed', (s)=> dropViewer(s.key));
+        live = true; setUI();
+      }
+      function stopLive(){
+        LIVE.ref('live/active').set(false);
+        signalsRef.off();
+        Object.keys(pcs).forEach(dropViewer);
+        signalsRef.remove();
+        if(localStream){ localStream.getTracks().forEach(t=>t.stop()); localStream = null; }
+        preview.srcObject = null; live = false; setUI();
+      }
+
+      $('goLiveBtn').addEventListener('click', goLive);
+      $('stopLiveBtn').addEventListener('click', stopLive);
+      $('flipBtn').addEventListener('click', async ()=>{
+        facing = (facing === 'user') ? 'environment' : 'user';
+        try{
+          await startStream();
+          // remplace la piste vidéo dans les connexions existantes
+          const newTrack = localStream.getVideoTracks()[0];
+          Object.values(pcs).forEach(pc=>{ const sender = pc.getSenders().find(s=> s.track && s.track.kind==='video'); if(sender) sender.replaceTrack(newTrack); });
+        }catch(e){}
+      });
+      window.addEventListener('beforeunload', ()=>{ if(live) stopLive(); });
+
+      // Stats temps réel
+      signalsRef.on('value', (s)=>{ let c=0; s.forEach(ch=>{ if(ch.child('active').val()===true) c++; }); $('stViewers').textContent = c; });
+      LIVE.ref('live/likes').on('value', (s)=>{ $('stLikes').textContent = s.val() || 0; });
+
+      // Chat hôte
+      const chatBox = $('hostChat');
+      const esc = (x)=> String(x||'').replace(/[<>&"]/g, c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+      LIVE.ref('live/chat').limitToLast(60).on('child_added', (s)=>{
+        const m = s.val(); if(!m) return;
+        const el = document.createElement('div'); el.className='lv-msg'; el.style.maxWidth='100%';
+        el.innerHTML = '<b style="color:var(--gold)">'+esc(m.n)+'</b> '+esc(m.t);
+        el.style.background='var(--bg-2)'; el.style.color='var(--ink)';
+        chatBox.appendChild(el); chatBox.scrollTop = chatBox.scrollHeight;
+      });
+      $('hostCompose').addEventListener('submit', (e)=>{
+        e.preventDefault(); const i=$('hostInput'); const t=i.value.trim(); if(!t) return;
+        LIVE.ref('live/chat').push({ n:'YAYRA Nail Shop', t, ts: LIVE.now() }); i.value='';
+      });
+
+      // Reprise d'état si déjà en direct (ex. rechargement)
+      LIVE.ref('live/active').once('value', (s)=>{ if(s.val()===true){ /* on laisse l'hôte relancer proprement */ } });
+      setUI();
+    }
+  </script>
+  <script src="../assets/js/livebadge.js"></script>
+</body>
+</html>

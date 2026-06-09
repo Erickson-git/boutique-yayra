@@ -1,17 +1,16 @@
-/* Badge « EN DIRECT » flottant : visible sur tout le site quand la boutique
-   est en live. Le propriétaire active/désactive depuis son espace.
-   État stocké dans localStorage ('yayra_live_on'). Actif par défaut. */
+/* Badge « EN DIRECT » réel : s'affiche UNIQUEMENT quand la boutique a démarré
+   un vrai live. L'état est lu en temps réel depuis Firebase (flux SSE de la
+   Realtime Database). Aucune simulation : sans live actif, rien ne s'affiche. */
 (function(){
-  function isOn(){ return localStorage.getItem('yayra_live_on') !== '0'; }
   function livePath(){
     const p = location.pathname;
     return (p.indexOf('/client/') > -1 || p.indexOf('/admin/') > -1) ? '../live.html' : 'live.html';
   }
   function onLivePage(){ return /live\.html$/.test(location.pathname); }
 
-  function render(){
+  function setLive(on){
     let el = document.getElementById('liveFlag');
-    if(isOn() && !onLivePage()){
+    if(on && !onLivePage()){
       if(!el){
         el = document.createElement('a');
         el.id = 'liveFlag';
@@ -24,13 +23,25 @@
     } else if(el){ el.remove(); }
   }
 
-  window.YAYRA_LIVE = {
-    isOn,
-    on(){ localStorage.setItem('yayra_live_on','1'); render(); },
-    off(){ localStorage.setItem('yayra_live_on','0'); render(); },
-    toggle(){ localStorage.setItem('yayra_live_on', isOn() ? '0' : '1'); render(); return isOn(); }
-  };
+  function start(){
+    if(!window.FIREBASE_READY){ setLive(false); return; }
+    const base = window.FIREBASE_CONFIG.databaseURL.replace(/\/$/, '');
+    const url = base + '/live/active.json';
+    try{
+      const es = new EventSource(url);
+      const handle = (e)=>{
+        try{ const d = JSON.parse(e.data); setLive(d && (d.data === true)); }
+        catch(_){ /* ignore keep-alive */ }
+      };
+      es.addEventListener('put', handle);
+      es.addEventListener('patch', handle);
+      es.onerror = ()=>{ /* reconnexion auto par le navigateur */ };
+    }catch(e){
+      // Repli : lecture unique
+      fetch(url).then(r=>r.json()).then(v=> setLive(v === true)).catch(()=>{});
+    }
+  }
 
-  if(document.readyState !== 'loading') render();
-  else document.addEventListener('DOMContentLoaded', render);
+  if(document.readyState !== 'loading') start();
+  else document.addEventListener('DOMContentLoaded', start);
 })();

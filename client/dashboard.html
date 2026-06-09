@@ -43,8 +43,8 @@
             <h3 style="margin:0;">Live de la boutique</h3>
             <p id="liveStatusTxt" style="margin:4px 0 0;"></p>
           </div>
-          <button class="btn-gold" id="liveToggle" type="button">…</button>
-          <a class="btn-outline" href="../live.html">Ouvrir le live</a>
+          <a class="btn-gold" href="studio.html">Ouvrir le studio</a>
+          <a class="btn-outline" href="../live.html" target="_blank" rel="noopener">Voir la page live</a>
         </div>
         <div class="dash-card">
           <span class="dash-ico"><svg class="ic" viewBox="0 0 24 24"><path d="M6 8h12l1 12H5L6 8Z"/><path d="M9 8a3 3 0 0 1 6 0"/></svg></span>
@@ -96,18 +96,21 @@
       window.location.href = 'login.html';
     });
     document.addEventListener('DOMContentLoaded', ()=>{
-      const btn = document.getElementById('liveToggle');
       const txt = document.getElementById('liveStatusTxt');
-      function refresh(){
-        const on = window.YAYRA_LIVE ? window.YAYRA_LIVE.isOn() : true;
-        txt.textContent = on ? 'Vous êtes actuellement EN DIRECT — un badge s\'affiche sur tout le site.' : 'Le live est arrêté.';
-        txt.style.color = on ? '#e23744' : 'var(--ink-soft)';
-        btn.textContent = on ? 'Arrêter le live' : 'Démarrer le live';
+      if(!window.FIREBASE_READY){
+        txt.textContent = 'Live à configurer (ouvrez le studio pour les étapes).';
+        txt.style.color = 'var(--ink-soft)';
+        return;
       }
-      btn.addEventListener('click', ()=>{ if(window.YAYRA_LIVE){ window.YAYRA_LIVE.toggle(); refresh(); } });
-      refresh();
+      const base = window.FIREBASE_CONFIG.databaseURL.replace(/\/$/, '');
+      fetch(base + '/live/active.json').then(r=>r.json()).then(v=>{
+        const on = v === true;
+        txt.textContent = on ? 'Vous êtes EN DIRECT — un badge s\'affiche sur tout le site.' : 'Hors ligne. Ouvrez le studio pour passer en direct.';
+        txt.style.color = on ? '#e23744' : 'var(--ink-soft)';
+      }).catch(()=>{ txt.textContent = 'Hors ligne. Ouvrez le studio pour passer en direct.'; });
     });
   </script>
+  <script src="../assets/js/firebase-config.js"></script>
   <script src="../assets/js/livebadge.js"></script>
 </body>
 </html>
