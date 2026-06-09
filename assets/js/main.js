@@ -9,8 +9,14 @@
   const menuToggle = document.getElementById('menuToggle');
   const navLinks = document.querySelector('.nav-links');
   if(menuToggle && navLinks){
-    menuToggle.addEventListener('click', ()=> navLinks.classList.toggle('open'));
+    menuToggle.addEventListener('click', (e)=>{ e.stopPropagation(); navLinks.classList.toggle('open'); });
     navLinks.querySelectorAll('a').forEach(a=> a.addEventListener('click', ()=> navLinks.classList.remove('open')));
+    // Fermer le menu si on clique en dehors
+    document.addEventListener('click', (e)=>{
+      if(!navLinks.classList.contains('open')) return;
+      if(e.target.closest('.nav-links') || e.target.closest('#menuToggle')) return;
+      navLinks.classList.remove('open');
+    });
   }
 
   // Navbar : ombre légère au scroll
