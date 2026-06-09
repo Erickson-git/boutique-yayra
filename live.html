@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>YAYRA Nail Shop — Live</title>
+  <title>YAYRA Nail Shop — Live & Vidéos</title>
   <meta name="theme-color" content="#000000">
   <link rel="stylesheet" href="assets/css/main.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -12,16 +12,15 @@
 </head>
 <body class="live-body">
   <div class="lv-stage">
-    <video id="remoteVideo" class="lv-video" autoplay playsinline></video>
-
-    <div class="lv-top" id="lvTop" style="display:none;">
-      <span class="lv-live">EN DIRECT</span>
-      <span class="lv-count"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg> <span id="lvCount">0</span></span>
-      <a href="index.html" class="lv-close" aria-label="Fermer"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></a>
+    <div class="lv-top" id="lvTop">
+      <a href="index.html" class="lv-close" aria-label="Accueil"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M15 6l-6 6 6 6"/></svg></a>
+      <span id="lvTitle" style="color:#fff; font-family:var(--serif); letter-spacing:.1em; font-size:15px;">Vidéos</span>
+      <span class="lv-count" id="lvLiveInfo" style="display:none;"><span class="lv-live" style="padding:4px 8px;">EN DIRECT</span> <span id="lvCount">0</span></span>
     </div>
 
+    <video id="remoteVideo" class="lv-video" autoplay playsinline style="display:none;"></video>
     <div class="hearts-live" id="hearts"></div>
-    <div class="lv-chat" id="lvChat"></div>
+    <div class="lv-chat" id="lvChat" style="display:none;"></div>
 
     <div class="lv-actions" id="lvActions" style="display:none;">
       <button class="lv-abtn" id="likeBtn"><span class="fa-ic"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 20s-7-4.6-9.3-8.5C1.2 8.6 2.6 5 6.2 5c2 0 3.2 1.2 3.8 2.2C10.6 6.2 11.8 5 13.8 5c3.6 0 5 3.6 3.5 6.5C19 15.4 12 20 12 20Z"/></svg></span><span id="likeCount">0</span></button>
@@ -39,14 +38,13 @@
       <div>Toucher pour activer le son</div>
     </div>
 
-    <div class="lv-empty" id="lvEmpty">
-      <p class="section-eyebrow">Live YAYRA Nail Shop</p>
-      <h2 id="lvEmptyTitle">Aucun live en cours</h2>
-      <p id="lvEmptyText">La boutique n'est pas en direct pour le moment. Reviens bientôt — tu seras notifié(e) par le badge « EN DIRECT » dès qu'un live démarre.</p>
-      <div style="display:flex; gap:12px; flex-wrap:wrap; justify-content:center;">
-        <a class="btn-gold" href="shop.html">Voir la boutique</a>
-        <a class="btn-light" href="index.html">Accueil</a>
-      </div>
+    <div class="feed" id="lvFeed" style="display:none;"></div>
+
+    <div class="lv-empty" id="lvEmpty" style="display:none;">
+      <p class="section-eyebrow">YAYRA Nail Shop</p>
+      <h2>Bientôt en vidéo</h2>
+      <p>Aucune vidéo pour le moment. Reviens vite !</p>
+      <a class="btn-gold" href="shop.html">Voir la boutique</a>
     </div>
   </div>
 
@@ -54,6 +52,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
   <script src="assets/js/firebase-config.js"></script>
   <script src="assets/js/live-core.js"></script>
+  <script src="assets/js/videos.js"></script>
   <script src="assets/js/live.js"></script>
 </body>
 </html>

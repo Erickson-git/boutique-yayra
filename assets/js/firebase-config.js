@@ -21,6 +21,7 @@ window.FIREBASE_CONFIG = {
   authDomain: "",
   databaseURL: "",   // ex : https://yayra-live-default-rtdb.firebaseio.com
   projectId: "",
+  storageBucket: "", // ex : yayra-live.appspot.com (pour publier des vidéos)
   appId: ""
 };
 window.FIREBASE_READY = !!(window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.databaseURL && window.FIREBASE_CONFIG.databaseURL.indexOf('http') === 0);
