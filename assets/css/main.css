@@ -464,6 +464,24 @@ h1,h2,h3,h4{margin:0; font-weight:500}
 .pd-actions{display:flex; gap:12px; flex-wrap:wrap; margin-top:8px; position:sticky; bottom:0; background:var(--paper); padding-top:12px}
 .pd-actions .btn-gold,.pd-actions .btn-wa{flex:1; justify-content:center; min-width:150px}
 
+/* ---------- Composeur de kit ---------- */
+.kit-cta{display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; background:linear-gradient(135deg, rgba(177,129,58,.1), rgba(231,205,152,.14)); border:1px solid var(--line-2); border-radius:var(--r-md); padding:16px 20px; margin-bottom:24px}
+.kit-cta p{margin:0; font-size:14px; color:var(--ink-soft)}
+.kit-cta strong{color:var(--ink)}
+.kb-body{padding:24px}
+.kb-pick{display:flex; gap:10px; flex-wrap:wrap; margin:14px 0}
+.kb-pick select{flex:1; min-width:200px; padding:12px 14px; border-radius:12px; border:1px solid var(--line-2); background:var(--paper); color:var(--ink)}
+.kb-list{display:flex; flex-direction:column; margin-top:6px}
+.kb-row{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:11px 0; border-bottom:1px solid var(--line); font-size:14px}
+.kb-row .kb-rm{border:0; background:none; color:var(--rose); cursor:pointer; font-size:13px; font-weight:600}
+.kb-empty{color:var(--ink-soft); padding:14px 0}
+.kb-summary{margin-top:16px; padding-top:14px; border-top:1px solid var(--line-2)}
+.kb-line{display:flex; justify-content:space-between; margin:6px 0; font-size:14px}
+.kb-old{color:var(--ink-faint); text-decoration:line-through}
+.kb-save{color:#2e9e5b; font-weight:600}
+.kb-total{font-size:20px; font-weight:600; color:var(--gold)}
+.kit-badge{display:inline-block; background:var(--gold); color:#1a1206; font-size:10.5px; font-weight:700; padding:3px 9px; border-radius:6px; letter-spacing:.05em; text-transform:uppercase}
+
 /* ---------- Flux vidéo plein écran « Live / Reels » (style TikTok) ---------- */
 .live-body{background:#000; color:#fff; overflow:hidden}
 .live-bar{position:fixed; top:0; left:0; right:0; z-index:30; display:flex; align-items:center; justify-content:space-between; padding:14px 18px; background:linear-gradient(rgba(0,0,0,.65),transparent)}

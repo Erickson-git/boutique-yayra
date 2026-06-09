@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YAYRA — Admin · Kits</title>
+  <meta name="theme-color" content="#1c140b">
+  <link rel="stylesheet" href="../assets/css/main.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <nav class="navbar" id="navbar">
+    <div class="nav-logo"><a href="../index.html"><span class="logo-y">Y</span>AYRA <span class="logo-sub">Nail Shop</span></a></div>
+    <ul class="nav-links">
+      <li><a href="admin-orders.html">Commandes</a></li>
+      <li><a href="admin-products.html">Produits</a></li>
+      <li><a href="admin-kits.html" class="active">Kits</a></li>
+      <li><a href="../shop.html">Boutique</a></li>
+    </ul>
+    <div class="nav-actions">
+      <button class="btn-outline" type="button" id="logoutBtn">Se déconnecter</button>
+    </div>
+    <button class="menu-toggle" id="menuToggle" aria-label="Menu"><svg class="ic" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
+  </nav>
+
+  <header class="page-hero">
+    <div class="ph-media" style="background-image:url('../assets/images/net-makeup-palette.jpg')"></div>
+    <div class="container">
+      <p class="section-eyebrow">Administration</p>
+      <h1>Validation des kits</h1>
+      <p>Validez les kits composés (remise automatique −5%) avant leur publication dans la boutique.</p>
+    </div>
+  </header>
+
+  <section class="page">
+    <div class="container" style="max-width:1000px;">
+      <h3 style="font-family:var(--serif); font-size:26px; margin:0 0 16px;">En attente de validation</h3>
+      <div id="pendingWrap"></div>
+
+      <h3 style="font-family:var(--serif); font-size:26px; margin:40px 0 16px;">Kits publiés</h3>
+      <div id="publishedWrap"></div>
+    </div>
+  </section>
+
+  <script src="../assets/js/kits.js"></script>
+  <script src="../assets/js/main.js"></script>
+  <script>
+    if(!localStorage.getItem('yayra_token')) window.location.href = '../client/login.html';
+    document.getElementById('logoutBtn').addEventListener('click', ()=>{ localStorage.removeItem('yayra_token'); window.location.href = '../client/login.html'; });
+    const fmt = (n)=> (parseInt(n,10)||0).toLocaleString('fr-FR') + ' FCFA';
+
+    function kitCard(k, actions){
+      const items = k.items.map(i=> i.name + ' ×' + i.qty).join(', ');
+      return '<div class="product-card" style="margin-bottom:14px;"><div class="product-info">'
+        + '<span class="kit-badge">Kit −5%</span>'
+        + '<h4 style="margin-top:8px;">' + k.name + '</h4>'
+        + '<p>' + items + '</p>'
+        + '<div class="price">' + fmt(k.total) + ' <span class="muted" style="text-decoration:line-through; font-weight:400; font-size:13px;">' + fmt(k.sub) + '</span></div>'
+        + '<div class="product-actions">' + actions + '</div>'
+        + '</div></div>';
+    }
+
+    function render(){
+      const pend = window.YAYRA_KITS.pending();
+      const pub = window.YAYRA_KITS.published();
+      const pw = document.getElementById('pendingWrap');
+      const uw = document.getElementById('publishedWrap');
+      pw.innerHTML = pend.length ? pend.map(k=> kitCard(k, '<button class="small-btn" data-approve="'+k.id+'">Valider & publier</button><button class="small-btn danger" data-reject="'+k.id+'">Refuser</button>')).join('') : '<p class="muted">Aucun kit en attente. Composez-en un depuis la boutique.</p>';
+      uw.innerHTML = pub.length ? pub.map(k=> kitCard(k, '<button class="small-btn danger" data-remove="'+k.id+'">Retirer</button>')).join('') : '<p class="muted">Aucun kit publié pour le moment.</p>';
+      pw.querySelectorAll('[data-approve]').forEach(b=> b.addEventListener('click', ()=>{ window.YAYRA_KITS.approve(b.getAttribute('data-approve')); render(); }));
+      pw.querySelectorAll('[data-reject]').forEach(b=> b.addEventListener('click', ()=>{ if(confirm('Refuser ce kit ?')){ window.YAYRA_KITS.reject(b.getAttribute('data-reject')); render(); } }));
+      uw.querySelectorAll('[data-remove]').forEach(b=> b.addEventListener('click', ()=>{ if(confirm('Retirer ce kit publié ?')){ window.YAYRA_KITS.removePublished(b.getAttribute('data-remove')); render(); } }));
+    }
+    document.addEventListener('DOMContentLoaded', render);
+  </script>
+</body>
+</html>

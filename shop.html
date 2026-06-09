@@ -54,6 +54,13 @@
         <button class="btn-gold" id="searchBtn" type="button">Rechercher</button>
       </div>
 
+      <div class="kit-cta">
+        <p><strong>Composez votre kit sur mesure</strong> — réunissez plusieurs produits et profitez automatiquement de <strong>−5%</strong> sur le total.</p>
+        <button class="btn-gold" type="button" id="openKitBtn"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3l2 6 6 2-6 2-2 6-2-6-6-2 6-2z"/></svg> Composer un kit</button>
+      </div>
+
+      <div id="publishedKits"></div>
+
       <div class="products-grid" id="productsGrid"></div>
 
       <div class="product-card" style="grid-column:span 12; margin-top:28px;">
@@ -141,6 +148,8 @@
           <div class="pd-stock"><span class="dotg"></span> <span id="pdStock"></span></div>
           <p class="pd-desc" id="pdDesc"></p>
           <div class="pd-meta" id="pdMeta"></div>
+          <button class="small-btn" id="pdAdvice" type="button" style="width:fit-content;"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3l2 6 6 2-6 2-2 6-2-6-6-2 6-2z"/></svg> Conseil IA automatique</button>
+          <div id="pdAdviceBox" style="line-height:1.6; font-size:14px;"></div>
           <div class="pd-qty">
             <button type="button" id="pdMinus" aria-label="Moins">−</button>
             <input id="pdQty" type="number" min="1" value="1" />
@@ -155,7 +164,35 @@
     </div>
   </div>
 
+  <div class="pd-modal" id="kbModal" aria-hidden="true">
+    <div class="pd-sheet" role="dialog" aria-modal="true" style="max-width:620px;">
+      <button class="pd-close" id="kbClose" aria-label="Fermer"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      <div class="kb-body">
+        <p class="section-eyebrow" style="margin-bottom:6px;">Composeur · −5%</p>
+        <h2 class="pd-title" style="margin-bottom:4px;">Créer un kit</h2>
+        <p class="muted" style="margin:0;">Ajoutez des produits, la remise de 5% est appliquée automatiquement. Le kit est publié après validation.</p>
+        <div class="kb-pick">
+          <select id="kbSelect"><option value="">Choisir un produit…</option></select>
+          <button class="btn-outline" type="button" id="kbAdd">Ajouter</button>
+        </div>
+        <div class="kb-list" id="kbList"><p class="kb-empty">Aucun produit dans le kit.</p></div>
+        <div class="kb-summary">
+          <div class="kb-line"><span>Sous-total</span><span class="kb-old" id="kbSub">0 FCFA</span></div>
+          <div class="kb-line"><span>Remise kit (−5%)</span><span class="kb-save" id="kbSave">0 FCFA</span></div>
+          <div class="kb-line"><span><strong>Total du kit</strong></span><span class="kb-total" id="kbTotal">0 FCFA</span></div>
+        </div>
+        <input id="kbName" placeholder="Nom du kit (ex : Coffret Manucure Éclat)" style="margin-top:14px; width:100%; padding:13px 16px; border-radius:12px; border:1px solid var(--line-2); background:var(--paper); color:var(--ink);" />
+        <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:14px;">
+          <button class="btn-gold" type="button" id="kbSubmit" style="flex:1; justify-content:center;">Soumettre pour validation</button>
+        </div>
+        <p class="muted" id="kbMsg" style="margin:12px 0 0;" aria-live="polite"></p>
+      </div>
+    </div>
+  </div>
+
   <script src="assets/js/catalog.js"></script>
+  <script src="assets/js/advisor.js"></script>
+  <script src="assets/js/kits.js"></script>
   <script src="assets/js/main.js"></script>
   <script src="assets/js/cart.js"></script>
   <script>
@@ -179,9 +216,13 @@
       wa.href = 'https://wa.me/22897498685?text=' + encodeURIComponent('Bonjour YAYRA ! Je souhaite commander : ' + (p.name||'') + ' (' + currencyFCFA(p.price_fcfa) + ').');
       const add = document.getElementById('pdAdd');
       add.style.display = inStock ? '' : 'none';
+      document.getElementById('pdAdviceBox').innerHTML = '';
       pdModal.classList.add('open');
       document.body.style.overflow = 'hidden';
     }
+    document.getElementById('pdAdvice').addEventListener('click', ()=>{
+      if(pdCurrent && window.YAYRA_ADVISOR){ document.getElementById('pdAdviceBox').innerHTML = window.YAYRA_ADVISOR.advise(pdCurrent); }
+    });
     function closeDetail(){ pdModal.classList.remove('open'); document.body.style.overflow=''; }
     document.getElementById('pdClose').addEventListener('click', closeDetail);
     pdModal.addEventListener('click', (e)=>{ if(e.target===pdModal) closeDetail(); });
@@ -216,22 +257,31 @@
       }).catch(()=> fillCategories(window.YAYRA_CATALOG ? window.YAYRA_CATALOG.categories : []));
     }
 
-    function aiAskInfoProduct(productId){
+    function findProduct(id){
+      return (window.YAYRA_CATALOG ? window.YAYRA_CATALOG.products.find(p=> String(p.id)===String(id)) : null);
+    }
+    function aiAskInfoProduct(productOrId){
       const msg = document.getElementById('aiMsg');
       const ans = document.getElementById('aiAnswer');
-      msg.textContent = 'Recherche du conseil en cours...';
+      const prod = (typeof productOrId === 'object') ? productOrId : findProduct(productOrId);
+      msg.textContent = 'Analyse du produit en cours...';
       ans.textContent = '';
-      document.getElementById('panier').scrollIntoView({behavior:'smooth', block:'nearest'});
+      document.getElementById('aiMsg').scrollIntoView({behavior:'smooth', block:'center'});
+      // Conseil instantané via le conseiller automatique (sans backend)
+      if(prod && window.YAYRA_ADVISOR){
+        setTimeout(()=>{ msg.textContent=''; ans.innerHTML = window.YAYRA_ADVISOR.advise(prod); }, 250);
+        return;
+      }
+      // Repli backend si conseiller indisponible
       return fetch('api/ai.php?action=info_product', {
         method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ product_id: productId, action: 'info_product', question: '' })
+        body: JSON.stringify({ product_id: (prod?prod.id:productOrId), action: 'info_product', question: '' })
       }).then(r=>r.json()).then(d=>{
         if(!d.ok || !d.answer) throw 0;
-        msg.textContent = '';
-        ans.innerHTML = d.answer.replace(/\n/g,'<br/>');
+        msg.textContent = ''; ans.innerHTML = d.answer.replace(/\n/g,'<br/>');
       }).catch(()=>{
         msg.textContent = '';
-        ans.innerHTML = 'Pour un conseil personnalisé sur ce produit, écrivez-nous sur <a href="https://wa.me/22897498685?text=Bonjour+YAYRA+!+J%27ai+une+question+sur+un+produit." style="color:var(--gold)" target="_blank" rel="noopener">WhatsApp</a> — réponse rapide et gratuite.';
+        ans.innerHTML = 'Pour un conseil personnalisé, écrivez-nous sur <a href="https://wa.me/22897498685?text=Bonjour+YAYRA+!" style="color:var(--gold)" target="_blank" rel="noopener">WhatsApp</a>.';
       });
     }
 
@@ -271,7 +321,7 @@
             </div>`;
           grid.appendChild(wrap);
           const btn = wrap.querySelector('[data-ai-info]');
-          if(btn) btn.addEventListener('click', (e)=>{ e.stopPropagation(); aiAskInfoProduct(p.id); });
+          if(btn) btn.addEventListener('click', (e)=>{ e.stopPropagation(); aiAskInfoProduct(p); });
           wrap.addEventListener('click', (e)=>{ if(e.target.closest('button,a')) return; openDetail(p); });
         });
       });
@@ -299,7 +349,73 @@
       box.querySelectorAll('[data-qty-input]').forEach(inp=> inp.addEventListener('change', ()=>{ window.YayaCart.setQty(inp.getAttribute('data-pid'), inp.value); renderCart(); window.YayaCart.syncCartCount(); }));
     }
 
+    // ---------- Composeur de kit ----------
+    const kbModal = document.getElementById('kbModal');
+    let kbItems = [];
+    function kbOpen(){
+      const sel = document.getElementById('kbSelect');
+      if(sel.options.length <= 1){
+        (window.YAYRA_CATALOG ? window.YAYRA_CATALOG.products : []).forEach(p=>{
+          const o = document.createElement('option'); o.value = p.id; o.textContent = p.name + ' — ' + currencyFCFA(p.price_fcfa); sel.appendChild(o);
+        });
+      }
+      kbModal.classList.add('open'); document.body.style.overflow = 'hidden';
+    }
+    function kbCloseFn(){ kbModal.classList.remove('open'); document.body.style.overflow = ''; }
+    function kbRender(){
+      const list = document.getElementById('kbList');
+      if(!kbItems.length){ list.innerHTML = '<p class="kb-empty">Aucun produit dans le kit.</p>'; }
+      else {
+        list.innerHTML = kbItems.map((it,idx)=> '<div class="kb-row"><span>'+it.name+' <span class="muted">×'+it.qty+'</span></span><span>'+currencyFCFA(it.price_fcfa*it.qty)+' &nbsp;<button class="kb-rm" data-i="'+idx+'">Retirer</button></span></div>').join('');
+        list.querySelectorAll('.kb-rm').forEach(b=> b.addEventListener('click', ()=>{ kbItems.splice(parseInt(b.dataset.i,10),1); kbRender(); }));
+      }
+      const pr = window.YAYRA_KITS.price(kbItems);
+      document.getElementById('kbSub').textContent = currencyFCFA(pr.sub);
+      document.getElementById('kbSave').textContent = '− ' + currencyFCFA(pr.saved);
+      document.getElementById('kbTotal').textContent = currencyFCFA(pr.total);
+    }
+    document.getElementById('openKitBtn').addEventListener('click', kbOpen);
+    document.getElementById('kbClose').addEventListener('click', kbCloseFn);
+    kbModal.addEventListener('click', (e)=>{ if(e.target===kbModal) kbCloseFn(); });
+    document.getElementById('kbAdd').addEventListener('click', ()=>{
+      const sel = document.getElementById('kbSelect'); const id = sel.value; if(!id) return;
+      const p = findProduct(id); if(!p) return;
+      const ex = kbItems.find(x=> String(x.id)===String(id));
+      if(ex) ex.qty++; else kbItems.push({ id:p.id, name:p.name, price_fcfa:p.price_fcfa, qty:1 });
+      kbRender();
+    });
+    document.getElementById('kbSubmit').addEventListener('click', ()=>{
+      const msg = document.getElementById('kbMsg');
+      if(kbItems.length < 2){ msg.style.color = 'var(--rose)'; msg.textContent = 'Ajoutez au moins 2 produits au kit.'; return; }
+      const name = document.getElementById('kbName').value.trim() || 'Kit YAYRA';
+      window.YAYRA_KITS.submit({ name, items: kbItems.slice() });
+      msg.style.color = 'var(--gold)'; msg.textContent = 'Kit soumis ✓ — il sera publié après validation dans l\'espace admin.';
+      kbItems = []; document.getElementById('kbName').value = ''; kbRender();
+      setTimeout(kbCloseFn, 1700);
+    });
+
+    // ---------- Coffrets validés (publiés) ----------
+    function renderPublishedKits(){
+      const host = document.getElementById('publishedKits'); if(!host) return;
+      const kits = window.YAYRA_KITS ? window.YAYRA_KITS.published() : [];
+      if(!kits.length){ host.innerHTML = ''; return; }
+      let html = '<h3 style="font-family:var(--serif); font-size:26px; margin:0 0 16px;">Coffrets & Kits</h3><div class="products-grid" style="margin-bottom:36px;">';
+      kits.forEach(k=>{
+        const itemsTxt = k.items.map(i=>i.name).join(', ');
+        html += '<div class="product-card"><div class="product-info"><span class="kit-badge">Kit −5%</span><h4 style="margin-top:8px;">'+k.name+'</h4><p>'+itemsTxt+'</p><div class="price">'+currencyFCFA(k.total)+' <span class="muted" style="text-decoration:line-through; font-weight:400; font-size:13px;">'+currencyFCFA(k.sub)+'</span></div><div class="product-actions"><button class="small-btn" data-kit-add="'+k.id+'">Ajouter au panier</button><a class="small-btn" target="_blank" rel="noopener" href="https://wa.me/22897498685?text='+encodeURIComponent('Bonjour YAYRA ! Je veux le '+k.name+' a '+currencyFCFA(k.total))+'">Commander</a></div></div></div>';
+      });
+      html += '</div>';
+      host.innerHTML = html;
+      host.querySelectorAll('[data-kit-add]').forEach(b=> b.addEventListener('click', ()=>{
+        const k = kits.find(x=> x.id === b.getAttribute('data-kit-add')); if(!k) return;
+        if(window.YayaCart){ window.YayaCart.add({ product_id:'kit-'+k.id, name:k.name+' (kit)', price_fcfa:k.total, qty:1 }); window.YayaCart.syncCartCount(); }
+        if(typeof renderCart==='function') renderCart();
+        b.textContent = 'Ajouté ✓'; setTimeout(()=> b.textContent='Ajouter au panier', 1100);
+      }));
+    }
+
     document.addEventListener('DOMContentLoaded', async ()=>{
+      renderPublishedKits();
       await loadCategories();
       const params = new URLSearchParams(location.search);
       await loadProducts({category: params.get('cat') || ''});
