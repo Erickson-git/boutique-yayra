@@ -26,10 +26,14 @@
 
   <section class="page">
     <div class="studio-wrap">
+      <a href="../admin/index.html" class="btn-ghost" style="width:fit-content; margin-bottom:16px;"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M15 6l-6 6 6 6"/></svg> Retour à l'administration</a>
       <div class="section-header" style="margin-bottom:18px;">
         <p class="section-eyebrow">Studio</p>
         <h2 class="section-title">Passer en direct</h2>
         <p class="section-sub">Diffusez en direct depuis votre caméra. Dès que vous démarrez, le badge « EN DIRECT » apparaît sur tout le site et vos clientes peuvent regarder et commenter en temps réel.</p>
+      </div>
+      <div class="product-card" style="margin-bottom:18px; border-color:rgba(226,55,68,.35);">
+        <div class="product-info"><p class="muted" style="margin:0;"><strong style="color:#e23744;">Important :</strong> restez sur cette page pendant tout le direct. Si vous la quittez ou la fermez, la diffusion vidéo s'arrête. Pour regarder en parallèle, ouvrez la page live sur un <strong>autre appareil</strong> ou un <strong>autre onglet</strong>.</p></div>
       </div>
 
       <div id="cfgWarn" class="product-card" style="display:none; margin-bottom:18px;">
@@ -101,6 +105,7 @@
         $('stStatus').textContent = live ? 'EN DIRECT' : 'Hors ligne';
         $('stStatus').style.color = live ? '#e23744' : '';
         $('goLiveBtn').style.display = live ? 'none' : '';
+        $('goLiveBtn').textContent = 'Passer en direct';
         $('stopLiveBtn').style.display = live ? '' : 'none';
         $('flipBtn').style.display = live ? '' : 'none';
       }
@@ -181,8 +186,18 @@
         LIVE.ref('live/chat').push({ n:'YAYRA Nail Shop', t, ts: LIVE.now() }); i.value='';
       });
 
-      // Reprise d'état si déjà en direct (ex. rechargement)
-      LIVE.ref('live/active').once('value', (s)=>{ if(s.val()===true){ /* on laisse l'hôte relancer proprement */ } });
+      // Si un direct est marqué « actif » au chargement de la page, c'est que
+      // la diffusion a été interrompue (page quittée) : proposer de reprendre/arrêter.
+      LIVE.ref('live/active').once('value', (s)=>{
+        if(s.val() === true && !live){
+          $('stStatus').textContent = 'Interrompu';
+          $('stStatus').style.color = '#e23744';
+          $('stopLiveBtn').style.display = '';
+          $('goLiveBtn').textContent = 'Reprendre le direct';
+          msg.style.color = '#e23744';
+          msg.textContent = "Un direct est marqué actif, mais la diffusion est coupée (la page a été quittée). Reprenez le direct, ou arrêtez-le.";
+        }
+      });
       setUI();
     }
   </script>
