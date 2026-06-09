@@ -17,11 +17,9 @@
    et aucun badge ne s'affiche (aucune simulation).
    ===================================================================== */
 window.FIREBASE_CONFIG = {
-  apiKey: "",
-  authDomain: "",
-  databaseURL: "",   // ex : https://yayra-live-default-rtdb.firebaseio.com
-  projectId: "",
-  storageBucket: "", // ex : yayra-live.appspot.com (pour publier des vidéos)
-  appId: ""
+  authDomain: "yayra-live.firebaseapp.com",
+  databaseURL: "https://yayra-live-default-rtdb.firebaseio.com",
+  projectId: "yayra-live",
+  storageBucket: "yayra-live.appspot.com"
 };
 window.FIREBASE_READY = !!(window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.databaseURL && window.FIREBASE_CONFIG.databaseURL.indexOf('http') === 0);
