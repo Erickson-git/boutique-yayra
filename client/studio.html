@@ -83,7 +83,13 @@
 
     if(!window.FIREBASE_READY || !LIVE.init()){
       $('cfgWarn').style.display = '';
-      $('goLiveBtn').disabled = true;
+      const b = $('goLiveBtn');
+      b.textContent = 'Live à configurer';
+      b.addEventListener('click', ()=>{
+        $('cfgWarn').scrollIntoView({ behavior:'smooth', block:'center' });
+        msg.style.color = 'var(--rose)';
+        msg.textContent = "Le live doit d'abord être configuré (Firebase, gratuit). Voir l'encadré ci-dessus.";
+      });
     } else {
       const preview = $('preview');
       let localStream = null, live = false, facing = 'user';
