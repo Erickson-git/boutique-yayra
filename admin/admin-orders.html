@@ -63,7 +63,7 @@
 
         let html = '<div class="table-wrap"><table class="table"><thead><tr><th>ID</th><th>Client</th><th>Total</th><th>Statut</th><th>Date</th></tr></thead><tbody>';
         for(const o of orders){
-          html += `<tr><td>${o.id}</td><td>${o.full_name || ''}<br/><span style="color:var(--muted); font-weight:700;">${o.phone || ''}</span></td><td>${(parseInt(o.total_fcfa,10)||0).toLocaleString('fr-FR')} FCFA</td><td>${o.status}</td><td>${o.created_at || ''}</td></tr>`;
+          html += `<tr><td>${o.id}</td><td>${o.full_name || ''}<br/><span style="color:var(--ink-soft); font-weight:700;">${o.phone || ''}</span></td><td>${(parseInt(o.total_fcfa,10)||0).toLocaleString('fr-FR')} FCFA</td><td>${o.status}</td><td>${o.created_at || ''}</td></tr>`;
         }
         html += '</tbody></table></div>';
         wrap.innerHTML = html;

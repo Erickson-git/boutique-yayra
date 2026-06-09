@@ -3,58 +3,85 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>YAYRA – Localisation & Livraison</title>
+  <title>YAYRA — Adresses & Livraison</title>
+  <meta name="description" content="Nos deux boutiques à Lomé (Atiégou & Agoè) et notre livraison sous 24h.">
+  <meta name="theme-color" content="#1c140b">
   <link rel="stylesheet" href="assets/css/main.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
 </head>
 <body>
   <div class="promo-bar">
-    ✦ <strong>Livraison à Lomé</strong> sous 24h · Paiement à la livraison · <a href="https://wa.me/22897498685?text=Bonjour+YAYRA+!">Commandez sur WhatsApp →</a>
+    Livraison à Lomé sous 24h<span class="dot">•</span>Paiement à la livraison<span class="dot">•</span><a href="https://wa.me/22897498685?text=Bonjour+YAYRA+!">Commander sur WhatsApp</a>
   </div>
 
-  <nav class="navbar">
+  <nav class="navbar" id="navbar">
     <div class="nav-logo"><a href="index.html"><span class="logo-y">Y</span>AYRA</a></div>
     <ul class="nav-links">
       <li><a href="index.html">Accueil</a></li>
       <li><a href="shop.html">Boutique</a></li>
       <li><a href="services.html">Services</a></li>
       <li><a href="ateliers.html">Ateliers</a></li>
+      <li><a href="locations.html" class="active">Adresses</a></li>
       <li><a href="contact.html">Contact</a></li>
     </ul>
     <div class="nav-actions">
       <a href="client/login.html" class="btn-outline">Mon Compte</a>
-      <a href="shop.html#panier" class="btn-cart" aria-label="Panier"><span class="cart-icon">🛍</span><span id="cart-count">0</span></a>
+      <a href="shop.html#panier" class="btn-cart" aria-label="Panier">
+        <span class="cart-icon"><svg class="ic" viewBox="0 0 24 24"><path d="M6 8h12l1 12H5L6 8Z"/><path d="M9 8a3 3 0 0 1 6 0"/></svg></span>
+        <span id="cart-count">0</span>
+      </a>
     </div>
-    <button class="menu-toggle" id="menuToggle">☰</button>
+    <button class="menu-toggle" id="menuToggle" aria-label="Menu"><svg class="ic" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
   </nav>
 
-  <section class="page">
-    <div class="container" style="max-width:980px;">
-      <div class="section-header">
-        <p class="section-eyebrow">Livraison</p>
-        <h2 class="section-title">Localisation & suivi</h2>
-        <p class="section-sub">Carte (démo) + messages automatiques côté client selon vos commandes.</p>
+  <header class="page-hero">
+    <div class="ph-media" style="background-image:url('assets/images/net-lotion-linen.jpg')"></div>
+    <div class="container">
+      <p class="section-eyebrow">Adresses & Livraison</p>
+      <h1>Retrouvez-nous à Lomé</h1>
+      <p>Deux boutiques pour vous accueillir, et une livraison sous 24h partout dans la ville.</p>
+    </div>
+  </header>
+
+  <section class="locations-section">
+    <div class="container">
+      <div class="locations-grid">
+        <div class="loc-card" data-reveal>
+          <div class="loc-number">01</div>
+          <h3>Boutique Atiégou</h3>
+          <p>À côté de la Mairie du Golfe 1</p>
+          <div class="loc-info">
+            <div class="loc-row"><svg class="ic" viewBox="0 0 24 24"><path d="M12 21s7-6.3 7-11a7 7 0 0 0-14 0c0 4.7 7 11 7 11Z"/><circle cx="12" cy="10" r="2.4"/></svg> Atiégou, Lomé</div>
+            <div class="loc-row"><svg class="ic" viewBox="0 0 24 24"><path d="M5 4h4l2 5-3 2a12 12 0 0 0 5 5l2-3 5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z"/></svg> +228 97 49 86 85</div>
+            <div class="loc-row"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3 2"/></svg> Lun – Sam : 8h00 – 20h00</div>
+          </div>
+          <a href="https://wa.me/22897498685?text=Bonjour+YAYRA+!" class="btn-outline">Itinéraire / Contact</a>
+        </div>
+        <div class="loc-card lc-gold" data-reveal>
+          <div class="loc-number">02</div>
+          <h3>Boutique Agoè</h3>
+          <p>Non loin de la Pharmacie Shalom</p>
+          <div class="loc-info">
+            <div class="loc-row"><svg class="ic" viewBox="0 0 24 24"><path d="M12 21s7-6.3 7-11a7 7 0 0 0-14 0c0 4.7 7 11 7 11Z"/><circle cx="12" cy="10" r="2.4"/></svg> Agoè-CACavéli, Lomé</div>
+            <div class="loc-row"><svg class="ic" viewBox="0 0 24 24"><path d="M5 4h4l2 5-3 2a12 12 0 0 0 5 5l2-3 5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z"/></svg> +228 91 01 81 81</div>
+            <div class="loc-row"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3 2"/></svg> Lun – Sam : 8h00 – 20h00</div>
+          </div>
+          <a href="https://wa.me/22891018181?text=Bonjour+YAYRA+!" class="btn-gold">Itinéraire / Contact</a>
+        </div>
       </div>
 
-      <div class="products-grid" style="grid-template-columns: 1fr; gap: 18px;">
-        <div class="product-card" style="flex-direction:column; align-items:stretch;">
-          <h3 style="margin:0 0 12px;">Carte de livraison</h3>
-          <div style="border-radius:18px; overflow:hidden; border:1px solid rgba(17,18,23,.04); background:var(--soft);">
-            <iframe
-              title="Carte Lomé"
-              width="100%"
-              height="380"
-              style="border:0; display:block;"
-              src="https://www.google.com/maps?q=Lom%C3%A9%20Togo&output=embed"
-              loading="lazy"
-              referrerpolicy="no-referrer-when-downgrade">
-            </iframe>
-          </div>
-          <p class="muted" style="margin-top:12px;">À adapter avec la position exacte du livreur (ou coordonnées) via API future.</p>
-        </div>
+      <div style="margin-top:40px; border-radius:var(--r-lg); overflow:hidden; border:1px solid var(--line);" data-reveal>
+        <iframe title="Carte Lomé" width="100%" height="420" style="border:0; display:block;"
+          src="https://www.google.com/maps?q=Lom%C3%A9%20Togo&output=embed" loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"></iframe>
+      </div>
 
-        <div class="product-card" style="flex-direction:column; align-items:stretch;">
-          <h3 style="margin:0 0 12px;">Messages automatiques (démo)</h3>
-          <p class="muted" style="margin-top:0;">Ce bloc simule la file d’attente : préparé → en cours → livré.</p>
+      <div class="product-card" style="grid-column:span 12; margin-top:32px;" data-reveal>
+        <div class="product-info">
+          <h4 style="font-size:22px;">Suivi de livraison</h4>
+          <p class="muted" style="margin:0 0 14px;">Aperçu du parcours de votre commande : préparée, en route, livrée.</p>
           <div id="autoMsgBox" style="display:flex; flex-direction:column; gap:10px;"></div>
         </div>
       </div>
@@ -65,122 +92,94 @@
     <div class="container">
       <div class="footer-grid">
         <div class="footer-brand">
-          <div class="footer-logo"><span class="logo-y">Y</span>AYRA Nail Shop</div>
-          <p>L'élégance de Lomé à votre portée. Beauté, soin et confiance pour la femme togolaise moderne.</p>
+          <div class="footer-logo"><span class="logo-y">Y</span>AYRA</div>
+          <p>Maison de beauté à Lomé : cosmétiques, onglerie et mobilier professionnel. La beauté, le soin et la confiance pour la femme togolaise moderne.</p>
           <div class="footer-social">
-            <a href="#" class="social-link">📘</a>
-            <a href="#" class="social-link">📸</a>
-            <a href="https://wa.me/22897498685" class="social-link">💬</a>
+            <a href="#" class="social-link" aria-label="Instagram"><svg class="ic" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/></svg></a>
+            <a href="#" class="social-link" aria-label="Facebook"><svg class="ic" viewBox="0 0 24 24"><path d="M14.5 8.5H17V5.5h-2.5A3.5 3.5 0 0 0 11 9v2H9v3h2v6.5h3V14h2.2l.8-3H14V9.2a.7.7 0 0 1 .5-.7Z"/></svg></a>
+            <a href="https://wa.me/22897498685" class="social-link" aria-label="WhatsApp"><svg class="ic" viewBox="0 0 24 24"><path d="M20.5 11.5a8.5 8.5 0 0 1-12.7 7.4L3.5 20l1.1-4.2a8.5 8.5 0 1 1 15.9-4.3Z"/><path d="M8.5 8.8c0 4 2.7 6.7 6.7 6.7"/></svg></a>
           </div>
         </div>
         <div class="footer-col">
-          <h4>Navigation</h4>
+          <h4>Boutique</h4>
           <ul>
-            <li><a href="index.html">Accueil</a></li>
-            <li><a href="shop.html">Boutique</a></li>
-            <li><a href="services.html">Services</a></li>
-            <li><a href="ateliers.html">Ateliers</a></li>
-            <li><a href="contact.html">Contact</a></li>
+            <li><a href="shop.html?cat=ongles">Onglerie</a></li>
+            <li><a href="shop.html?cat=kits">Cosmétiques</a></li>
+            <li><a href="shop.html?cat=visage">Soins visage</a></li>
+            <li><a href="shop.html?cat=meubles">Mobilier pro</a></li>
+            <li><a href="shop.html">Tout voir</a></li>
           </ul>
         </div>
         <div class="footer-col">
-          <h4>Mon Espace</h4>
+          <h4>Maison</h4>
           <ul>
-            <li><a href="client/login.html">Se connecter</a></li>
-            <li><a href="client/register.html">Créer un compte</a></li>
-            <li><a href="client/dashboard.html">Mon tableau de bord</a></li>
-            <li><a href="client/orders.html">Mes commandes</a></li>
-            <li><a href="client/appointments.html">Mes rendez-vous</a></li>
+            <li><a href="services.html">Services</a></li>
+            <li><a href="ateliers.html">Ateliers</a></li>
+            <li><a href="locations.html">Adresses</a></li>
+            <li><a href="contact.html">Contact</a></li>
+            <li><a href="client/login.html">Mon compte</a></li>
           </ul>
         </div>
         <div class="footer-col">
           <h4>Contact</h4>
           <div class="footer-contact">
-            <p>📞 +228 97 49 86 85</p>
-            <p>📞 +228 91 01 81 81</p>
-            <p>📞 +228 70 39 25 39</p>
-            <p>✉️ yayranailshop146@gmail.com</p>
+            <p><svg class="ic" viewBox="0 0 24 24"><path d="M5 4h4l2 5-3 2a12 12 0 0 0 5 5l2-3 5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z"/></svg> +228 97 49 86 85</p>
+            <p><svg class="ic" viewBox="0 0 24 24"><path d="M5 4h4l2 5-3 2a12 12 0 0 0 5 5l2-3 5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z"/></svg> +228 91 01 81 81</p>
+            <p><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3.5 7l8.5 6 8.5-6"/></svg> yayranailshop146@gmail.com</p>
           </div>
         </div>
       </div>
       <div class="footer-bottom">
-        <p>© 2025 YAYRA Nail Shop — Tous droits réservés | Lomé, Togo</p>
-        <div class="footer-legal">
-          <a href="#">Politique de confidentialité</a>
-          <a href="#">Conditions générales</a>
-        </div>
+        <p>© 2026 YAYRA — Tous droits réservés · Lomé, Togo</p>
+        <div class="footer-legal"><a href="#">Confidentialité</a><a href="#">Conditions générales</a></div>
       </div>
     </div>
   </footer>
 
-  <a href="https://wa.me/22897498685?text=Bonjour+YAYRA+Nail+Shop+!" class="whatsapp-float" target="_blank" rel="noopener">
-    <span>💬</span>
-    <div class="wa-tooltip">Commandez sur WhatsApp !</div>
+  <a href="https://wa.me/22897498685?text=Bonjour+YAYRA+!" class="whatsapp-float" target="_blank" rel="noopener" aria-label="WhatsApp">
+    <svg class="ic" viewBox="0 0 24 24"><path d="M20.5 11.5a8.5 8.5 0 0 1-12.7 7.4L3.5 20l1.1-4.2a8.5 8.5 0 1 1 15.9-4.3Z"/><path d="M8.5 8.8c0 4 2.7 6.7 6.7 6.7"/></svg>
+    <span class="wa-tooltip">Commander sur WhatsApp</span>
   </a>
 
   <script src="assets/js/main.js"></script>
+  <script src="assets/js/cart.js"></script>
   <script>
-    // Démo : génération de messages selon “statut” local (sera relié à vos commandes + API plus tard)
     const messages = [
-      {status:'preparing', text:'Commande reçue. Préparation en cours…'},
-      {status:'onway', text:'Votre livreur est en route…'},
-      {status:'delivered', text:'Commande livrée. Merci pour votre confiance ✨'}
+      {text:'Commande reçue. Préparation en cours.'},
+      {text:'Votre livreur est en route.'},
+      {text:'Commande livrée. Merci pour votre confiance.'}
     ];
-
     function getDemoProgress(){
-      try{
-        const raw = localStorage.getItem('yayra_delivery_demo_progress') || '0';
-        const n = parseInt(raw, 10);
-        return isNaN(n) ? 0 : Math.max(0, Math.min(2, n));
-      }catch(e){
-        return 0;
-      }
+      try{ const n = parseInt(localStorage.getItem('yayra_delivery_demo_progress')||'0',10); return isNaN(n)?0:Math.max(0,Math.min(2,n)); }
+      catch(e){ return 0; }
     }
-
-    function setDemoProgress(next){
-      localStorage.setItem('yayra_delivery_demo_progress', String(next));
-    }
-
+    function setDemoProgress(n){ localStorage.setItem('yayra_delivery_demo_progress', String(n)); }
     function renderAutoMessages(){
       const box = document.getElementById('autoMsgBox');
       if(!box) return;
       box.innerHTML = '';
-
       const progress = getDemoProgress();
       messages.forEach((m, idx)=>{
         const isActive = idx <= progress;
         const el = document.createElement('div');
-        el.style.border = '1px solid rgba(17,18,23,.04)';
-        el.style.background = isActive ? 'linear-gradient(180deg, rgba(181,134,43,.08), rgba(255,245,224,.02))' : 'var(--soft)';
-        el.style.borderRadius = '16px';
-        el.style.padding = '12px 14px';
-        el.style.fontWeight = '900';
-        el.style.color = isActive ? 'var(--gold2)' : 'var(--muted)';
-        el.textContent = (isActive ? '✓ ' : '• ') + m.text;
+        el.style.border = '1px solid var(--line)';
+        el.style.background = isActive ? 'rgba(177,129,58,.08)' : 'transparent';
+        el.style.borderRadius = '14px';
+        el.style.padding = '13px 16px';
+        el.style.fontWeight = '500';
+        el.style.color = isActive ? 'var(--gold)' : 'var(--ink-soft)';
+        el.textContent = (isActive ? '— ' : '· ') + m.text;
         box.appendChild(el);
       });
-
       if(progress < 2){
-        const hint = document.createElement('button');
-        hint.className = 'btn-gold';
-        hint.type = 'button';
-        hint.style.marginTop = '6px';
-        hint.textContent = 'Simuler l’avancement (démo)';
-        hint.onclick = ()=>{
-          setDemoProgress(progress + 1);
-          renderAutoMessages();
-        };
-        box.appendChild(hint);
-      }else{
-        const el = document.createElement('div');
-        el.className = 'muted';
-        el.textContent = 'Statut complet (démo).';
-        box.appendChild(el);
+        const btn = document.createElement('button');
+        btn.className = 'btn-outline'; btn.type = 'button'; btn.style.marginTop = '6px';
+        btn.textContent = 'Simuler l’avancement';
+        btn.onclick = ()=>{ setDemoProgress(progress + 1); renderAutoMessages(); };
+        box.appendChild(btn);
       }
     }
-
     document.addEventListener('DOMContentLoaded', renderAutoMessages);
   </script>
 </body>
 </html>
-

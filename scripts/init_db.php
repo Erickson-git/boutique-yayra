@@ -134,19 +134,19 @@ if ($hasProducts === 0) {
   // Colonnes : [slug, sku, nom, description, prix_fcfa, image, vedette, stock, dispo]
   $seed = [
     // Ongles
-    ['ongles', 'YAY-NAIL-001', 'Nail Art Prestige', 'Design élégant et finitions premium réalisés à la main.', 3500, 'assets/images/nails-art.jpg', 1, 25, 1],
+    ['ongles', 'YAY-NAIL-001', 'Nail Art Prestige', 'Design élégant et finitions premium réalisés à la main.', 3500, 'assets/images/net-nailart-amber.jpg', 1, 25, 1],
     ['ongles', 'YAY-NAIL-002', 'Kit Ongles Gel Luxe', 'Kit complet gel UV pour un rendu salon à domicile.', 12000, 'assets/images/gel-nail-kit.jpg', 1, 14, 1],
     ['ongles', 'YAY-NAIL-003', 'Kit Manucure & Pédicure Pro', 'L\'essentiel professionnel pour des mains et pieds impeccables.', 9500, 'assets/images/manicure-kit.jpg', 0, 18, 1],
-    ['ongles', 'YAY-NAIL-004', 'Collection Nails Automne', 'Teintes chaudes tendance pour la saison.', 4000, 'assets/images/nails-fall.jpg', 0, 12, 1],
+    ['ongles', 'YAY-NAIL-004', 'Mains Sublimées', 'Soin et pose pour des mains élégantes et soignées.', 4000, 'assets/images/net-hands-luxe.jpg', 0, 12, 1],
 
-    // Kits beauté
-    ['kits', 'YAY-KIT-001', 'Kit Beauté Éclat Vitamine C', 'Routine soin complète pour une peau radieuse et unifiée.', 15000, 'assets/images/vitamin-c-kit.jpg', 1, 10, 1],
-    ['kits', 'YAY-KIT-002', 'Kit Maquillage All-in-One', 'Palette et accessoires pour un look complet, partout.', 18000, 'assets/images/makeup-kit-allinone.jpg', 1, 8, 1],
-    ['kits', 'YAY-KIT-003', 'Coffret Découverte Beauté', 'Sélection de nos best-sellers en format découverte.', 11000, 'assets/images/beauty-flatlay.jpg', 0, 9, 1],
+    // Cosmétiques / Kits
+    ['kits', 'YAY-KIT-001', 'Kit Beauté Éclat Vitamine C', 'Routine soin complète pour une peau radieuse et unifiée.', 15000, 'assets/images/net-skincare-flatlay.jpg', 1, 10, 1],
+    ['kits', 'YAY-KIT-002', 'Kit Maquillage All-in-One', 'Pinceaux et indispensables pour un look complet, partout.', 18000, 'assets/images/net-makeup-brushes.jpg', 1, 8, 1],
+    ['kits', 'YAY-KIT-003', 'Coffret Maquillage Prestige', 'Palette et teint, une sélection de nos best-sellers.', 11000, 'assets/images/net-makeup-palette.jpg', 1, 9, 1],
 
     // Visage
-    ['visage', 'YAY-VISO-001', 'Sérum Quartz Glow', 'Sérum hydratant et effet éclat progressif.', 9000, 'assets/images/serum-glow.jpg', 1, 16, 1],
-    ['visage', 'YAY-VISO-002', 'Soin Visage Deluxe', 'Texture riche pour nourrir et sublimer la peau.', 13000, 'assets/images/skincare-product.jpg', 0, 7, 1],
+    ['visage', 'YAY-VISO-001', 'Sérum Quartz Glow', 'Sérum hydratant et effet éclat progressif.', 9000, 'assets/images/net-serums-luxe.jpg', 1, 16, 1],
+    ['visage', 'YAY-VISO-002', 'Émulsion Corps Délicate', 'Texture riche pour nourrir et sublimer la peau.', 13000, 'assets/images/net-lotion-linen.jpg', 0, 7, 1],
     ['visage', 'YAY-VISO-003', 'Rituel Peau Éclatante', 'Le rituel signature pour une peau visiblement lumineuse.', 14500, 'assets/images/glowing-skin.jpg', 0, 6, 1],
     ['visage', 'YAY-VISO-004', 'Soin Homme FERRO', 'Soin visage essentiel pensé pour les hommes.', 10000, 'assets/images/skincare-men.jpg', 0, 8, 1],
 
@@ -155,7 +155,7 @@ if ($hasProducts === 0) {
     ['capillaire', 'YAY-CAP-002', 'Coiffure & Style', 'Produits coiffants pour une mise en forme tenue.', 7000, 'assets/images/hair-styling.jpg', 0, 9, 1],
     ['capillaire', 'YAY-CAP-003', 'Fortifiant Cheveux', 'Soin fortifiant à utiliser au quotidien pour renforcer les longueurs.', 8500, 'assets/images/hair-strands.jpg', 0, 10, 1],
 
-    // Meubles & Machines
+    // Mobilier & Machines
     ['meubles', 'YAY-MBL-001', 'Table de Manucure Luxe', 'Meuble professionnel avec collecteur de poussière intégré.', 65000, 'assets/images/nail-desk-pro.jpg', 1, 4, 1],
     ['machines', 'YAY-MCH-001', 'Poste Pro Nail Master', 'Espace de travail complet pour technicienne ongulaire.', 42000, 'assets/images/nail-master.jpg', 0, 5, 1],
   ];

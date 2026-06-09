@@ -3,78 +3,73 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>YAYRA Nail Shop – Boutique</title>
+  <title>YAYRA — Boutique en ligne</title>
+  <meta name="description" content="Cosmétiques, onglerie, soins et mobilier professionnel. Achetez en ligne, livraison 24h à Lomé.">
+  <meta name="theme-color" content="#1c140b">
   <link rel="stylesheet" href="assets/css/main.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
 </head>
 <body>
   <div class="promo-bar">
-    ✦ <strong>Livraison à Lomé</strong> sous 24h · Paiement à la livraison · <a href="https://wa.me/22897498685?text=Bonjour+YAYRA+!">Commandez sur WhatsApp →</a>
-  </div>
-
-  <div id="loader" aria-hidden="true">
-    <div class="loader-inner">
-      <svg viewBox="0 0 100 40" class="loader-logo-svg">
-        <text x="50%" y="70%" text-anchor="middle" class="loader-text-svg">YAYRA</text>
-      </svg>
-      <div class="loader-bar"><div class="loader-fill"></div></div>
-    </div>
+    Livraison à Lomé sous 24h<span class="dot">•</span>Paiement à la livraison<span class="dot">•</span><a href="https://wa.me/22897498685?text=Bonjour+YAYRA+!">Commander sur WhatsApp</a>
   </div>
 
   <nav class="navbar" id="navbar">
-    <div class="nav-logo">
-      <a href="index.html"><span class="logo-y">Y</span>AYRA</a>
-    </div>
+    <div class="nav-logo"><a href="index.html"><span class="logo-y">Y</span>AYRA</a></div>
     <ul class="nav-links">
       <li><a href="index.html">Accueil</a></li>
       <li><a href="shop.html" class="active">Boutique</a></li>
       <li><a href="services.html">Services</a></li>
       <li><a href="ateliers.html">Ateliers</a></li>
+      <li><a href="locations.html">Adresses</a></li>
       <li><a href="contact.html">Contact</a></li>
     </ul>
     <div class="nav-actions">
       <a href="client/login.html" class="btn-outline">Mon Compte</a>
       <a href="shop.html#panier" class="btn-cart" aria-label="Panier">
-        <span class="cart-icon">🛍</span>
+        <span class="cart-icon"><svg class="ic" viewBox="0 0 24 24"><path d="M6 8h12l1 12H5L6 8Z"/><path d="M9 8a3 3 0 0 1 6 0"/></svg></span>
         <span id="cart-count">0</span>
       </a>
     </div>
-    <button class="menu-toggle" id="menuToggle">☰</button>
+    <button class="menu-toggle" id="menuToggle" aria-label="Menu"><svg class="ic" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
   </nav>
+
+  <header class="page-hero">
+    <div class="ph-media" style="background-image:url('assets/images/net-makeup-marble.jpg')"></div>
+    <div class="container">
+      <p class="section-eyebrow">Boutique</p>
+      <h1>La collection YAYRA</h1>
+      <p>Cosmétiques, onglerie, soins et mobilier professionnel. Livraison 24h, paiement à la livraison.</p>
+    </div>
+  </header>
 
   <section class="page">
     <div class="container">
-      <div class="section-header">
-        <p class="section-eyebrow">Boutique</p>
-        <h2 class="section-title">Nos Produits</h2>
-        <p class="section-sub">Recherche, catégories et ajout au panier (stockage local).</p>
-      </div>
-
-      <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:16px;">
-        <input id="searchQ" type="text" placeholder="Rechercher..." style="flex:1; min-width:240px; padding:12px 14px; border-radius:16px; border:1px solid rgba(17,18,23,.06); background:rgba(17,18,23,.04); color:var(--text); outline:none;" />
-        <select id="catSelect" style="padding:12px 14px; border-radius:16px; border:1px solid rgba(17,18,23,.06); background:rgba(17,18,23,.04); color:var(--text); outline:none;">
-          <option value="">Toutes catégories</option>
-        </select>
+      <div class="shop-toolbar">
+        <input id="searchQ" type="text" placeholder="Rechercher un produit..." />
+        <select id="catSelect"><option value="">Toutes catégories</option></select>
         <button class="btn-gold" id="searchBtn" type="button">Rechercher</button>
       </div>
 
       <div class="products-grid" id="productsGrid"></div>
 
-        <div class="product-card" style="margin-top:16px; flex-direction:column; align-items:stretch;">
-        <h3 style="margin:0 0 10px;">Conseil IA</h3>
-        <p class="muted" style="margin:0 0 10px;">Clique sur « Conseil IA » pour obtenir des explications sur l’article.</p>
-        <p class="muted" id="aiMsg" style="margin:0 0 8px;" aria-live="polite"></p>
-        <div id="aiAnswer" style="color:var(--text); font-weight:650; line-height:1.55; white-space:normal;"></div>
+      <div class="product-card" style="grid-column:span 12; margin-top:28px;">
+        <div class="product-info">
+          <h4 style="font-size:20px;">Conseil personnalisé</h4>
+          <p class="muted" style="margin:0 0 8px;">Cliquez sur « Conseil » sur un produit pour obtenir des explications détaillées.</p>
+          <p class="muted" id="aiMsg" style="margin:0 0 8px;" aria-live="polite"></p>
+          <div id="aiAnswer" style="color:var(--ink); line-height:1.6;"></div>
+        </div>
       </div>
 
-
-      <div style="margin-top:34px; border-top:1px solid rgba(17,18,23,.04); padding-top:24px;" id="panier">
-        <h3 style="margin:0 0 10px;">Votre panier</h3>
+      <div id="panier" style="margin-top:48px; border-top:1px solid var(--line); padding-top:34px;">
+        <h3 style="font-family:var(--serif); font-size:28px; margin:0 0 16px;">Votre panier</h3>
         <div id="cartBox"></div>
-        <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:16px;">
-          <button class="btn-ghost" type="button" id="clearCartBtn">Vider</button>
-          <a class="btn-gold" href="checkout.html" style="text-decoration:none; display:inline-flex; align-items:center; justify-content:center; padding:10px 14px; border-radius:999px; font-weight:800;">Finaliser →</a>
+        <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:20px;">
+          <button class="btn-ghost" type="button" id="clearCartBtn">Vider le panier</button>
+          <a class="btn-gold" href="checkout.html">Finaliser la commande <svg class="ic" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
         </div>
       </div>
     </div>
@@ -82,55 +77,90 @@
 
   <footer class="footer">
     <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div class="footer-logo"><span class="logo-y">Y</span>AYRA</div>
+          <p>Maison de beauté à Lomé : cosmétiques, onglerie et mobilier professionnel. La beauté, le soin et la confiance pour la femme togolaise moderne.</p>
+          <div class="footer-social">
+            <a href="#" class="social-link" aria-label="Instagram"><svg class="ic" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/></svg></a>
+            <a href="#" class="social-link" aria-label="Facebook"><svg class="ic" viewBox="0 0 24 24"><path d="M14.5 8.5H17V5.5h-2.5A3.5 3.5 0 0 0 11 9v2H9v3h2v6.5h3V14h2.2l.8-3H14V9.2a.7.7 0 0 1 .5-.7Z"/></svg></a>
+            <a href="https://wa.me/22897498685" class="social-link" aria-label="WhatsApp"><svg class="ic" viewBox="0 0 24 24"><path d="M20.5 11.5a8.5 8.5 0 0 1-12.7 7.4L3.5 20l1.1-4.2a8.5 8.5 0 1 1 15.9-4.3Z"/><path d="M8.5 8.8c0 4 2.7 6.7 6.7 6.7"/></svg></a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h4>Boutique</h4>
+          <ul>
+            <li><a href="shop.html?cat=ongles">Onglerie</a></li>
+            <li><a href="shop.html?cat=kits">Cosmétiques</a></li>
+            <li><a href="shop.html?cat=visage">Soins visage</a></li>
+            <li><a href="shop.html?cat=meubles">Mobilier pro</a></li>
+            <li><a href="shop.html">Tout voir</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Maison</h4>
+          <ul>
+            <li><a href="services.html">Services</a></li>
+            <li><a href="ateliers.html">Ateliers</a></li>
+            <li><a href="locations.html">Adresses</a></li>
+            <li><a href="contact.html">Contact</a></li>
+            <li><a href="client/login.html">Mon compte</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Contact</h4>
+          <div class="footer-contact">
+            <p><svg class="ic" viewBox="0 0 24 24"><path d="M5 4h4l2 5-3 2a12 12 0 0 0 5 5l2-3 5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z"/></svg> +228 97 49 86 85</p>
+            <p><svg class="ic" viewBox="0 0 24 24"><path d="M5 4h4l2 5-3 2a12 12 0 0 0 5 5l2-3 5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z"/></svg> +228 91 01 81 81</p>
+            <p><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3.5 7l8.5 6 8.5-6"/></svg> yayranailshop146@gmail.com</p>
+          </div>
+        </div>
+      </div>
       <div class="footer-bottom">
-        <p>© 2025 YAYRA Nail Shop — Lomé, Togo</p>
+        <p>© 2026 YAYRA — Tous droits réservés · Lomé, Togo</p>
+        <div class="footer-legal"><a href="#">Confidentialité</a><a href="#">Conditions générales</a></div>
       </div>
     </div>
   </footer>
 
-  <a href="https://wa.me/22897498685?text=Bonjour+YAYRA+Nail+Shop+!" class="whatsapp-float" target="_blank" rel="noopener">
-    <span>💬</span>
-    <div class="wa-tooltip">Commandez sur WhatsApp !</div>
+  <a href="https://wa.me/22897498685?text=Bonjour+YAYRA+!" class="whatsapp-float" target="_blank" rel="noopener" aria-label="WhatsApp">
+    <svg class="ic" viewBox="0 0 24 24"><path d="M20.5 11.5a8.5 8.5 0 0 1-12.7 7.4L3.5 20l1.1-4.2a8.5 8.5 0 1 1 15.9-4.3Z"/><path d="M8.5 8.8c0 4 2.7 6.7 6.7 6.7"/></svg>
+    <span class="wa-tooltip">Commander sur WhatsApp</span>
   </a>
 
   <script src="assets/js/main.js"></script>
   <script src="assets/js/cart.js"></script>
-<script>
+  <script>
     const currencyFCFA = (n)=> (parseInt(n,10)||0).toLocaleString('fr-FR') + ' FCFA';
 
     function loadCategories(){
       const sel = document.getElementById('catSelect');
-      return fetch('api/categories.php?action=list')
-        .then(r=>r.json())
-        .then(d=>{
-          if(!d.ok) return;
-          (d.categories||[]).forEach(c=>{
-            const opt = document.createElement('option');
-            opt.value = c.slug;
-            opt.textContent = c.name;
-            sel.appendChild(opt);
-          })
+      return fetch('api/categories.php?action=list').then(r=>r.json()).then(d=>{
+        if(!d.ok) return;
+        (d.categories||[]).forEach(c=>{
+          const opt = document.createElement('option');
+          opt.value = c.slug; opt.textContent = c.name; sel.appendChild(opt);
         });
+        const params = new URLSearchParams(location.search);
+        const pre = params.get('cat');
+        if(pre){ sel.value = pre; }
+      });
     }
 
     function aiAskInfoProduct(productId){
       const msg = document.getElementById('aiMsg');
       const ans = document.getElementById('aiAnswer');
-      msg.textContent = 'Conseil IA en cours...';
+      msg.textContent = 'Recherche du conseil en cours...';
       ans.textContent = '';
-
+      document.getElementById('panier').scrollIntoView({behavior:'smooth', block:'nearest'});
       return fetch('api/ai.php?action=info_product', {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
+        method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({ product_id: productId, action: 'info_product', question: '' })
-      })
-      .then(r=>r.json())
-      .then(d=>{
-        if(!d.ok){ msg.textContent = d.error || 'Erreur IA'; return; }
+      }).then(r=>r.json()).then(d=>{
+        if(!d.ok){ msg.textContent = d.error || 'Conseil indisponible pour le moment.'; return; }
         msg.textContent = '';
         ans.innerHTML = d.answer ? d.answer.replace(/\n/g,'<br/>') : '';
-      })
-      .catch(()=>{ msg.textContent = 'Erreur réseau (IA).'; });
+      }).catch(()=>{ msg.textContent = 'Erreur réseau.'; });
     }
 
     function loadProducts({q='', category=''}={}){
@@ -139,171 +169,109 @@
       const params = new URLSearchParams();
       if(q) params.set('q', q);
       if(category) params.set('category', category);
-
-      return fetch('api/products.php?' + params.toString())
-        .then(r=>r.json())
-        .then(d=>{
-          const products = d.products || [];
-          if(products.length === 0){
-            grid.innerHTML = '<p style="color:var(--muted); font-weight:700;">Aucun produit.</p>';
-            return;
-          }
-          products.forEach(p=>{
-            const wrap = document.createElement('div');
-            wrap.className = 'product-card';
-            wrap.innerHTML = `
-              <div class="product-thumb" style="background-image:url('${p.image_url||''}'); background-size:cover; background-position:center;"></div>
-              <div class="product-info" style="flex:1;">
-                <h4>${p.name}</h4>
-                <p>${p.description || ''}</p>
-                <div class="price">${currencyFCFA(p.price_fcfa)}</div>
-                <div class="product-actions" style="flex-wrap:wrap;">
-                  ${(p.is_available && p.stock_qty > 0) ? `<button class="small-btn" data-add-to-cart data-product-id="${p.id}" data-product-name="${p.name}" data-product-price="${p.price_fcfa}" data-qty="1">Ajouter au panier</button>` : `<button class="small-btn" type="button" data-notify-rupture data-pid="${p.id}" data-pname="${p.name}" style="padding:10px 12px;">Alerte rupture</button>`}
-                  <div style="margin-top:6px; color:rgba(17,18,23,.58); font-weight:800;">${(p.is_available && p.stock_qty > 0) ? '' : 'Rupture de stock'}</div>
-
-                  <button class="small-btn" type="button" data-ai-info data-pid="${p.id}" style="padding:10px 12px;">Conseil IA</button>
-                  <span style="color:rgba(17,18,23,.58); font-weight:800;">${p.category_slug||''}</span>
-
-                </div>
+      return fetch('api/products.php?' + params.toString()).then(r=>r.json()).then(d=>{
+        const products = d.products || [];
+        if(products.length === 0){
+          grid.innerHTML = '<p class="muted">Aucun produit ne correspond à votre recherche.</p>';
+          return;
+        }
+        products.forEach(p=>{
+          const inStock = p.is_available && p.stock_qty > 0;
+          const img = (p.image_url||'').replace(/'/g,'');
+          const wrap = document.createElement('div');
+          wrap.className = 'product-card fade-in';
+          wrap.innerHTML = `
+            <div class="product-thumb" style="background-image:url('${img}')"></div>
+            <div class="product-info">
+              <h4>${p.name}</h4>
+              <p>${p.description || ''}</p>
+              <div class="price">${currencyFCFA(p.price_fcfa)}</div>
+              <div class="product-actions">
+                ${inStock
+                  ? `<button class="small-btn" data-add-to-cart data-product-id="${p.id}" data-product-name="${p.name}" data-product-price="${p.price_fcfa}" data-qty="1">Ajouter au panier</button>`
+                  : `<button class="small-btn" type="button" data-notify-rupture data-pid="${p.id}" data-pname="${p.name}">Alerte retour en stock</button>`}
+                <button class="small-btn" type="button" data-ai-info data-pid="${p.id}">Conseil</button>
               </div>
-            `;
-            grid.appendChild(wrap);
-
-            const btn = wrap.querySelector('[data-ai-info]');
-            if(btn){
-              btn.addEventListener('click', ()=>aiAskInfoProduct(p.id));
-            }
-          })
+              ${inStock ? '' : '<p class="muted" style="margin:8px 0 0; font-size:12.5px;">Actuellement en rupture</p>'}
+            </div>`;
+          grid.appendChild(wrap);
+          const btn = wrap.querySelector('[data-ai-info]');
+          if(btn) btn.addEventListener('click', ()=>aiAskInfoProduct(p.id));
         });
+      });
     }
 
     function renderCart(){
       const box = document.getElementById('cartBox');
       const state = window.YayaCart ? window.YayaCart.load() : {items:[]};
       const items = state.items || [];
-      if(items.length === 0){
-        box.innerHTML = '<p style="color:var(--muted); font-weight:700;">Panier vide.</p>';
-        return;
-      }
+      if(items.length === 0){ box.innerHTML = '<p class="muted">Votre panier est vide.</p>'; return; }
       let html = '<div class="table-wrap"><table class="table"><thead><tr><th>Produit</th><th>Qté</th><th>Prix</th><th>Total</th><th></th></tr></thead><tbody>';
       for(const it of items){
         const line = currencyFCFA((parseInt(it.price_fcfa,10)||0) * (parseInt(it.qty,10)||0));
-        html += `
-          <tr>
-            <td style="font-weight:900; color:var(--text);">${it.name||''}</td>
-            <td>
-              <input type="number" min="1" value="${it.qty}" style="width:84px; padding:8px 10px; border-radius:14px; border:1px solid rgba(17,18,23,.06); background:rgba(17,18,23,.04); color:var(--text);" data-qty-input data-pid="${it.product_id}" />
-            </td>
-            <td>${currencyFCFA(it.price_fcfa)}</td>
-            <td>${line}</td>
-            <td><button class="small-btn" style="padding:8px 10px;" data-remove data-pid="${it.product_id}">Retirer</button></td>
-          </tr>
-        `;
+        html += `<tr>
+          <td style="font-weight:600; color:var(--ink);">${it.name||''}</td>
+          <td><input type="number" min="1" value="${it.qty}" style="width:74px; padding:8px 10px; border-radius:10px; border:1px solid var(--line-2); background:var(--paper); color:var(--ink);" data-qty-input data-pid="${it.product_id}" /></td>
+          <td>${currencyFCFA(it.price_fcfa)}</td>
+          <td>${line}</td>
+          <td><button class="small-btn" style="padding:8px 12px;" data-remove data-pid="${it.product_id}">Retirer</button></td>
+        </tr>`;
       }
-      const total = currencyFCFA(window.YayaCart.total());
-      html += `</tbody></table></div><div style="text-align:right; margin-top:12px; color:var(--text); font-weight:1000;">Total: ${total}</div>`;
+      html += `</tbody></table></div><div style="text-align:right; margin-top:14px; font-weight:600;">Total : <span style="color:var(--gold)">${currencyFCFA(window.YayaCart.total())}</span></div>`;
       box.innerHTML = html;
-
-      box.querySelectorAll('[data-remove]').forEach(b=>{
-        b.addEventListener('click', ()=>{
-          const pid = b.getAttribute('data-pid');
-          window.YayaCart.remove(pid);
-          renderCart();
-          window.YayaCart.syncCartCount();
-        });
-      });
-
-      box.querySelectorAll('[data-qty-input]').forEach(inp=>{
-        inp.addEventListener('change', ()=>{
-          const pid = inp.getAttribute('data-pid');
-          window.YayaCart.setQty(pid, inp.value);
-          renderCart();
-          window.YayaCart.syncCartCount();
-        });
-      });
+      box.querySelectorAll('[data-remove]').forEach(b=> b.addEventListener('click', ()=>{ window.YayaCart.remove(b.getAttribute('data-pid')); renderCart(); window.YayaCart.syncCartCount(); }));
+      box.querySelectorAll('[data-qty-input]').forEach(inp=> inp.addEventListener('change', ()=>{ window.YayaCart.setQty(inp.getAttribute('data-pid'), inp.value); renderCart(); window.YayaCart.syncCartCount(); }));
     }
-
-
 
     document.addEventListener('DOMContentLoaded', async ()=>{
       await loadCategories();
-      await loadProducts();
+      const params = new URLSearchParams(location.search);
+      await loadProducts({category: params.get('cat') || ''});
       renderCart();
       window.YayaCart.syncCartCount();
 
-      // Rupture notification (public endpoint; client sends position)
+      // ré-afficher le panier après chaque ajout
+      document.addEventListener('click', (e)=>{ if(e.target.closest('[data-add-to-cart]')) setTimeout(renderCart, 60); });
+
+      // Alerte retour en stock
       document.addEventListener('click', async (e)=>{
         const b = e.target.closest('[data-notify-rupture]');
         if(!b) return;
         const pid = b.getAttribute('data-pid');
         const pname = b.getAttribute('data-pname') || '';
-        if(!confirm('Le produit semble indisponible. Recevoir une notification pour "' + pname + '" ?')) return;
-
-        const email = prompt('Email (pour recevoir la notification) :');
-        if(!email) return;
-        const fullName = prompt('Nom complet :');
-        if(!fullName) return;
+        if(!confirm('Être prévenue du retour en stock de « ' + pname + ' » ?')) return;
+        const email = prompt('Votre email :'); if(!email) return;
+        const fullName = prompt('Votre nom complet :'); if(!fullName) return;
         const phone = prompt('Téléphone (optionnel) :') || '';
-
-        let positionLabel = '';
-        let lat = null;
-        let lng = null;
-
-        const manual = prompt('Position (ville/quartier) — optionnel :') || '';
-        positionLabel = manual.trim();
-
+        const positionLabel = (prompt('Ville / quartier (optionnel) :') || '').trim();
+        let lat = null, lng = null;
         if(navigator.geolocation){
-          const coords = await new Promise((resolve)=>{
-            navigator.geolocation.getCurrentPosition(
-              (pos)=>resolve({lat:pos.coords.latitude, lng:pos.coords.longitude}),
-              ()=>resolve(null),
-              {timeout:5000}
-            );
-          });
+          const coords = await new Promise((resolve)=> navigator.geolocation.getCurrentPosition(
+            (pos)=>resolve({lat:pos.coords.latitude, lng:pos.coords.longitude}), ()=>resolve(null), {timeout:5000}));
           if(coords){ lat = coords.lat; lng = coords.lng; }
         }
-
-        b.disabled = true;
-        b.textContent = 'En cours...';
-
+        b.disabled = true; b.textContent = 'Envoi...';
         const res = await fetch('api/stock.php?action=notify', {
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({
-            product_id: parseInt(pid,10),
-            full_name: fullName,
-            email: email,
-            phone: phone,
-            position_label: positionLabel,
-            lat, lng,
-          })
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ product_id: parseInt(pid,10), full_name: fullName, email, phone, position_label: positionLabel, lat, lng })
         });
-
         const d = await res.json().catch(()=>({}));
-        if(d.ok){
-          alert('Demande envoyée ✅. Dès que le produit revient, nous vous contacterons.');
-        }else{
-          alert(d.error || 'Erreur lors de l’envoi');
-        }
-
-        b.disabled = false;
-        b.textContent = 'Alerte rupture';
+        alert(d.ok ? 'Demande enregistrée. Nous vous contacterons dès le retour en stock.' : (d.error || 'Erreur lors de l’envoi'));
+        b.disabled = false; b.textContent = 'Alerte retour en stock';
       });
 
       document.getElementById('searchBtn').addEventListener('click', ()=>{
-        const q = document.getElementById('searchQ').value.trim();
-        const category = document.getElementById('catSelect').value;
-        loadProducts({q, category});
+        loadProducts({ q: document.getElementById('searchQ').value.trim(), category: document.getElementById('catSelect').value });
       });
-
+      document.getElementById('searchQ').addEventListener('keydown', (e)=>{ if(e.key==='Enter') document.getElementById('searchBtn').click(); });
+      document.getElementById('catSelect').addEventListener('change', ()=>{
+        loadProducts({ q: document.getElementById('searchQ').value.trim(), category: document.getElementById('catSelect').value });
+      });
       document.getElementById('clearCartBtn').addEventListener('click', ()=>{
         localStorage.setItem('yaya_cart_v1', JSON.stringify({items:[]}));
-        window.YayaCart.syncCartCount();
-        renderCart();
+        window.YayaCart.syncCartCount(); renderCart();
       });
     });
   </script>
 </body>
 </html>
-
-
