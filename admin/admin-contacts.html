@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YAYRA Nail Shop — Contacts</title>
+  <meta name="theme-color" content="#1c140b">
+  <link rel="stylesheet" href="../assets/css/main.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <nav class="navbar" id="navbar">
+    <div class="nav-logo"><a href="../index.html"><span class="logo-y">Y</span>AYRA <span class="logo-sub">Nail Shop</span></a></div>
+    <ul class="nav-links">
+      <li><a href="index.html">Tableau de bord</a></li>
+      <li><a href="admin-products.html">Produits</a></li>
+      <li><a href="admin-orders.html">Commandes</a></li>
+      <li><a href="admin-kits.html">Kits</a></li>
+      <li><a href="admin-videos.html">Vidéos</a></li>
+      <li><a href="admin-contacts.html" class="active">Contacts</a></li>
+      <li><a href="admin-staff.html">Employés</a></li>
+    </ul>
+    <div class="nav-actions">
+      <button class="btn-outline" type="button" id="logoutBtn">Se déconnecter</button>
+    </div>
+    <button class="menu-toggle" id="menuToggle" aria-label="Menu"><svg class="ic" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
+  </nav>
+
+  <header class="page-hero">
+    <div class="ph-media" style="background-image:url('../assets/images/net-hands-luxe.jpg')"></div>
+    <div class="container">
+      <p class="section-eyebrow">Administration</p>
+      <h1>Contacts utiles</h1>
+      <p>Enregistrez les numéros de vos clientes et prévenez-les en un tap quand vous passez en direct.</p>
+    </div>
+  </header>
+
+  <section class="page">
+    <div class="container" style="max-width:1000px;">
+      <div class="kit-cta" style="margin-bottom:24px;">
+        <p><strong>Alerte direct</strong> — quand vous êtes en live, prévenez vos clientes sur WhatsApp avec le lien du direct. Cliquez sur « Prévenir » à côté de chaque contact (WhatsApp n'autorise pas l'envoi automatique en masse).</p>
+        <button class="btn-gold" type="button" id="alertAllBtn"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 12a8 8 0 0 1-11.5 7.2L4 20l1-4.8A8 8 0 1 1 21 12Z"/></svg> Prévenir toutes</button>
+      </div>
+
+      <div class="admin-grid">
+        <div>
+          <div class="product-card">
+            <div class="product-info">
+              <h4 style="font-size:20px;">Ajouter un contact</h4>
+              <form class="form" id="cForm" style="margin-top:8px;">
+                <input id="cName" placeholder="Nom de la cliente" />
+                <input id="cPhone" placeholder="Numéro (ex : 22890000000)" required />
+                <button class="btn-gold" type="submit">Enregistrer le contact</button>
+                <p class="muted" id="cMsg" style="margin:0;" aria-live="polite"></p>
+              </form>
+              <p class="muted" id="storeNote" style="margin-top:12px; font-size:12.5px;"></p>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="product-card">
+            <div class="product-info">
+              <h4 style="font-size:20px;">Carnet de contacts (<span id="cCount">0</span>)</h4>
+              <div id="cList" style="margin-top:8px;"><p class="muted">—</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <script src="../assets/js/firebase-config.js"></script>
+  <script src="../assets/js/live-core.js"></script>
+  <script src="../assets/js/main.js"></script>
+  <script>
+    if(!localStorage.getItem('yayra_token')) window.location.href = '../client/login.html';
+    document.getElementById('logoutBtn').addEventListener('click', ()=>{ localStorage.removeItem('yayra_token'); window.location.href = '../client/login.html'; });
+    const $ = (id)=> document.getElementById(id);
+    const useFB = (window.FIREBASE_READY && LIVE.init());
+    $('storeNote').textContent = useFB ? 'Contacts synchronisés (Firebase) — accessibles depuis tous vos appareils.' : 'Contacts enregistrés sur cet appareil. Configurez Firebase pour les synchroniser.';
+    const liveUrl = new URL('../live.html', location.href).href;
+    const esc = (s)=> String(s||'').replace(/[<>&"]/g, c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+    const clean = (p)=> String(p||'').replace(/[^0-9]/g,'');
+    function waLink(c){ const msg = 'Bonjour' + (c.name?' '+c.name:'') + ', YAYRA Nail Shop est EN DIRECT maintenant ! Rejoignez le live : ' + liveUrl; return 'https://wa.me/' + clean(c.phone) + '?text=' + encodeURIComponent(msg); }
+
+    function lsLoad(){ try{ return JSON.parse(localStorage.getItem('yayra_contacts')||'[]'); }catch(e){ return []; } }
+    function lsSave(a){ localStorage.setItem('yayra_contacts', JSON.stringify(a)); }
+
+    async function getAll(){
+      if(useFB){ const s = await LIVE.ref('contacts').once('value'); const v = s.val()||{}; return Object.keys(v).map(k=> Object.assign({_id:k}, v[k])); }
+      return lsLoad();
+    }
+    function addContact(c){
+      if(useFB){ LIVE.ref('contacts').push(c); }
+      else { const a = lsLoad(); c._id = 'c'+(Date.now()); a.push(c); lsSave(a); }
+    }
+    function delContact(id){
+      if(useFB){ LIVE.ref('contacts/'+id).remove(); }
+      else { lsSave(lsLoad().filter(x=> x._id !== id)); }
+    }
+
+    let CACHE = [];
+    async function render(){
+      CACHE = await getAll();
+      $('cCount').textContent = CACHE.length;
+      const wrap = $('cList');
+      if(!CACHE.length){ wrap.innerHTML = '<p class="muted">Aucun contact enregistré.</p>'; return; }
+      wrap.innerHTML = CACHE.map(c=> '<div class="product-row"><div style="flex:1;"><strong>'+esc(c.name||'Cliente')+'</strong><br/><span class="muted" style="font-size:13px;">'+esc(c.phone)+'</span></div><div style="display:flex; gap:6px;"><a class="small-btn" target="_blank" rel="noopener" href="'+waLink(c)+'">Prévenir</a><button class="small-btn danger" data-del="'+c._id+'">Suppr.</button></div></div>').join('');
+      wrap.querySelectorAll('[data-del]').forEach(b=> b.addEventListener('click', ()=>{ if(confirm('Supprimer ce contact ?')){ delContact(b.getAttribute('data-del')); render(); } }));
+    }
+
+    $('cForm').addEventListener('submit', (e)=>{
+      e.preventDefault();
+      const phone = clean($('cPhone').value);
+      if(phone.length < 8){ $('cMsg').style.color='var(--rose)'; $('cMsg').textContent='Numéro invalide (format international, ex : 22890000000).'; return; }
+      addContact({ name: $('cName').value.trim(), phone: phone, ts: (useFB ? LIVE.now() : Date.now()) });
+      $('cMsg').style.color='var(--gold)'; $('cMsg').textContent='Contact enregistré.';
+      e.target.reset(); setTimeout(render, useFB ? 300 : 0);
+    });
+
+    $('alertAllBtn').addEventListener('click', ()=>{
+      if(!CACHE.length){ alert('Aucun contact à prévenir.'); return; }
+      if(!confirm('Ouvrir WhatsApp pour prévenir les ' + CACHE.length + ' contact(s) du direct ? (une fenêtre par contact)')) return;
+      CACHE.forEach((c, i)=> setTimeout(()=> window.open(waLink(c), '_blank'), i*600));
+    });
+
+    document.addEventListener('DOMContentLoaded', render);
+    render();
+  </script>
+  <script src="../assets/js/livebadge.js"></script>
+</body>
+</html>
