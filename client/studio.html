@@ -57,9 +57,12 @@
       <div style="display:flex; gap:12px; flex-wrap:wrap;">
         <button class="btn-gold" id="goLiveBtn" type="button">Passer en direct</button>
         <button class="btn-outline" id="stopLiveBtn" type="button" style="display:none;">Arrêter le live</button>
+        <button class="btn-ghost" id="micBtn" type="button" style="display:none;">Couper le micro</button>
+        <button class="btn-ghost" id="pipBtn" type="button" style="display:none;">Réduire dans un coin</button>
         <button class="btn-ghost" id="flipBtn" type="button" style="display:none;">Caméra avant/arrière</button>
         <a class="btn-ghost" href="../live.html" target="_blank" rel="noopener">Voir la page live</a>
       </div>
+      <p class="muted" style="margin-top:10px; font-size:13px;">Astuce : cliquez sur <strong>« Réduire dans un coin »</strong> pour garder le direct flottant pendant que vous utilisez d'autres applications ou onglets — la diffusion continue tant que la vidéo flottante reste ouverte.</p>
       <p class="muted" id="studioMsg" style="margin-top:12px;" aria-live="polite"></p>
 
       <div class="product-card" style="margin-top:22px;">
@@ -96,7 +99,7 @@
       });
     } else {
       const preview = $('preview');
-      let localStream = null, live = false, facing = 'user';
+      let localStream = null, live = false, facing = 'user', micOn = true;
       const pcs = {};
       const signalsRef = LIVE.ref('live/signals');
 
@@ -108,6 +111,9 @@
         $('goLiveBtn').textContent = 'Passer en direct';
         $('stopLiveBtn').style.display = live ? '' : 'none';
         $('flipBtn').style.display = live ? '' : 'none';
+        $('micBtn').style.display = live ? '' : 'none';
+        $('pipBtn').style.display = live ? '' : 'none';
+        if(!live) $('micBtn').textContent = 'Couper le micro';
       }
 
       async function startStream(){
@@ -165,6 +171,20 @@
           Object.values(pcs).forEach(pc=>{ const sender = pc.getSenders().find(s=> s.track && s.track.kind==='video'); if(sender) sender.replaceTrack(newTrack); });
         }catch(e){}
       });
+      $('micBtn').addEventListener('click', ()=>{
+        if(!localStream) return;
+        micOn = !micOn;
+        localStream.getAudioTracks().forEach(t=> t.enabled = micOn);
+        $('micBtn').textContent = micOn ? 'Couper le micro' : 'Activer le micro';
+      });
+      $('pipBtn').addEventListener('click', async ()=>{
+        try{
+          if(document.pictureInPictureElement){ await document.exitPictureInPicture(); }
+          else if(preview.requestPictureInPicture){ await preview.play().catch(()=>{}); await preview.requestPictureInPicture(); }
+          else { alert("Le mode « coin flottant » n'est pas supporté ici. Utilisez Chrome ou Edge sur ordinateur (ou Chrome sur Android)."); }
+        }catch(e){ alert("Impossible d'activer le mode coin flottant sur ce navigateur."); }
+      });
+
       window.addEventListener('beforeunload', ()=>{ if(live) stopLive(); });
 
       // Stats temps réel

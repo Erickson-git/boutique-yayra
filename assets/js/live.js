@@ -99,8 +99,17 @@
   function showEmpty(){ mode='empty'; hideAllLive(); feed.style.display='none'; empty.style.display='flex'; }
 
   /* ---------------- DIRECT RÉEL (WebRTC) ---------------- */
-  function tryPlay(){ remoteVideo.muted=true; const p=remoteVideo.play(); if(p) p.catch(()=>{}); unmute.style.display='flex'; }
-  unmute.addEventListener('click', ()=>{ remoteVideo.muted=false; remoteVideo.play().catch(()=>{}); unmute.style.display='none'; });
+  function reflectMute(){
+    const icon = document.getElementById('muteIcon'); const lbl = document.getElementById('muteLbl');
+    if(!icon || !lbl) return;
+    const m = remoteVideo.muted;
+    lbl.textContent = m ? 'Activer' : 'Couper';
+    icon.innerHTML = m
+      ? '<path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M22 9l-6 6M16 9l6 6"/>'
+      : '<path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M16 9a4 4 0 0 1 0 6M19 7a8 8 0 0 1 0 10"/>';
+  }
+  function tryPlay(){ remoteVideo.muted=true; const p=remoteVideo.play(); if(p) p.catch(()=>{}); unmute.style.display='flex'; reflectMute(); }
+  unmute.addEventListener('click', ()=>{ remoteVideo.muted=false; remoteVideo.play().catch(()=>{}); unmute.style.display='none'; reflectMute(); });
 
   function appendMsg(name, text){ const el=document.createElement('div'); el.className='lv-msg'; el.innerHTML='<b>'+esc(name)+'</b> '+esc(text); chatBox.appendChild(el); while(chatBox.children.length>14) chatBox.removeChild(chatBox.firstChild); }
   function myName(){ let n=localStorage.getItem('yayra_live_name'); if(!n){ n=(prompt('Votre prénom pour le chat :')||'Invité').slice(0,20).trim()||'Invité'; localStorage.setItem('yayra_live_name', n); } return n; }
@@ -121,6 +130,14 @@
       const r = s.val(); if(r && r.e && (Number(r.ts)||0) >= joinTs - 6000) floatReaction(r.e);
     });
     reactionsBar.querySelectorAll('[data-emoji]').forEach(b=> b.addEventListener('click', ()=> sendReaction(b.getAttribute('data-emoji'))));
+
+    // Couper / activer le son (côté spectateur)
+    document.getElementById('muteBtn').addEventListener('click', ()=>{
+      remoteVideo.muted = !remoteVideo.muted;
+      if(!remoteVideo.muted){ remoteVideo.play().catch(()=>{}); unmute.style.display='none'; }
+      reflectMute();
+    });
+    reflectMute();
   }
   function joinLive(){
     if(pc) return;
