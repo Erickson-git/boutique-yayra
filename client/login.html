@@ -64,9 +64,31 @@
     const msg = document.getElementById('loginMsg');
     const ADMIN_ROLES = ['admin','manager','vendeur'];
 
+    // Se souvenir du dernier identifiant + reprise de session
+    (function(){
+      try{
+        const last = localStorage.getItem('yayra_last_user');
+        if(last) document.getElementById('email').value = last;
+        const token = localStorage.getItem('yayra_token'), role = localStorage.getItem('yayra_role') || '';
+        if(token){
+          const dest = (ADMIN_ROLES.indexOf(role) > -1) ? '../admin/index.html' : './dashboard.html';
+          const sess = (window.YAYRA_STAFF && YAYRA_STAFF.session()) || (window.YAYRA_CLIENTS && YAYRA_CLIENTS.session());
+          const name = (sess && sess.name) || last || '';
+          const card = document.querySelector('.auth-card');
+          if(card){
+            const b = document.createElement('div');
+            b.style.cssText = 'margin-bottom:16px;padding:12px 14px;border:1px solid var(--line-2);border-radius:12px;background:var(--bg-2);font-size:14px;';
+            b.innerHTML = 'Vous êtes déjà connecté' + (name ? (' en tant que <strong>' + name + '</strong>') : '') + '. <a href="' + dest + '" style="color:var(--gold);font-weight:600;">Continuer →</a>';
+            card.insertBefore(b, card.firstChild);
+          }
+        }
+      }catch(e){}
+    })();
+
     async function access(){
       const id = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
+      if(id) localStorage.setItem('yayra_last_user', id);
       msg.style.color = ''; msg.textContent = 'Connexion en cours...';
 
       // 1) Backend (si déployé)

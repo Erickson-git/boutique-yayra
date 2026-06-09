@@ -17,8 +17,14 @@
 </head>
 <body>
   <div id="loader" aria-hidden="true">
-    <div class="loader-inner">
-      <svg viewBox="0 0 200 50" width="200"><text x="50%" y="68%" text-anchor="middle" class="loader-text-svg">YAYRA</text></svg>
+    <div class="splash">
+      <svg class="splash-emblem" viewBox="0 0 200 200">
+        <circle class="ring1" cx="100" cy="100" r="86"/>
+        <circle class="ring2" cx="100" cy="100" r="72"/>
+        <text class="splash-y" x="100" y="132">Y</text>
+        <path class="splash-spark" d="M150 42l2.4 6.6 6.6 2.4-6.6 2.4L150 60.4l-2.4-6.6-6.6-2.4 6.6-2.4z"/>
+      </svg>
+      <div class="splash-word"><b>YAYRA</b><span>Nail Shop</span></div>
       <div class="loader-bar"><div class="loader-fill"></div></div>
     </div>
   </div>
@@ -58,7 +64,7 @@
       <p class="hero-desc">Cosmétiques de prestige, onglerie d'exception et mobilier professionnel. Une adresse, trois univers, une même exigence d'excellence.</p>
       <div class="hero-btns">
         <a href="shop.html" class="btn-gold">Découvrir la boutique <svg class="ic" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-        <a href="services.html" class="btn-light">Nos services</a>
+        <button class="btn-light" id="introBtn" type="button"><svg class="ic" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M8 5v14l11-7z"/></svg> Voir la présentation</button>
       </div>
       <div class="hero-stats">
         <div class="stat"><strong>500+</strong><span>Clientes fidèles</span></div>
@@ -409,6 +415,12 @@
     <button class="reel-nav prev" aria-label="Précédent"><svg class="ic" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
     <video controls playsinline></video>
     <button class="reel-nav next" aria-label="Suivant"><svg class="ic" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
+  </div>
+
+  <div class="intro-lb" id="introLb" aria-hidden="true">
+    <button class="intro-close" id="introClose" aria-label="Fermer"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <video id="introVideo" playsinline></video>
+    <button class="intro-skip" id="introSkip">Passer la présentation</button>
   </div>
 
   <script src="assets/js/catalog.js"></script>

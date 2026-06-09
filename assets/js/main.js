@@ -77,4 +77,22 @@
       fetch('api/cart.php', {method:'POST', body:payload}).catch(()=>{});
     }catch(_){}
   });
+
+  // Présentation vidéo (montage rapide de la boutique)
+  const introBtn = document.getElementById('introBtn');
+  const introLb = document.getElementById('introLb');
+  if(introBtn && introLb){
+    const v = document.getElementById('introVideo');
+    const PLAYLIST = ['assets/images/video-05.mp4','assets/images/video-03.mp4','assets/images/video-09.mp4','assets/images/video-01.mp4'];
+    let idx = 0;
+    function playIdx(i){ idx = i; v.src = PLAYLIST[i % PLAYLIST.length]; v.currentTime = 0; v.play().catch(()=>{}); }
+    function openIntro(){ introLb.classList.add('open'); document.body.style.overflow='hidden'; v.muted = false; playIdx(0); }
+    function closeIntro(){ introLb.classList.remove('open'); document.body.style.overflow=''; try{ v.pause(); v.removeAttribute('src'); v.load(); }catch(e){} }
+    introBtn.addEventListener('click', openIntro);
+    document.getElementById('introClose').addEventListener('click', closeIntro);
+    document.getElementById('introSkip').addEventListener('click', closeIntro);
+    introLb.addEventListener('click', (e)=>{ if(e.target === introLb) closeIntro(); });
+    v.addEventListener('ended', ()=>{ if(idx < PLAYLIST.length - 1) playIdx(idx + 1); else closeIntro(); });
+    document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape' && introLb.classList.contains('open')) closeIntro(); });
+  }
 })();
