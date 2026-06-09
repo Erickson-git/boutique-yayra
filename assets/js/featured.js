@@ -19,7 +19,7 @@
     fetchFeatured().then(products => {
       grid.innerHTML = '';
       products.forEach(p => {
-        const img = (p.image_url || 'assets/images/net-makeup-marble.jpg').replace(/'/g,'');
+        const img = (window.YAYRA_PRODIMG ? window.YAYRA_PRODIMG.url(p) : (p.image_url || 'assets/images/net-makeup-marble.jpg')).replace(/'/g,'');
         const inStock = p.is_available && p.stock_qty > 0;
         const card = document.createElement('div');
         card.className = 'product-card fade-in';

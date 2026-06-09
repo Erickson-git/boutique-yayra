@@ -206,6 +206,7 @@
   </div>
 
   <script src="assets/js/catalog.js"></script>
+  <script src="assets/js/prodimg.js"></script>
   <script src="assets/js/advisor.js"></script>
   <script src="assets/js/kits.js"></script>
   <script src="assets/js/main.js"></script>
@@ -217,7 +218,7 @@
     let pdCurrent = null;
     function openDetail(p){
       pdCurrent = p;
-      document.getElementById('pdImg').src = (p.image_url||'').replace(/'/g,'');
+      document.getElementById('pdImg').src = (window.YAYRA_PRODIMG ? window.YAYRA_PRODIMG.url(p) : (p.image_url||'')).replace(/'/g,'');
       document.getElementById('pdImg').alt = p.name || '';
       document.getElementById('pdCat').textContent = p.category_slug || '';
       document.getElementById('pdTitle').textContent = p.name || '';
@@ -306,7 +307,7 @@
 
     function buildCard(p){
       const inStock = p.is_available && p.stock_qty > 0;
-      const img = (p.image_url||'').replace(/'/g,'');
+      const img = (window.YAYRA_PRODIMG ? window.YAYRA_PRODIMG.url(p) : (p.image_url||'')).replace(/'/g,'');
       const wrap = document.createElement('div');
       wrap.className = 'product-card';
       wrap.innerHTML = `
