@@ -171,9 +171,14 @@
       <div class="kb-body">
         <p class="section-eyebrow" style="margin-bottom:6px;">Composeur · −5%</p>
         <h2 class="pd-title" style="margin-bottom:4px;">Créer un kit</h2>
-        <p class="muted" style="margin:0;">Ajoutez des produits, la remise de 5% est appliquée automatiquement. Le kit est publié après validation.</p>
+        <p class="muted" style="margin:0;">Réunissez des produits, ou indiquez votre budget : la remise de 5% est appliquée automatiquement.</p>
         <div class="kb-pick">
-          <select id="kbSelect"><option value="">Choisir un produit…</option></select>
+          <input id="kbBudget" type="number" min="0" placeholder="Votre budget (FCFA)" />
+          <select id="kbBudgetCat"><option value="">Toutes catégories</option></select>
+          <button class="btn-gold" type="button" id="kbBudgetBtn">Proposer mon kit</button>
+        </div>
+        <div class="kb-pick">
+          <select id="kbSelect"><option value="">Ajouter un produit…</option></select>
           <button class="btn-outline" type="button" id="kbAdd">Ajouter</button>
         </div>
         <div class="kb-list" id="kbList"><p class="kb-empty">Aucun produit dans le kit.</p></div>
@@ -182,10 +187,12 @@
           <div class="kb-line"><span>Remise kit (−5%)</span><span class="kb-save" id="kbSave">0 FCFA</span></div>
           <div class="kb-line"><span><strong>Total du kit</strong></span><span class="kb-total" id="kbTotal">0 FCFA</span></div>
         </div>
-        <input id="kbName" placeholder="Nom du kit (ex : Coffret Manucure Éclat)" style="margin-top:14px; width:100%; padding:13px 16px; border-radius:12px; border:1px solid var(--line-2); background:var(--paper); color:var(--ink);" />
+        <input id="kbName" placeholder="Nom du kit (facultatif)" style="margin-top:14px; width:100%; padding:13px 16px; border-radius:12px; border:1px solid var(--line-2); background:var(--paper); color:var(--ink);" />
         <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:14px;">
-          <button class="btn-gold" type="button" id="kbSubmit" style="flex:1; justify-content:center;">Soumettre pour validation</button>
+          <button class="btn-gold" type="button" id="kbCart" style="flex:1; justify-content:center;">Ajouter au panier</button>
+          <a class="btn-wa" id="kbWa" target="_blank" rel="noopener" style="flex:1; justify-content:center;">Commander</a>
         </div>
+        <button class="btn-outline" type="button" id="kbSubmit" style="width:100%; justify-content:center; margin-top:10px;">Proposer ce kit à la boutique</button>
         <p class="muted" id="kbMsg" style="margin:12px 0 0;" aria-live="polite"></p>
       </div>
     </div>
@@ -360,6 +367,10 @@
           const o = document.createElement('option'); o.value = p.id; o.textContent = p.name + ' — ' + currencyFCFA(p.price_fcfa); sel.appendChild(o);
         });
       }
+      const bcat = document.getElementById('kbBudgetCat');
+      if(bcat.options.length <= 1){
+        (window.YAYRA_CATALOG ? window.YAYRA_CATALOG.categories : []).forEach(c=>{ const o=document.createElement('option'); o.value=c.slug; o.textContent=c.name; bcat.appendChild(o); });
+      }
       kbModal.classList.add('open'); document.body.style.overflow = 'hidden';
     }
     function kbCloseFn(){ kbModal.classList.remove('open'); document.body.style.overflow = ''; }
@@ -374,9 +385,34 @@
       document.getElementById('kbSub').textContent = currencyFCFA(pr.sub);
       document.getElementById('kbSave').textContent = '− ' + currencyFCFA(pr.saved);
       document.getElementById('kbTotal').textContent = currencyFCFA(pr.total);
+      const wa = document.getElementById('kbWa');
+      if(wa){ const lst = kbItems.map(i=>i.name).join(', '); wa.href = 'https://wa.me/22897498685?text=' + encodeURIComponent('Bonjour YAYRA ! Je veux ce kit (' + currencyFCFA(pr.total) + ') : ' + lst); }
+    }
+    function kbBudgetPropose(){
+      const amount = parseInt(document.getElementById('kbBudget').value, 10) || 0;
+      const msg = document.getElementById('kbMsg');
+      if(amount <= 0){ msg.style.color='var(--rose)'; msg.textContent='Indiquez un budget.'; return; }
+      const cat = document.getElementById('kbBudgetCat').value;
+      const kit = window.YAYRA_KITS.byBudget(amount, cat);
+      if(!kit.items.length){ msg.style.color='var(--rose)'; msg.textContent='Aucun produit ne rentre dans ce budget.'; return; }
+      kbItems = kit.items.slice();
+      msg.style.color='var(--gold)'; msg.textContent = kit.items.length + ' produits proposés pour votre budget (remise −5% incluse).';
+      kbRender();
+    }
+    function kbAddToCart(){
+      const msg = document.getElementById('kbMsg');
+      if(!kbItems.length){ msg.style.color='var(--rose)'; msg.textContent='Composez d\'abord un kit (ou utilisez votre budget).'; return; }
+      const pr = window.YAYRA_KITS.price(kbItems);
+      const name = (document.getElementById('kbName').value.trim() || 'Kit personnalisé') + ' (−5%)';
+      if(window.YayaCart){ window.YayaCart.add({ product_id:'kit-'+Date.now(), name, price_fcfa: pr.total, qty:1 }); window.YayaCart.syncCartCount(); }
+      renderCart();
+      msg.style.color='var(--gold)'; msg.textContent='Kit ajouté au panier ('+currencyFCFA(pr.total)+').';
+      setTimeout(kbCloseFn, 1200);
     }
     document.getElementById('openKitBtn').addEventListener('click', kbOpen);
     document.getElementById('kbClose').addEventListener('click', kbCloseFn);
+    document.getElementById('kbBudgetBtn').addEventListener('click', kbBudgetPropose);
+    document.getElementById('kbCart').addEventListener('click', kbAddToCart);
     kbModal.addEventListener('click', (e)=>{ if(e.target===kbModal) kbCloseFn(); });
     document.getElementById('kbAdd').addEventListener('click', ()=>{
       const sel = document.getElementById('kbSelect'); const id = sel.value; if(!id) return;

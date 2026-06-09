@@ -37,6 +37,61 @@
       const pub = load(PUBLISHED); pub.push(k); save(PUBLISHED, pub);
     },
     reject(id){ save(PENDING, load(PENDING).filter(x=> x.id !== id)); },
-    removePublished(id){ save(PUBLISHED, load(PUBLISHED).filter(x=> x.id !== id)); }
+    removePublished(id){ save(PUBLISHED, load(PUBLISHED).filter(x=> x.id !== id)); },
+
+    // ---- IA : génération automatique de kits ----
+    _pool(category){
+      const cat = (window.YAYRA_CATALOG ? window.YAYRA_CATALOG.products : []);
+      let pool = cat.filter(p=> p.is_available && p.stock_qty > 0);
+      if(category) pool = pool.filter(p=> p.category_slug === category);
+      return pool;
+    },
+    _base(name){ return String(name||'').split(' ').slice(0,2).join(' ').toLowerCase(); },
+
+    // Kits thématiques suggérés automatiquement (à valider par l'admin)
+    suggest(){
+      const self = this;
+      function pick(cats, n){
+        const seen = new Set(); const out = [];
+        for(const p of self._pool()){
+          if(cats.indexOf(p.category_slug) < 0) continue;
+          const b = self._base(p.name); if(seen.has(b)) continue;
+          seen.add(b); out.push(p); if(out.length >= n) break;
+        }
+        return out;
+      }
+      const THEMES = [
+        { name:'Kit Onglerie Essentiel', cats:['ongles'], n:4 },
+        { name:'Coffret Maquillage Complet', cats:['kits'], n:4 },
+        { name:'Routine Visage Éclat', cats:['visage'], n:4 },
+        { name:'Kit Capillaire Soin', cats:['capillaire'], n:3 },
+        { name:'Kit Beauté Découverte', cats:['kits','visage'], n:4 },
+        { name:'Pack Pro Onglerie', cats:['ongles','machines'], n:3 }
+      ];
+      return THEMES.map(t=>{
+        const items = pick(t.cats, t.n).map(p=>({ id:p.id, name:p.name, price_fcfa:p.price_fcfa, qty:1 }));
+        const pr = price(items);
+        return { name:t.name, items, sub:pr.sub, total:pr.total };
+      }).filter(k=> k.items.length >= 2);
+    },
+
+    // Kit composé selon un budget (client). category facultative.
+    byBudget(budget, category){
+      budget = parseInt(budget,10) || 0;
+      const self = this;
+      const pool = this._pool(category).slice().sort((a,b)=> a.price_fcfa - b.price_fcfa);
+      const cap = budget / (1 - DISCOUNT); // le total final aura -5%
+      const items = []; const seen = new Set(); let sub = 0;
+      for(const p of pool){
+        const b = self._base(p.name); if(seen.has(b)) continue;
+        if(sub + p.price_fcfa > cap) continue;
+        items.push({ id:p.id, name:p.name, price_fcfa:p.price_fcfa, qty:1 });
+        seen.add(b); sub += p.price_fcfa;
+        if(items.length >= 6) break;
+      }
+      if(!items.length && pool.length){ const p = pool[0]; items.push({ id:p.id, name:p.name, price_fcfa:p.price_fcfa, qty:1 }); }
+      const pr = price(items);
+      return { name:'Kit ' + budget.toLocaleString('fr-FR') + ' FCFA', items, sub:pr.sub, total:pr.total };
+    }
   };
 })();

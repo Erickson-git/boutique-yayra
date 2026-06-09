@@ -11,6 +11,7 @@
   const unmute = document.getElementById('lvUnmute');
   const chatBox = document.getElementById('lvChat');
   const heartsHost = document.getElementById('hearts');
+  const reactionsBar = document.getElementById('lvReactions');
   const title = document.getElementById('lvTitle');
 
   const HEART = '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 20s-7-4.6-9.3-8.5C1.2 8.6 2.6 5 6.2 5c2 0 3.2 1.2 3.8 2.2C10.6 6.2 11.8 5 13.8 5c3.6 0 5 3.6 3.5 6.5C19 15.4 12 20 12 20Z"/></svg>';
@@ -22,7 +23,7 @@
 
   let pc=null, viewerId=null, sigRef=null, commonOn=false, lastLikes=0, feedBuilt=false, mode='';
 
-  function hideAllLive(){ remoteVideo.style.display='none'; liveInfo.style.display='none'; actions.style.display='none'; compose.style.display='none'; unmute.style.display='none'; chatBox.style.display='none'; }
+  function hideAllLive(){ remoteVideo.style.display='none'; liveInfo.style.display='none'; actions.style.display='none'; compose.style.display='none'; unmute.style.display='none'; chatBox.style.display='none'; if(reactionsBar) reactionsBar.style.display='none'; }
 
   function spawnHeart(host){
     host = host || heartsHost; if(!host) return;
@@ -30,6 +31,14 @@
     h.style.setProperty('--dx', (((host.children.length*53)%80)-40)+'px');
     h.innerHTML = HEART; host.appendChild(h); setTimeout(()=>h.remove(), 2400);
   }
+  function floatReaction(emoji){
+    if(!heartsHost) return;
+    const el = document.createElement('div'); el.className='reaction';
+    el.textContent = emoji;
+    el.style.setProperty('--dx', (((heartsHost.children.length*61)%120)-60)+'px');
+    heartsHost.appendChild(el); setTimeout(()=> el.remove(), 2600);
+  }
+  function sendReaction(emoji){ if(window.LIVE && LIVE.ready) LIVE.ref('live/reactions').push({ e: emoji, ts: LIVE.now() }); else floatReaction(emoji); }
   async function doShare(){
     const data = { title:'YAYRA Nail Shop', text:'Découvre les vidéos de YAYRA Nail Shop', url: location.href };
     if(navigator.share){ try{ await navigator.share(data); return; }catch(e){ return; } }
@@ -102,9 +111,16 @@
     LIVE.ref('live/chat').limitToLast(40).on('child_added', (s)=>{ const m=s.val(); if(m) appendMsg(m.n,m.t); });
     compose.addEventListener('submit', (e)=>{ e.preventDefault(); const i=document.getElementById('lvInput'); const t=i.value.trim(); if(!t) return; LIVE.ref('live/chat').push({n:myName(),t,ts:LIVE.now()}); i.value=''; });
     const likesRef = LIVE.ref('live/likes');
-    likesRef.on('value', (s)=>{ const v=s.val()||0; if(v>lastLikes){ for(let i=0;i<Math.min(4,v-lastLikes);i++) spawnHeart(); } lastLikes=v; document.getElementById('likeCount').textContent=fmtK(v); });
-    document.getElementById('likeBtn').addEventListener('click', ()=>{ likesRef.transaction(x=>(x||0)+1); document.getElementById('likeBtn').classList.add('liked'); });
+    likesRef.on('value', (s)=>{ lastLikes=s.val()||0; document.getElementById('likeCount').textContent=fmtK(lastLikes); });
+    document.getElementById('likeBtn').addEventListener('click', ()=>{ likesRef.transaction(x=>(x||0)+1); document.getElementById('likeBtn').classList.add('liked'); sendReaction('❤️'); });
     document.getElementById('shareBtn').addEventListener('click', doShare);
+
+    // Réactions emojis en temps réel (cœurs + emojis qui s'envolent pour tous)
+    const joinTs = Date.now();
+    LIVE.ref('live/reactions').limitToLast(20).on('child_added', (s)=>{
+      const r = s.val(); if(r && r.e && (Number(r.ts)||0) >= joinTs - 6000) floatReaction(r.e);
+    });
+    reactionsBar.querySelectorAll('[data-emoji]').forEach(b=> b.addEventListener('click', ()=> sendReaction(b.getAttribute('data-emoji'))));
   }
   function joinLive(){
     if(pc) return;
@@ -121,7 +137,7 @@
   function showLive(){
     if(mode==='live') return; mode='live';
     feed.style.display='none'; empty.style.display='none';
-    remoteVideo.style.display='block'; liveInfo.style.display='inline-flex'; actions.style.display='flex'; compose.style.display='flex'; chatBox.style.display='flex';
+    remoteVideo.style.display='block'; liveInfo.style.display='inline-flex'; actions.style.display='flex'; compose.style.display='flex'; chatBox.style.display='flex'; reactionsBar.style.display='flex';
     title.textContent='Live';
     startCommon(); joinLive();
   }

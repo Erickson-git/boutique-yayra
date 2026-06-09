@@ -39,6 +39,11 @@
 
   <section class="page">
     <div class="container" style="max-width:1000px;">
+      <div class="kit-cta" style="margin-bottom:24px;">
+        <p><strong>Génération automatique (IA)</strong> — l'assistant compose des kits thématiques (remise −5%) à partir de votre catalogue. Vous validez ensuite ceux à publier.</p>
+        <button class="btn-gold" type="button" id="genKitsBtn"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3l2 6 6 2-6 2-2 6-2-6-6-2 6-2z"/></svg> Générer des kits</button>
+      </div>
+
       <h3 style="font-family:var(--serif); font-size:26px; margin:0 0 16px;">En attente de validation</h3>
       <div id="pendingWrap"></div>
 
@@ -47,6 +52,7 @@
     </div>
   </section>
 
+  <script src="../assets/js/catalog.js"></script>
   <script src="../assets/js/kits.js"></script>
   <script src="../assets/js/main.js"></script>
   <script>
@@ -76,6 +82,13 @@
       pw.querySelectorAll('[data-reject]').forEach(b=> b.addEventListener('click', ()=>{ if(confirm('Refuser ce kit ?')){ window.YAYRA_KITS.reject(b.getAttribute('data-reject')); render(); } }));
       uw.querySelectorAll('[data-remove]').forEach(b=> b.addEventListener('click', ()=>{ if(confirm('Retirer ce kit publié ?')){ window.YAYRA_KITS.removePublished(b.getAttribute('data-remove')); render(); } }));
     }
+    document.getElementById('genKitsBtn').addEventListener('click', ()=>{
+      const sug = window.YAYRA_KITS.suggest();
+      if(!sug.length){ alert('Catalogue indisponible pour générer des kits.'); return; }
+      sug.forEach(k=> window.YAYRA_KITS.submit({ name:k.name, items:k.items }));
+      render();
+      alert(sug.length + ' kit(s) généré(s) et ajouté(s) en attente de validation.');
+    });
     document.addEventListener('DOMContentLoaded', render);
   </script>
   <script src="../assets/js/firebase-config.js"></script>

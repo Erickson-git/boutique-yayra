@@ -49,8 +49,8 @@
             <div class="product-info">
               <h4 style="font-size:20px;">Publier une vidéo</h4>
               <form id="vForm" class="form" style="margin-top:8px;">
-                <input id="vCap" placeholder="Légende (ex : Nail art automne)" />
-                <input id="vTag" placeholder="Catégorie (ex : Onglerie)" />
+                <input id="vCap" placeholder="Légende (facultatif)" />
+                <input id="vTag" placeholder="Catégorie (facultatif)" />
                 <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
                   <button class="btn-outline" type="button" id="vPick"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 5v14l11-7z"/></svg> Importer (galerie / fichiers)</button>
                   <span class="muted" id="vName" style="font-size:12.5px;"></span>
@@ -113,24 +113,33 @@
       $('pubList').querySelectorAll('[data-del]').forEach(b=> b.addEventListener('click', ()=>{ if(confirm('Retirer cette vidéo ?')){ LIVE.ref('videos/'+b.getAttribute('data-del')).remove().then(renderPublished); } }));
     }
 
+    function hasStorage(){ return !!(window.FIREBASE_CONFIG.storageBucket && window.FIREBASE_CONFIG.apiKey && firebase.storage); }
+
     $('vForm').addEventListener('submit', async (e)=>{
       e.preventDefault();
       if(!ready){ msg.style.color='var(--rose)'; msg.textContent='Publication impossible sans configuration Firebase.'; return; }
-      const cap = $('vCap').value.trim(), tag = $('vTag').value.trim(), urlIn = $('vUrl').value.trim();
+      // Champs facultatifs : valeurs par défaut
+      const cap = $('vCap').value.trim() || 'Vidéo YAYRA Nail Shop';
+      const tag = $('vTag').value.trim() || '';
+      const urlIn = $('vUrl').value.trim();
       try{
         let src = urlIn;
         if(pickedFile){
-          if(!window.FIREBASE_CONFIG.storageBucket){ msg.style.color='var(--rose)'; msg.textContent='Pour importer un fichier, renseignez storageBucket dans firebase-config.js (ou collez un lien).'; return; }
+          if(!hasStorage()){
+            msg.style.color='var(--rose)';
+            msg.innerHTML = "L'import de fichier vidéo nécessite la clé <strong>apiKey</strong> Firebase (à ajouter à la config). En attendant, vous pouvez <strong>coller un lien de vidéo</strong> ci-dessus pour publier tout de suite.";
+            return;
+          }
           msg.style.color=''; msg.textContent='Envoi de la vidéo…';
           const ref = firebase.storage().ref('videos/' + (LIVE.now()) + '_' + pickedFile.name.replace(/[^a-zA-Z0-9._-]/g,'_'));
           await ref.put(pickedFile);
           src = await ref.getDownloadURL();
         }
-        if(!src){ msg.style.color='var(--rose)'; msg.textContent='Importez un fichier ou collez un lien de vidéo.'; return; }
+        if(!src){ msg.style.color='var(--rose)'; msg.textContent='Ajoutez une vidéo : importez un fichier ou collez un lien.'; return; }
         await LIVE.ref('videos').push({ src, cap, tag, ts: LIVE.now() });
         msg.style.color='var(--gold)'; msg.textContent='Vidéo publiée. Elle apparaît sur la page Live (hors direct).';
         e.target.reset(); pickedFile=null; $('vPreview').style.display='none'; $('vName').textContent=''; renderPublished();
-      }catch(err){ msg.style.color='var(--rose)'; msg.textContent='Erreur lors de la publication : ' + (err && err.message ? err.message : err); }
+      }catch(err){ msg.style.color='var(--rose)'; msg.textContent='Erreur : ' + (err && err.message ? err.message : err); }
     });
 
     document.addEventListener('DOMContentLoaded', ()=>{ renderDefaults(); renderPublished(); });
