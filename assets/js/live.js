@@ -116,7 +116,13 @@
 
   function startCommon(){
     if(commonOn) return; commonOn=true;
-    LIVE.ref('live/signals').on('value', (s)=>{ let c=0; s.forEach(ch=>{ if(ch.child('active').val()===true) c++; }); document.getElementById('lvCount').textContent=c; });
+    // Nombre de spectateurs affiché aux clientes : factice et toujours croissant
+    let vStart=Date.now(), vBoost=0, vReal=0, vShown=0;
+    function recountFake(){ const g=Math.floor((Date.now()-vStart)/7000); let v=vBoost+vReal+g; if(v<vShown) v=vShown; vShown=v; document.getElementById('lvCount').textContent=v.toLocaleString('fr-FR'); }
+    LIVE.ref('live/startedAt').on('value', (s)=>{ const t=Number(s.val()); if(t) vStart=t; recountFake(); });
+    LIVE.ref('live/boost').on('value', (s)=>{ vBoost=parseInt(s.val(),10)||0; recountFake(); });
+    LIVE.ref('live/signals').on('value', (s)=>{ let c=0; s.forEach(ch=>{ if(ch.child('active').val()===true) c++; }); vReal=c; recountFake(); });
+    setInterval(recountFake, 5000);
     LIVE.ref('live/chat').limitToLast(40).on('child_added', (s)=>{ const m=s.val(); if(m) appendMsg(m.n,m.t); });
     compose.addEventListener('submit', (e)=>{ e.preventDefault(); const i=document.getElementById('lvInput'); const t=i.value.trim(); if(!t) return; LIVE.ref('live/chat').push({n:myName(),t,ts:LIVE.now()}); i.value=''; });
     const likesRef = LIVE.ref('live/likes');
