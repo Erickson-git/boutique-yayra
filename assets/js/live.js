@@ -159,8 +159,23 @@
       else if(st === 'failed'){ rejoinLive(); }
       else if(st === 'disconnected'){ title.textContent='Reconnexion…'; clearTimeout(discTimer); discTimer = setTimeout(()=>{ if(pc && pc.connectionState !== 'connected') rejoinLive(); }, 5000); }
     };
-    sigRef.child('offer').on('value', async (snap)=>{ const offer=snap.val(); if(!offer||(pc.currentRemoteDescription&&pc.currentRemoteDescription.sdp)) return; try{ await pc.setRemoteDescription(new RTCSessionDescription(offer)); const a=await pc.createAnswer(); await pc.setLocalDescription(a); sigRef.child('answer').set({type:a.type,sdp:a.sdp}); }catch(e){} });
-    sigRef.child('hostCandidates').on('child_added', (snap)=>{ const c=snap.val(); if(c) pc.addIceCandidate(new RTCIceCandidate(c)).catch(()=>{}); });
+    const pending = []; let remoteReady = false;
+    sigRef.child('offer').on('value', async (snap)=>{
+      const offer = snap.val();
+      if(!offer || (pc.currentRemoteDescription && pc.currentRemoteDescription.sdp)) return;
+      try{
+        await pc.setRemoteDescription(new RTCSessionDescription(offer));
+        remoteReady = true;
+        while(pending.length){ pc.addIceCandidate(new RTCIceCandidate(pending.shift())).catch(()=>{}); }
+        const a = await pc.createAnswer(); await pc.setLocalDescription(a);
+        sigRef.child('answer').set({ type:a.type, sdp:a.sdp });
+      }catch(e){}
+    });
+    sigRef.child('hostCandidates').on('child_added', (snap)=>{
+      const c = snap.val(); if(!c) return;
+      if(remoteReady && pc.remoteDescription){ pc.addIceCandidate(new RTCIceCandidate(c)).catch(()=>{}); }
+      else { pending.push(c); }
+    });
   }
   function rejoinLive(){
     if(mode !== 'live') return;

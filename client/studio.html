@@ -149,8 +149,22 @@
         pc.onicecandidate = (e)=>{ if(e.candidate) sref.child('hostCandidates').push(e.candidate.toJSON()); };
         // On ne coupe que sur échec/fermeture réels ; « disconnected » est souvent transitoire et se rétablit seul.
         pc.onconnectionstatechange = ()=>{ const st = pc.connectionState; if(st === 'failed' || st === 'closed') dropViewer(vid); };
-        sref.child('answer').on('value', async (s)=>{ const a = s.val(); if(a && !(pc.currentRemoteDescription && pc.currentRemoteDescription.sdp)){ try{ await pc.setRemoteDescription(new RTCSessionDescription(a)); }catch(e){} } });
-        sref.child('viewerCandidates').on('child_added', (s)=>{ const c = s.val(); if(c) pc.addIceCandidate(new RTCIceCandidate(c)).catch(()=>{}); });
+        const pend = []; let answered = false;
+        sref.child('answer').on('value', async (s)=>{
+          const a = s.val();
+          if(a && !(pc.currentRemoteDescription && pc.currentRemoteDescription.sdp)){
+            try{
+              await pc.setRemoteDescription(new RTCSessionDescription(a));
+              answered = true;
+              while(pend.length){ pc.addIceCandidate(new RTCIceCandidate(pend.shift())).catch(()=>{}); }
+            }catch(e){}
+          }
+        });
+        sref.child('viewerCandidates').on('child_added', (s)=>{
+          const c = s.val(); if(!c) return;
+          if(answered && pc.remoteDescription){ pc.addIceCandidate(new RTCIceCandidate(c)).catch(()=>{}); }
+          else { pend.push(c); }
+        });
         try{
           const offer = await pc.createOffer();
           await pc.setLocalDescription(offer);

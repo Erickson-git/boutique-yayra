@@ -63,6 +63,10 @@
       <div id="publishedKits"></div>
 
       <div class="products-grid" id="productsGrid"></div>
+      <div style="text-align:center; margin-top:28px;">
+        <p class="muted" id="prodCount" style="margin:0 0 12px; font-size:13px;"></p>
+        <button class="btn-outline" id="moreBtn" type="button" style="display:none;">Voir plus de produits</button>
+      </div>
 
       <div class="product-card" style="grid-column:span 12; margin-top:28px;">
         <div class="product-info">
@@ -293,9 +297,51 @@
       });
     }
 
+    // Pagination : on n'affiche pas les 1000 produits d'un coup (sinon lenteur)
+    const PAGE_SIZE = 48;
+    let _all = [], _shown = 0;
+
+    function buildCard(p){
+      const inStock = p.is_available && p.stock_qty > 0;
+      const img = (p.image_url||'').replace(/'/g,'');
+      const wrap = document.createElement('div');
+      wrap.className = 'product-card';
+      wrap.innerHTML = `
+        <div class="product-thumb" style="background-image:url('${img}')"></div>
+        <div class="product-info">
+          <h4>${p.name}</h4>
+          <p>${p.description || ''}</p>
+          <div class="price">${currencyFCFA(p.price_fcfa)}</div>
+          <div class="product-actions">
+            ${inStock
+              ? `<button class="small-btn" data-add-to-cart data-product-id="${p.id}" data-product-name="${p.name}" data-product-price="${p.price_fcfa}" data-qty="1">Ajouter au panier</button>`
+              : `<button class="small-btn" type="button" data-notify-rupture data-pid="${p.id}" data-pname="${p.name}">Alerte retour en stock</button>`}
+            <button class="small-btn" type="button" data-ai-info data-pid="${p.id}">Conseil</button>
+          </div>
+          ${inStock ? '' : '<p class="muted" style="margin:8px 0 0; font-size:12.5px;">Actuellement en rupture</p>'}
+        </div>`;
+      const btn = wrap.querySelector('[data-ai-info]');
+      if(btn) btn.addEventListener('click', (e)=>{ e.stopPropagation(); aiAskInfoProduct(p); });
+      wrap.addEventListener('click', (e)=>{ if(e.target.closest('button,a')) return; openDetail(p); });
+      return wrap;
+    }
+
+    function renderBatch(){
+      const grid = document.getElementById('productsGrid');
+      const frag = document.createDocumentFragment();
+      _all.slice(_shown, _shown + PAGE_SIZE).forEach(p=> frag.appendChild(buildCard(p)));
+      const added = Math.min(PAGE_SIZE, _all.length - _shown);
+      grid.appendChild(frag);
+      _shown += added;
+      const more = document.getElementById('moreBtn');
+      const cnt = document.getElementById('prodCount');
+      if(more) more.style.display = (_shown < _all.length) ? '' : 'none';
+      if(cnt) cnt.textContent = _all.length ? (_shown + ' produits affichés sur ' + _all.length) : '';
+    }
+
     function loadProducts({q='', category=''}={}){
       const grid = document.getElementById('productsGrid');
-      grid.innerHTML = '';
+      grid.innerHTML = ''; _all = []; _shown = 0;
       const params = new URLSearchParams();
       if(q) params.set('q', q);
       if(category) params.set('category', category);
@@ -304,35 +350,12 @@
         .then(r=>r.json()).then(d=> (d && d.ok && d.products) ? d.products : fb())
         .catch(()=> fb())
         .then(products=>{
-        if(products.length === 0){
-          grid.innerHTML = '<p class="muted">Aucun produit ne correspond à votre recherche.</p>';
-          return;
-        }
-        products.forEach(p=>{
-          const inStock = p.is_available && p.stock_qty > 0;
-          const img = (p.image_url||'').replace(/'/g,'');
-          const wrap = document.createElement('div');
-          wrap.className = 'product-card fade-in';
-          wrap.innerHTML = `
-            <div class="product-thumb" style="background-image:url('${img}')"></div>
-            <div class="product-info">
-              <h4>${p.name}</h4>
-              <p>${p.description || ''}</p>
-              <div class="price">${currencyFCFA(p.price_fcfa)}</div>
-              <div class="product-actions">
-                ${inStock
-                  ? `<button class="small-btn" data-add-to-cart data-product-id="${p.id}" data-product-name="${p.name}" data-product-price="${p.price_fcfa}" data-qty="1">Ajouter au panier</button>`
-                  : `<button class="small-btn" type="button" data-notify-rupture data-pid="${p.id}" data-pname="${p.name}">Alerte retour en stock</button>`}
-                <button class="small-btn" type="button" data-ai-info data-pid="${p.id}">Conseil</button>
-              </div>
-              ${inStock ? '' : '<p class="muted" style="margin:8px 0 0; font-size:12.5px;">Actuellement en rupture</p>'}
-            </div>`;
-          grid.appendChild(wrap);
-          const btn = wrap.querySelector('[data-ai-info]');
-          if(btn) btn.addEventListener('click', (e)=>{ e.stopPropagation(); aiAskInfoProduct(p); });
-          wrap.addEventListener('click', (e)=>{ if(e.target.closest('button,a')) return; openDetail(p); });
+          _all = products || [];
+          const more = document.getElementById('moreBtn');
+          const cnt = document.getElementById('prodCount');
+          if(!_all.length){ grid.innerHTML = '<p class="muted">Aucun produit ne correspond à votre recherche.</p>'; if(more) more.style.display='none'; if(cnt) cnt.textContent=''; return; }
+          renderBatch();
         });
-      });
     }
 
     function renderCart(){
@@ -493,6 +516,7 @@
         loadProducts({ q: document.getElementById('searchQ').value.trim(), category: document.getElementById('catSelect').value });
       });
       document.getElementById('searchQ').addEventListener('keydown', (e)=>{ if(e.key==='Enter') document.getElementById('searchBtn').click(); });
+      document.getElementById('moreBtn').addEventListener('click', renderBatch);
       document.getElementById('catSelect').addEventListener('change', ()=>{
         loadProducts({ q: document.getElementById('searchQ').value.trim(), category: document.getElementById('catSelect').value });
       });

@@ -4,13 +4,15 @@ window.LIVE = (function(){
   // Serveurs ICE : STUN Google + TURN gratuit (Open Relay) pour traverser les NAT.
   const ICE = {
     iceServers: [
-      { urls: ['stun:stun.l.google.com:19302','stun:stun1.l.google.com:19302'] },
+      { urls: ['stun:stun.l.google.com:19302','stun:stun1.l.google.com:19302','stun:stun2.l.google.com:19302','stun:stun.cloudflare.com:3478'] },
       { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
       { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
-      { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' }
+      { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' },
+      { urls: 'turns:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' }
     ],
     bundlePolicy: 'max-bundle',
-    rtcpMuxPolicy: 'require'
+    rtcpMuxPolicy: 'require',
+    iceCandidatePoolSize: 4
   };
   // Débit/résolution recommandés pour un réseau mobile (réduit la latence et les coupures)
   const VIDEO_CONSTRAINTS = { width: { ideal: 640, max: 854 }, height: { ideal: 480, max: 480 }, frameRate: { ideal: 24, max: 30 } };
