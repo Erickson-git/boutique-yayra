@@ -369,7 +369,7 @@
         .then(r=>r.json()).then(d=> (d && d.ok && d.products) ? d.products : fb())
         .catch(()=> fb())
         .then(products=>{
-          _all = products || [];
+          _all = (products || []).slice().sort((a,b)=> String(a.name||'').localeCompare(String(b.name||''), 'fr', {sensitivity:'base', numeric:true}));
           const more = document.getElementById('moreBtn');
           const cnt = document.getElementById('prodCount');
           if(!_all.length){ grid.innerHTML = '<p class="muted">Aucun produit ne correspond à votre recherche.</p>'; if(more) more.style.display='none'; if(cnt) cnt.textContent=''; return; }

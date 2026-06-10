@@ -18,7 +18,7 @@
     if(!grid) return;
     fetchFeatured().then(products => {
       grid.innerHTML = '';
-      products.forEach(p => {
+      (products || []).slice().sort((a,b)=> String(a.name||'').localeCompare(String(b.name||''), 'fr', {sensitivity:'base', numeric:true})).forEach(p => {
         const img = (window.YAYRA_PRODIMG ? window.YAYRA_PRODIMG.url(p) : (p.image_url || 'assets/images/net-makeup-marble.jpg')).replace(/'/g,'');
         const inStock = p.is_available && p.stock_qty > 0;
         const card = document.createElement('div');

@@ -15,14 +15,18 @@
 
   // bases : [nom, prix_min, prix_max] en FCFA (prix marché)
   const GROUPS = [
-    { slug:'ongles', prefix:'ONG', count:220, imgs:['net-nailart-amber','net-nailart-red','nails-art','nails-fall','gel-nail-kit','manicure-kit','net-hands-luxe'], bases:[
+    { slug:'ongles', prefix:'ONG', count:500, imgs:['net-nailart-amber','net-nailart-red','nails-art','nails-fall','gel-nail-kit','manicure-kit','net-hands-luxe'], bases:[
       ['Vernis Gel',2500,4000],['Vernis Semi-Permanent',3000,4500],['Top Coat',2500,3500],['Base Coat',2500,3500],['Gel UV Couleur',3000,5500],
       ['Gel Constructeur',4000,7000],['Kit Capsules',3500,6500],['Capsules French',2500,4000],['Faux Ongles',2000,3500],['Tips Box 500',3000,6000],
       ['Lime Professionnelle',1000,2000],['Bloc Polissoir',1000,2000],['Strass Nail Art',1500,3000],['Stickers Ongles',1000,2000],['Paillettes Ongles',1500,3000],
       ['Foil Transfert',1500,3500],['Tampon Stamping',2000,4000],['Plaque Stamping',2000,4500],['Pinceau Nail Art',1500,3500],['Stylo Nail Art',1500,3000],
       ['Poudre Acrylique',4000,9000],['Liquide Acrylique',4000,9000],['Colle à Ongles',1000,2500],['Dissolvant Doux',1500,2500],['Huile Cuticules',2000,4000],
       ['Repousse-Cuticules',1500,3000],['Coupe-Ongles Pro',1500,3500],['Râpe Pieds',1500,3500],['Set Manucure',6000,13000],['Kit Pédicure',7000,13000],
-      ['Séparateurs Orteils',800,1800],['Brosse Nettoyante',1000,2500] ] },
+      ['Séparateurs Orteils',800,1800],['Brosse Nettoyante',1000,2500],
+      ['Vernis Mat',2500,4000],['Vernis Chrome',3000,5000],['Vernis Magnétique',3000,5500],['Vernis Pailleté',3000,5000],['Vernis Thermo',3000,5500],
+      ['Top Coat Mat',2500,3500],['Gel Builder',4000,7500],['Gel Camouflage',4000,7000],['Gel Fibre de Verre',4500,8000],['Capsules Amande',2500,4500],
+      ['Capsules Ballerine',2500,4500],['Capsules Stiletto',2500,4500],['Tips Colorés',2500,4500],['Poudre Dip',4000,8000],['Kit Poudre Dip',7000,14000],
+      ['Primer Ongles',1500,3000],['Déshydratant Ongles',1500,3000],['Sticker French',1000,2200] ] },
     { slug:'kits', prefix:'COS', count:240, imgs:['net-makeup-brushes','net-makeup-palette','net-makeup-marble','net-makeup-model','net-gold-brush','makeup-kit-allinone','beauty-flatlay'], bases:[
       ['Palette Maquillage',8000,18000],['Palette Fards',6000,14000],['Fond de Teint',5000,12000],['BB Crème',4500,9000],['Poudre Compacte',4000,8500],
       ['Poudre Libre',4000,8500],['Anticernes',3500,7000],['Correcteur',3000,6500],['Blush Poudre',3500,7000],['Blush Crème',3500,7000],
