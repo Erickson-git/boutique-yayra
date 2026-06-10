@@ -21,7 +21,7 @@
   const fmtK = (n)=> n >= 1000 ? (n/1000).toFixed(1).replace('.0','') + 'k' : String(n);
   const esc = (s)=> String(s||'').replace(/[<>&"]/g, c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
 
-  let pc=null, viewerId=null, sigRef=null, commonOn=false, lastLikes=0, feedBuilt=false, mode='', discTimer=null, joinTimer=null, gotStream=false;
+  let pc=null, viewerId=null, sigRef=null, commonOn=false, lastLikes=0, feedBuilt=false, mode='', discTimer=null, joinTimer=null, gotStream=false, audioArmed=true;
 
   function hideAllLive(){ remoteVideo.style.display='none'; liveInfo.style.display='none'; actions.style.display='none'; compose.style.display='none'; unmute.style.display='none'; chatBox.style.display='none'; if(reactionsBar) reactionsBar.style.display='none'; }
 
@@ -108,8 +108,8 @@
       ? '<path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M22 9l-6 6M16 9l6 6"/>'
       : '<path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M16 9a4 4 0 0 1 0 6M19 7a8 8 0 0 1 0 10"/>';
   }
-  function tryPlay(){ remoteVideo.muted=true; const p=remoteVideo.play(); if(p) p.catch(()=>{}); unmute.style.display='flex'; reflectMute(); }
-  unmute.addEventListener('click', ()=>{ remoteVideo.muted=false; remoteVideo.play().catch(()=>{}); unmute.style.display='none'; reflectMute(); });
+  function tryPlay(){ audioArmed=true; remoteVideo.muted=true; const p=remoteVideo.play(); if(p) p.catch(()=>{}); unmute.style.display='flex'; reflectMute(); }
+  unmute.addEventListener('click', ()=>{ audioArmed=false; remoteVideo.muted=false; remoteVideo.play().catch(()=>{}); unmute.style.display='none'; reflectMute(); });
 
   function appendMsg(name, text){ const el=document.createElement('div'); el.className='lv-msg'; el.innerHTML='<b>'+esc(name)+'</b> '+esc(text); chatBox.appendChild(el); while(chatBox.children.length>14) chatBox.removeChild(chatBox.firstChild); }
   function myName(){ let n=localStorage.getItem('yayra_live_name'); if(!n){ n=(prompt('Votre prénom pour le chat :')||'Invité').slice(0,20).trim()||'Invité'; localStorage.setItem('yayra_live_name', n); } return n; }
@@ -139,10 +139,26 @@
 
     // Couper / activer le son (côté spectateur)
     document.getElementById('muteBtn').addEventListener('click', ()=>{
+      audioArmed = false; // l'utilisateur gère le son lui-même à partir d'ici
       remoteVideo.muted = !remoteVideo.muted;
       if(!remoteVideo.muted){ remoteVideo.play().catch(()=>{}); unmute.style.display='none'; }
       reflectMute();
     });
+
+    // Le son s'active automatiquement au PREMIER contact n'importe où sur l'écran
+    // (les navigateurs interdisent le son tant qu'il n'y a pas eu d'interaction).
+    const unlockEvents = ['pointerdown','touchstart','click','keydown'];
+    function unlockAudio(){
+      if(!audioArmed) return;
+      if(remoteVideo && remoteVideo.srcObject && remoteVideo.muted){
+        remoteVideo.muted = false;
+        remoteVideo.play().catch(()=>{});
+        unmute.style.display = 'none';
+        reflectMute();
+        audioArmed = false;
+      }
+    }
+    unlockEvents.forEach(ev=> document.addEventListener(ev, unlockAudio, { passive:true }));
     reflectMute();
   }
   function joinLive(){

@@ -136,7 +136,22 @@
       async function startStream(){
         if(localStream) localStream.getTracks().forEach(t=>t.stop());
         const videoC = Object.assign({ facingMode: facing }, LIVE.VIDEO_CONSTRAINTS);
-        localStream = await navigator.mediaDevices.getUserMedia({ video: videoC, audio: { echoCancellation:true, noiseSuppression:true } });
+        const audioC = { echoCancellation:true, noiseSuppression:true, autoGainControl:true };
+        try{
+          localStream = await navigator.mediaDevices.getUserMedia({ video: videoC, audio: audioC });
+        }catch(e){
+          // Si la demande combinée échoue, on tente caméra puis micro séparément
+          localStream = await navigator.mediaDevices.getUserMedia({ video: videoC });
+          try{
+            const mic = await navigator.mediaDevices.getUserMedia({ audio: audioC });
+            mic.getAudioTracks().forEach(t=> localStream.addTrack(t));
+          }catch(e2){ /* micro indisponible : on diffuse au moins l'image */ }
+        }
+        // S'assurer que le micro est actif et prévenir si absent
+        const aud = localStream.getAudioTracks();
+        aud.forEach(t=> t.enabled = true);
+        micOn = aud.length > 0;
+        if(!aud.length){ msg.textContent = "Attention : micro non détecté — les spectateurs n'auront pas le son. Autorisez le micro."; }
         preview.srcObject = localStream; preview.muted = true; preview.play().catch(()=>{});
       }
       function capBitrate(pc){
@@ -181,7 +196,7 @@
       async function goLive(){
         try{ msg.textContent = 'Activation de la caméra…'; await startStream(); }
         catch(e){ msg.textContent = "Accès caméra refusé. Autorisez la caméra et le micro."; return; }
-        msg.textContent = '';
+        if(localStream && localStream.getAudioTracks().length) msg.textContent = '';
         // Nouvelle session : on repart d'un direct vierge (indépendant du précédent)
         await signalsRef.remove();
         ['live/chat','live/likes','live/reactions','live/boost'].forEach(p=> LIVE.ref(p).remove());
