@@ -135,9 +135,9 @@
     /* Fenêtre glissante : on précharge la vidéo courante ± WINDOW (≈10 voisines)
        pour un défilement fluide, et on pilote lecture/son via l'API YouTube
        (postMessage) — sans recharger l'iframe. */
-    const items = Array.from(feed.querySelectorAll('.feed-item'));
+    let items = Array.from(feed.querySelectorAll('.feed-item'));
     const WINDOW = 5;
-    let soundOn = false, current = -1;
+    let soundOn = false, current = -1, io = null;
 
     /* Préchargement progressif des posters (miniatures) des 100 vidéos :
        toutes finissent par se charger, mais les plus PROCHES de la vidéo
@@ -202,13 +202,40 @@
     }
     ['pointerdown','touchstart','click','keydown'].forEach(ev=> document.addEventListener(ev, enableSound, { passive:true }));
     if('IntersectionObserver' in window){
-      const io = new IntersectionObserver((entries)=>{
+      io = new IntersectionObserver((entries)=>{
         entries.forEach(e=>{ if(e.isIntersecting && e.intersectionRatio > 0.6){ const idx = items.indexOf(e.target); if(idx > -1) setCurrent(idx); } });
       }, {threshold:[0,0.6,1]});
       items.forEach(it=> io.observe(it));
     }
     setCurrent(0);
     if(feed.querySelector('iframe[data-embed], video')) showSndCta();
+
+    /* Apparition INSTANTANÉE des vidéos publiées (sans recharger la page) :
+       on écoute la base et on insère la nouvelle vidéo en tête du fil. */
+    const seen = new Set((vids||[]).filter(x=> x && x._id).map(x=> x._id));
+    function prependItem(v){
+      const wrap = document.createElement('div'); wrap.innerHTML = feedItem(v, 0);
+      const el = wrap.firstElementChild; if(!el) return;
+      const wasAtTop = feed.scrollTop < 8;
+      feed.insertBefore(el, feed.firstChild);
+      items = Array.from(feed.querySelectorAll('.feed-item'));
+      const im = el.querySelector('.feed-poster'); if(im) posters.unshift({ im, i:0, done:false });
+      posters.forEach(p=>{ const it = p.im.closest('.feed-item'); p.i = it ? items.indexOf(it) : p.i; });
+      if(io) io.observe(el);
+      if(wasAtTop){
+        feed.scrollTop = 0; current = -1; setCurrent(0); // révéler tout de suite la nouvelle vidéo
+      } else {
+        feed.scrollTop += el.offsetHeight; if(current >= 0) current += 1; // préserver la position
+      }
+      pumpPosters();
+    }
+    if(window.LIVE && LIVE.ready){
+      LIVE.ref('videos').on('child_added', (s)=>{
+        const key = s.key; if(seen.has(key)) return; seen.add(key);
+        const v = Object.assign({ _id:key }, s.val()||{});
+        if(v.src || v.blob) prependItem(v);
+      });
+    }
     // interactions (les vidéos directes utilisent leurs contrôles natifs : barre de progression)
     feed.addEventListener('click', (e)=>{
       const like = e.target.closest('[data-like]');

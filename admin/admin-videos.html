@@ -133,6 +133,50 @@
     function fileToDataURL(file){
       return new Promise((resolve, reject)=>{ const r=new FileReader(); r.onload=()=>resolve(r.result); r.onerror=reject; r.readAsDataURL(file); });
     }
+    // Compresse une vidéo dans le navigateur (480p, débit réduit) -> permet de
+    // publier directement depuis la galerie sans Firebase Storage.
+    function pickRecMime(){
+      const c = ['video/mp4;codecs=h264,aac','video/mp4','video/webm;codecs=vp8,opus','video/webm;codecs=vp9,opus','video/webm'];
+      for(let i=0;i<c.length;i++){ if(window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(c[i])) return c[i]; }
+      return '';
+    }
+    function compressVideo(file, onProgress){
+      return new Promise((resolve, reject)=>{
+        if(!window.MediaRecorder){ reject(new Error('non supporté')); return; }
+        const url = URL.createObjectURL(file);
+        const vid = document.createElement('video');
+        vid.src = url; vid.playsInline = true; vid.muted = false; vid.preload = 'auto';
+        vid.onerror = ()=>{ URL.revokeObjectURL(url); reject(new Error('lecture impossible')); };
+        vid.onloadedmetadata = ()=>{
+          const dur = vid.duration || 0;
+          const minSide = Math.min(vid.videoWidth, vid.videoHeight) || 480;
+          const scale = Math.min(1, 480 / minSide);
+          let w = Math.round(vid.videoWidth*scale/2)*2, h = Math.round(vid.videoHeight*scale/2)*2;
+          if(!w || !h){ w = vid.videoWidth; h = vid.videoHeight; }
+          const canvas = document.createElement('canvas'); canvas.width=w; canvas.height=h;
+          const ctx = canvas.getContext('2d');
+          const cstream = canvas.captureStream(24);
+          let actx = null;
+          try{
+            actx = new (window.AudioContext||window.webkitAudioContext)();
+            const sn = actx.createMediaElementSource(vid); const dest = actx.createMediaStreamDestination();
+            sn.connect(dest); dest.stream.getAudioTracks().forEach(t=> cstream.addTrack(t));
+          }catch(e){}
+          const mime = pickRecMime(); let rec;
+          try{ rec = new MediaRecorder(cstream, Object.assign({ videoBitsPerSecond:900000, audioBitsPerSecond:96000 }, mime?{mimeType:mime}:{})); }
+          catch(e){ URL.revokeObjectURL(url); reject(e); return; }
+          const chunks=[];
+          rec.ondataavailable = (e)=>{ if(e.data && e.data.size) chunks.push(e.data); };
+          rec.onstop = ()=>{ try{ if(actx) actx.close(); }catch(e){} URL.revokeObjectURL(url); resolve(new Blob(chunks, { type: rec.mimeType || 'video/webm' })); };
+          let raf;
+          function draw(){ if(vid.paused || vid.ended) return; ctx.drawImage(vid,0,0,w,h); if(onProgress && dur) onProgress(vid.currentTime/dur); raf=requestAnimationFrame(draw); }
+          vid.onplay = ()=>{ if(actx && actx.state==='suspended') actx.resume(); draw(); };
+          vid.onended = ()=>{ cancelAnimationFrame(raf); try{ rec.stop(); }catch(e){} };
+          rec.start(250);
+          vid.play().catch((e)=>{ try{ rec.stop(); }catch(_){} reject(e); });
+        };
+      });
+    }
     const isImageUrl = (u)=> /\.(jpe?g|png|gif|webp)$/i.test(u) || /^data:image\//.test(u);
     // Lien hébergeur -> vidéo précise jouable (YouTube/Vimeo/Drive) ; null si non jouable
     function embedSrc(u){
@@ -184,13 +228,23 @@
               const ref = firebase.storage().ref('videos/' + (LIVE.now()) + '_' + pickedFile.name.replace(/[^a-zA-Z0-9._-]/g,'_'));
               await ref.put(pickedFile);
               src = await ref.getDownloadURL(); kind = 'video';
-            } else if(pickedFile.size <= 9 * 1024 * 1024){
-              msg.style.color=''; msg.textContent='Préparation de la vidéo…';
-              blobData = await fileToDataURL(pickedFile); kind = 'video'; src = '';
             } else {
-              msg.style.color='var(--rose)';
-              msg.innerHTML = "Vidéo trop lourde pour l'import direct (limite ~9 Mo). <strong>Solution recommandée :</strong> mettez la vidéo sur <strong>YouTube</strong> ou <strong>Google Drive</strong>, puis <strong>collez le lien</strong> ci-dessus (aucune limite de taille). Vous pouvez aussi importer un clip plus court.";
-              return;
+              // Pas de Storage : on compresse la vidéo de la galerie pour pouvoir la stocker
+              let work = pickedFile;
+              if(pickedFile.size > 9 * 1024 * 1024){
+                try{
+                  msg.style.color=''; msg.textContent='Compression de la vidéo… 0%';
+                  work = await compressVideo(pickedFile, (p)=>{ msg.textContent = 'Compression de la vidéo… ' + Math.min(99, Math.round(p*100)) + '%'; });
+                }catch(e){ work = pickedFile; }
+              }
+              if(work.size <= 12 * 1024 * 1024){
+                msg.style.color=''; msg.textContent='Préparation de la vidéo…';
+                blobData = await fileToDataURL(work); kind = 'video'; src = '';
+              } else {
+                msg.style.color='var(--rose)';
+                msg.innerHTML = "Vidéo trop longue pour l'import direct, même compressée. Importez un <strong>clip plus court</strong> (≤ ~90 s), ou collez un <strong>lien YouTube/Drive</strong>.";
+                return;
+              }
             }
           }
         } else if(src){
