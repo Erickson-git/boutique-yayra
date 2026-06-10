@@ -84,9 +84,9 @@
   function embedSrc(u){
     u = u || ''; let m;
     if((m = u.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/|live\/)|youtu\.be\/)([\w-]{6,})/)))
-      return 'https://www.youtube.com/embed/' + m[1] + '?enablejsapi=1&autoplay=0&mute=1&loop=1&playlist=' + m[1] + '&controls=1&playsinline=1&rel=0&origin=' + encodeURIComponent(location.origin);
+      return 'https://www.youtube.com/embed/' + m[1] + '?enablejsapi=1&autoplay=1&mute=1&loop=1&playlist=' + m[1] + '&controls=1&playsinline=1&rel=0&origin=' + encodeURIComponent(location.origin);
     if((m = u.match(/vimeo\.com\/(?:video\/)?(\d+)/)))
-      return 'https://player.vimeo.com/video/' + m[1] + '?autoplay=0&muted=1&loop=1';
+      return 'https://player.vimeo.com/video/' + m[1] + '?autoplay=1&muted=1&loop=1';
     if((m = u.match(/drive\.google\.com\/file\/d\/([\w-]+)/)))
       return 'https://drive.google.com/file/d/' + m[1] + '/preview';
     return null;
@@ -138,36 +138,31 @@
     function ytCmd(f, func, args){ if(!f || !f.src || !f.contentWindow) return; try{ f.contentWindow.postMessage(JSON.stringify({ event:'command', func:func, args:args||[] }), '*'); }catch(e){} }
     function loadFrame(f){ if(f && !f.src){ const s=f.getAttribute('data-embed'); if(s) f.src=s; } }
     function unloadFrame(f){ if(f && f.src){ f.removeAttribute('src'); try{ f.src=''; }catch(e){} } }
-    function applyWindow(idx){
-      items.forEach((it, i)=>{ const f = it.querySelector('iframe[data-embed]'); if(!f) return; (Math.abs(i-idx) <= WINDOW) ? loadFrame(f) : unloadFrame(f); });
+    // Applique l'état (charge la fenêtre, lit la courante, met en pause les autres).
+    // La courante démarre en AUTOPLAY natif (muet) dès le chargement de l'iframe ;
+    // si elle était déjà préchargée+pause, playVideo la relance instantanément.
+    function applyState(idx){
+      items.forEach((it, i)=>{
+        const f = it.querySelector('iframe[data-embed]'); const v = it.querySelector('video');
+        const inWin = Math.abs(i - idx) <= WINDOW;
+        if(f){
+          if(inWin){
+            loadFrame(f);
+            if(i === idx){ ytCmd(f,'playVideo'); ytCmd(f, soundOn?'unMute':'mute'); if(soundOn) ytCmd(f,'setVolume',[100]); }
+            else { ytCmd(f,'pauseVideo'); ytCmd(f,'mute'); }
+          } else unloadFrame(f);
+        }
+        if(v){ if(i === idx){ playVid(v); v.muted = !soundOn; } else { v.pause(); v.muted = true; } }
+      });
     }
     function setCurrent(idx){
       if(idx < 0 || idx >= items.length || idx === current) return;
       current = idx;
-      applyWindow(idx);
-      items.forEach((it, i)=>{
-        const f = it.querySelector('iframe[data-embed]'); const v = it.querySelector('video');
-        if(i === idx){
-          if(f){ ytCmd(f,'playVideo'); ytCmd(f, soundOn?'unMute':'mute'); }
-          if(v){ playVid(v); v.muted = !soundOn; }
-        } else {
-          if(f){ ytCmd(f,'pauseVideo'); ytCmd(f,'mute'); }
-          if(v){ v.pause(); v.muted = true; }
-        }
-      });
-      // Le lecteur peut ne pas être prêt tout de suite : on renvoie la commande
-      [350,900,1800].forEach(d=> setTimeout(()=>{ if(current!==idx) return; const f=items[idx].querySelector('iframe[data-embed]'); if(f){ ytCmd(f,'playVideo'); ytCmd(f, soundOn?'unMute':'mute'); } }, d));
+      applyState(idx);
+      // Les lecteurs fraîchement chargés peuvent ne pas être prêts : on réapplique
+      [400,1000,2000].forEach(d=> setTimeout(()=>{ if(current === idx) applyState(idx); }, d));
     }
-    function applySound(){
-      // le son suit la vidéo courante ; les autres restent muettes
-      items.forEach((it, i)=>{
-        const f = it.querySelector('iframe[data-embed]'); const v = it.querySelector('video');
-        const on = soundOn && i === current;
-        if(f){ ytCmd(f, on?'unMute':'mute'); if(on) ytCmd(f,'setVolume',[100]); }
-        if(v){ v.muted = !on; if(on) v.play().catch(()=>{}); }
-      });
-    }
-    function enableSound(){ if(soundOn) return; soundOn = true; hideSndCta(); applySound(); }
+    function enableSound(){ if(soundOn) return; soundOn = true; hideSndCta(); applyState(current); }
     // Bouton visible « activer le son » : un geste sur la PAGE est requis (les touches
     // sur la vidéo vont dans le lecteur YouTube et n'autorisent pas le son).
     let sndCta = null;
