@@ -74,7 +74,7 @@
       <div class="product-card" style="grid-column:span 12; margin-top:28px;">
         <div class="product-info">
           <h4 style="font-size:20px;">Conseil personnalisé</h4>
-          <p class="muted" style="margin:0 0 8px;">Cliquez sur « Conseil » sur un produit pour obtenir des explications détaillées.</p>
+          <p class="muted" style="margin:0 0 8px;">Cliquez sur « Infos produit » sur un article pour ouvrir sa fiche détaillée avec le conseil automatique.</p>
           <p class="muted" id="aiMsg" style="margin:0 0 8px;" aria-live="polite"></p>
           <div id="aiAnswer" style="color:var(--ink); line-height:1.6;"></div>
         </div>
@@ -156,7 +156,7 @@
           <div class="pd-stock"><span class="dotg"></span> <span id="pdStock"></span></div>
           <p class="pd-desc" id="pdDesc"></p>
           <div class="pd-meta" id="pdMeta"></div>
-          <button class="small-btn" id="pdAdvice" type="button" style="width:fit-content;"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3l2 6 6 2-6 2-2 6-2-6-6-2 6-2z"/></svg> Conseil IA automatique</button>
+          <button class="small-btn" id="pdAdvice" type="button" style="width:fit-content;"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3l2 6 6 2-6 2-2 6-2-6-6-2 6-2z"/></svg> Revoir le conseil</button>
           <div id="pdAdviceBox" style="line-height:1.6; font-size:14px;"></div>
           <div class="pd-qty">
             <button type="button" id="pdMinus" aria-label="Moins">−</button>
@@ -232,13 +232,16 @@
       wa.href = 'https://wa.me/22897498685?text=' + encodeURIComponent('Bonjour YAYRA ! Je souhaite commander : ' + (p.name||'') + ' (' + currencyFCFA(p.price_fcfa) + ').');
       const add = document.getElementById('pdAdd');
       add.style.display = inStock ? '' : 'none';
-      document.getElementById('pdAdviceBox').innerHTML = '';
       pdModal.classList.add('open');
       document.body.style.overflow = 'hidden';
+      showAdvice();
     }
-    document.getElementById('pdAdvice').addEventListener('click', ()=>{
-      if(pdCurrent && window.YAYRA_ADVISOR){ document.getElementById('pdAdviceBox').innerHTML = window.YAYRA_ADVISOR.advise(pdCurrent); }
-    });
+    function showAdvice(){
+      const box = document.getElementById('pdAdviceBox');
+      if(pdCurrent && window.YAYRA_ADVISOR){ box.innerHTML = window.YAYRA_ADVISOR.advise(pdCurrent); }
+      else { box.innerHTML = '<p class="muted">Pour un conseil personnalisé, écrivez-nous sur <a href="https://wa.me/22897498685?text=Bonjour+YAYRA+!" style="color:var(--gold)" target="_blank" rel="noopener">WhatsApp</a>.</p>'; }
+    }
+    document.getElementById('pdAdvice').addEventListener('click', showAdvice);
     function closeDetail(){ pdModal.classList.remove('open'); document.body.style.overflow=''; }
     document.getElementById('pdClose').addEventListener('click', closeDetail);
     pdModal.addEventListener('click', (e)=>{ if(e.target===pdModal) closeDetail(); });
@@ -320,12 +323,12 @@
             ${inStock
               ? `<button class="small-btn" data-add-to-cart data-product-id="${p.id}" data-product-name="${p.name}" data-product-price="${p.price_fcfa}" data-qty="1">Ajouter au panier</button>`
               : `<button class="small-btn" type="button" data-notify-rupture data-pid="${p.id}" data-pname="${p.name}">Alerte retour en stock</button>`}
-            <button class="small-btn" type="button" data-ai-info data-pid="${p.id}">Conseil</button>
+            <button class="small-btn" type="button" data-ai-info data-pid="${p.id}">Infos produit</button>
           </div>
           ${inStock ? '' : '<p class="muted" style="margin:8px 0 0; font-size:12.5px;">Actuellement en rupture</p>'}
         </div>`;
       const btn = wrap.querySelector('[data-ai-info]');
-      if(btn) btn.addEventListener('click', (e)=>{ e.stopPropagation(); aiAskInfoProduct(p); });
+      if(btn) btn.addEventListener('click', (e)=>{ e.stopPropagation(); openDetail(p); });
       wrap.addEventListener('click', (e)=>{ if(e.target.closest('button,a')) return; openDetail(p); });
       return wrap;
     }
