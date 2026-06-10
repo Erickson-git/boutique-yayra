@@ -291,8 +291,22 @@
     li.appendChild(a); links.appendChild(li);
   }
 
+  // Accessible globalement (ex. bouton « Installer » sur la page d'accueil)
+  window.YAYRA_INSTALL = function(){ installApp(); };
+  window.YAYRA_IS_INSTALLED = isInstalled;
+
+  function wireInstallButtons(){
+    // Tout élément marqué data-install-app déclenche l'installation ; caché si déjà installé
+    document.querySelectorAll('[data-install-app]').forEach(function(el){
+      if(isInstalled()){ el.style.display = 'none'; return; }
+      if(el.__yaWired) return; el.__yaWired = true;
+      el.addEventListener('click', function(e){ e.preventDefault(); installApp(); });
+    });
+  }
+
   function init(){
     addInstallNav();
+    wireInstallButtons();
     const u = currentUser();
     if(u) render(u);
     // Invite à installer (bannière) après un court délai, une seule fois
