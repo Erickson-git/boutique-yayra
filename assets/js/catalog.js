@@ -68,7 +68,7 @@
       const span = b[2] - b[1];
       const raw = b[1] + (span > 0 ? ((qIdx * 137) % (span + 1)) : 0);
       const price = Math.round(raw / step) * step;
-      const img = g.imgs[i % g.imgs.length];
+      const baseIdx = i % g.bases.length;
       const stock = 3 + ((i * 13) % 28);
       products.push({
         id,
@@ -77,7 +77,10 @@
         name: b[0] + ' ' + qual,
         description: b[0] + ' ' + qual + ' — sélection YAYRA Nail Shop, qualité professionnelle.',
         price_fcfa: price,
-        image_url: 'assets/images/' + img + '.jpg',
+        // Une image par TYPE de produit (assets/images/p/) : chaque type apparaît
+        // ~6-7 fois => aucune image ne dépasse 10 répétitions. Remplaçable par une
+        // vraie photo de la boutique (même nom de fichier).
+        image_url: 'assets/images/p/' + g.slug + '-' + baseIdx + '.jpg',
         is_featured: (id % 23 === 0) ? 1 : 0,
         stock_qty: stock,
         is_available: 1

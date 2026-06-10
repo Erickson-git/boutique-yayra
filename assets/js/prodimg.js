@@ -51,6 +51,9 @@ window.YAYRA_PRODIMG = (function(){
 
   function url(p){
     p = p || {};
+    // Priorité à l'image par type (assets/images/p/...) fournie par le catalogue ;
+    // repli sur une photo générique de la catégorie si absente.
+    if(p.image_url && p.image_url.indexOf('assets/images/p/') === 0) return p.image_url;
     return 'assets/images/' + photoFor(p.name, p.category_slug) + '.jpg';
   }
   return { url, photoFor };

@@ -1,0 +1,21 @@
+IMAGES PAR TYPE DE PRODUIT — YAYRA Nail Shop
+=============================================
+
+Chaque fichier ici correspond à UN type de produit du catalogue.
+Nom de fichier : <categorie>-<numero>.jpg
+  categories : ongles, kits (cosmétiques), visage, capillaire, meubles, machines
+
+Pourquoi : le catalogue compte 1000 produits. Chaque type de produit
+n'apparaît que ~6 à 7 fois, donc aucune image ne se répète plus de ~7 fois
+(plafond demandé : 10 maximum).
+
+REMPLACER PAR TA PROPRE PHOTO
+-----------------------------
+Pour mettre la vraie photo d'un de tes produits, remplace simplement le
+fichier correspondant en GARDANT LE MÊME NOM (par ex. kits-19.jpg pour le
+rouge à lèvres). La photo s'affichera automatiquement partout sur le site.
+
+Pour retrouver quel fichier correspond à quel produit : ouvre une fiche
+produit sur la boutique, le numéro suit l'ordre des types de la catégorie.
+
+Format conseillé : carré (ex. 800x800), JPG, < 200 Ko.
