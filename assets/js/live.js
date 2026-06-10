@@ -84,9 +84,9 @@
   function embedSrc(u){
     u = u || ''; let m;
     if((m = u.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/|live\/)|youtu\.be\/)([\w-]{6,})/)))
-      return 'https://www.youtube.com/embed/' + m[1] + '?autoplay=1&mute=1&loop=1&playlist=' + m[1] + '&controls=1&playsinline=1&rel=0';
+      return 'https://www.youtube.com/embed/' + m[1] + '?enablejsapi=1&autoplay=0&mute=1&loop=1&playlist=' + m[1] + '&controls=1&playsinline=1&rel=0&origin=' + encodeURIComponent(location.origin);
     if((m = u.match(/vimeo\.com\/(?:video\/)?(\d+)/)))
-      return 'https://player.vimeo.com/video/' + m[1] + '?autoplay=1&muted=1&loop=1';
+      return 'https://player.vimeo.com/video/' + m[1] + '?autoplay=0&muted=1&loop=1';
     if((m = u.match(/drive\.google\.com\/file\/d\/([\w-]+)/)))
       return 'https://drive.google.com/file/d/' + m[1] + '/preview';
     return null;
@@ -128,25 +128,50 @@
       return LIVE.ref('videoBlobs/'+bid).once('value').then(s=>{ const d=s.val(); if(d){ v.src = d; return true; } return false; }).catch(()=> false);
     }
     function playVid(v){ if(!v) return; const bid=v.getAttribute('data-blobid'); if(bid && !v.src){ loadBlob(v).then(ok=>{ if(ok) v.play().catch(()=>{}); }); } else v.play().catch(()=>{}); }
-    // Active un élément (vidéo ou lecteur intégré) ; charge l'iframe seulement quand visible
-    function activate(it){
-      const v = it.querySelector('video'); if(v) playVid(v);
-      const f = it.querySelector('iframe[data-embed]'); if(f && !f.src) f.src = f.getAttribute('data-embed');
+
+    /* Fenêtre glissante : on précharge la vidéo courante ± WINDOW (≈10 voisines)
+       pour un défilement fluide, et on pilote lecture/son via l'API YouTube
+       (postMessage) — sans recharger l'iframe. */
+    const items = Array.from(feed.querySelectorAll('.feed-item'));
+    const WINDOW = 5;
+    let soundOn = false, current = -1;
+    function ytCmd(f, func, args){ if(!f || !f.src || !f.contentWindow) return; try{ f.contentWindow.postMessage(JSON.stringify({ event:'command', func:func, args:args||[] }), '*'); }catch(e){} }
+    function loadFrame(f){ if(f && !f.src){ const s=f.getAttribute('data-embed'); if(s) f.src=s; } }
+    function unloadFrame(f){ if(f && f.src){ f.removeAttribute('src'); try{ f.src=''; }catch(e){} } }
+    function applyWindow(idx){
+      items.forEach((it, i)=>{ const f = it.querySelector('iframe[data-embed]'); if(!f) return; (Math.abs(i-idx) <= WINDOW) ? loadFrame(f) : unloadFrame(f); });
     }
-    function deactivate(it){
-      const v = it.querySelector('video'); if(v) v.pause();
-      const f = it.querySelector('iframe[data-embed]'); if(f && f.src){ f.removeAttribute('src'); try{ f.src=''; }catch(e){} }
+    function setCurrent(idx){
+      if(idx < 0 || idx >= items.length || idx === current) return;
+      current = idx;
+      applyWindow(idx);
+      items.forEach((it, i)=>{
+        const f = it.querySelector('iframe[data-embed]'); const v = it.querySelector('video');
+        if(i === idx){
+          if(f){ ytCmd(f,'playVideo'); ytCmd(f, soundOn?'unMute':'mute'); }
+          if(v){ playVid(v); v.muted = !soundOn; }
+        } else {
+          if(f){ ytCmd(f,'pauseVideo'); ytCmd(f,'mute'); }
+          if(v){ v.pause(); v.muted = true; }
+        }
+      });
+      // Le lecteur peut ne pas être prêt tout de suite : on renvoie la commande
+      [350,900,1800].forEach(d=> setTimeout(()=>{ if(current!==idx) return; const f=items[idx].querySelector('iframe[data-embed]'); if(f){ ytCmd(f,'playVideo'); ytCmd(f, soundOn?'unMute':'mute'); } }, d));
     }
+    function enableSound(){
+      if(soundOn) return; soundOn = true;
+      const it = items[current]; if(!it) return;
+      const f = it.querySelector('iframe[data-embed]'); if(f){ ytCmd(f,'unMute'); ytCmd(f,'setVolume',[100]); }
+      const v = it.querySelector('video'); if(v){ v.muted=false; v.play().catch(()=>{}); }
+    }
+    ['pointerdown','touchstart','click','keydown'].forEach(ev=> document.addEventListener(ev, enableSound, { passive:true }));
     if('IntersectionObserver' in window){
       const io = new IntersectionObserver((entries)=>{
-        entries.forEach(e=>{
-          if(e.isIntersecting && e.intersectionRatio > 0.5) activate(e.target);
-          else if(e.intersectionRatio === 0) deactivate(e.target);
-        });
-      }, {threshold:[0,0.5,1]});
-      feed.querySelectorAll('.feed-item').forEach(it=> io.observe(it));
+        entries.forEach(e=>{ if(e.isIntersecting && e.intersectionRatio > 0.6){ const idx = items.indexOf(e.target); if(idx > -1) setCurrent(idx); } });
+      }, {threshold:[0,0.6,1]});
+      items.forEach(it=> io.observe(it));
     }
-    const firstItem = feed.querySelector('.feed-item'); if(firstItem) activate(firstItem);
+    setCurrent(0);
     // interactions
     feed.querySelectorAll('.feed-item').forEach(it=>{
       const v = it.querySelector('video');
