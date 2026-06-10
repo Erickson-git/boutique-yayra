@@ -91,12 +91,15 @@
       return 'https://drive.google.com/file/d/' + m[1] + '/preview';
     return null;
   }
+  function ytId(u){ u=u||''; const m = u.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/|live\/)|youtu\.be\/)([\w-]{6,})/); return m ? m[1] : null; }
   function feedItem(v, i){
     const img = isImageItem(v);
     const emb = (!img && !v.blob) ? embedSrc(v.src) : null;
+    const yid = emb ? ytId(v.src) : null;
+    const poster = yid ? '<img class="feed-poster" data-poster="https://i.ytimg.com/vi/'+yid+'/hqdefault.jpg" alt="" />' : '';
     let media;
     if(img) media = '<img src="'+v.src+'" alt="'+esc(v.cap||'')+'" loading="lazy" />';
-    else if(emb) media = '<iframe class="feed-embed" data-embed="'+emb+'" frameborder="0" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen></iframe>';
+    else if(emb) media = poster + '<iframe class="feed-embed" data-embed="'+emb+'" style="display:none" frameborder="0" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen></iframe>';
     else if(v.blob) media = '<video data-blobid="'+(v._id||'')+'" muted loop playsinline controls controlslist="nodownload" preload="none"></video>';
     else media = '<video src="'+v.src+'" muted loop playsinline controls controlslist="nodownload" preload="metadata"></video>';
     const soundBtn = (img || emb) ? ''
@@ -135,9 +138,30 @@
     const items = Array.from(feed.querySelectorAll('.feed-item'));
     const WINDOW = 5;
     let soundOn = false, current = -1;
+
+    /* Préchargement progressif des posters (miniatures) des 100 vidéos :
+       toutes finissent par se charger, mais les plus PROCHES de la vidéo
+       courante sont chargées en priorité -> affichage instantané au défilement. */
+    const posters = items.map((it, i)=>{ const im = it.querySelector('.feed-poster'); return im ? { im, i, done:false } : null; }).filter(Boolean);
+    let pumping = false;
+    function pumpPosters(){
+      if(pumping) return;
+      const pending = posters.filter(p=> !p.done);
+      if(!pending.length) return;
+      pending.sort((a,b)=> Math.abs(a.i-(current<0?0:current)) - Math.abs(b.i-(current<0?0:current)));
+      const batch = pending.slice(0, 8);
+      pumping = true; let remaining = batch.length;
+      batch.forEach(p=>{
+        p.done = true;
+        const src = p.im.getAttribute('data-poster'); if(!src){ remaining--; return; }
+        p.im.onload = p.im.onerror = ()=>{ remaining--; if(remaining <= 0){ pumping = false; setTimeout(pumpPosters, 120); } };
+        p.im.src = src; p.im.removeAttribute('data-poster');
+      });
+      if(remaining <= 0){ pumping = false; setTimeout(pumpPosters, 120); }
+    }
     function ytCmd(f, func, args){ if(!f || !f.src || !f.contentWindow) return; try{ f.contentWindow.postMessage(JSON.stringify({ event:'command', func:func, args:args||[] }), '*'); }catch(e){} }
-    function loadFrame(f){ if(f && !f.src){ const s=f.getAttribute('data-embed'); if(s) f.src=s; } }
-    function unloadFrame(f){ if(f && f.src){ f.removeAttribute('src'); try{ f.src=''; }catch(e){} } }
+    function loadFrame(f){ if(f && !f.src){ const s=f.getAttribute('data-embed'); if(s){ f.src=s; f.style.display=''; } } }
+    function unloadFrame(f){ if(f && f.src){ f.removeAttribute('src'); try{ f.src=''; }catch(e){} f.style.display='none'; } }
     // Applique l'état (charge la fenêtre, lit la courante, met en pause les autres).
     // La courante démarre en AUTOPLAY natif (muet) dès le chargement de l'iframe ;
     // si elle était déjà préchargée+pause, playVideo la relance instantanément.
@@ -159,6 +183,7 @@
       if(idx < 0 || idx >= items.length || idx === current) return;
       current = idx;
       applyState(idx);
+      pumpPosters(); // reprioriser le préchargement autour de la nouvelle position
       // Les lecteurs fraîchement chargés peuvent ne pas être prêts : on réapplique
       [400,1000,2000].forEach(d=> setTimeout(()=>{ if(current === idx) applyState(idx); }, d));
     }
