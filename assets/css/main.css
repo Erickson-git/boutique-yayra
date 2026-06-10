@@ -563,7 +563,7 @@ h1,h2,h3,h4{margin:0; font-weight:500}
 .feed{height:100dvh; overflow-y:scroll; scroll-snap-type:y mandatory; -webkit-overflow-scrolling:touch; scrollbar-width:none}
 .feed::-webkit-scrollbar{display:none}
 .feed-item{position:relative; height:100dvh; scroll-snap-align:start; display:flex; align-items:center; justify-content:center; overflow:hidden; background:#000}
-.feed-item>video{width:100%; height:100%; object-fit:cover}
+.feed-item>video,.feed-item>img{width:100%; height:100%; object-fit:cover}
 .feed-grad{position:absolute; inset:0; z-index:1; pointer-events:none; background:linear-gradient(180deg, rgba(0,0,0,.45) 0%, transparent 20%, transparent 52%, rgba(0,0,0,.8) 100%)}
 .feed-overlay{position:absolute; left:0; right:0; bottom:0; z-index:3; padding:0 16px 28px; display:flex; align-items:flex-end; justify-content:space-between; gap:14px}
 .feed-info{max-width:72%}

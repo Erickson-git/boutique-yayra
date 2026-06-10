@@ -46,10 +46,19 @@
     catch(e){ window.open('https://wa.me/?text=' + encodeURIComponent(data.text + ' ' + location.href), '_blank'); }
   }
 
-  /* ---------------- FIL DE VIDÉOS (pas de direct) ---------------- */
+  /* ---------------- FIL DE VIDÉOS / PHOTOS (pas de direct) ---------------- */
+  const SND_ON  = '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M16 9a4 4 0 0 1 0 6M19 7a8 8 0 0 1 0 10"/></svg>';
+  const SND_OFF = '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M22 9l-6 6M16 9l6 6"/></svg>';
+  function isImageItem(v){ return v && (v.kind === 'image' || /\.(jpe?g|png|gif|webp)$/i.test(v.src||'') || /^data:image\//.test(v.src||'')); }
   function feedItem(v, i){
+    const img = isImageItem(v);
+    const media = img
+      ? '<img src="'+v.src+'" alt="'+esc(v.cap||'')+'" loading="lazy" />'
+      : '<video src="'+v.src+'" muted loop playsinline preload="metadata"></video>';
+    const soundBtn = img ? ''
+      : '<button class="fa-btn" data-sound><span class="fa-ic">'+SND_OFF+'</span><span class="snd-lbl">Son</span></button>';
     return '<article class="feed-item">'
-      + '<video src="'+v.src+'" muted loop playsinline preload="metadata"></video>'
+      + media
       + '<div class="feed-grad"></div>'
       + '<div class="hearts" data-hearts></div>'
       + '<div class="feed-overlay"><div class="feed-info">'
@@ -58,6 +67,7 @@
       +   (v.link?'<a class="feed-cta" href="'+v.link+'">Voir</a>':'')
       + '</div><div class="feed-actions">'
       +   '<button class="fa-btn" data-like><span class="fa-ic">'+HEART+'</span><span class="like-count">'+(60+i*37%400)+'</span></button>'
+      +   soundBtn
       +   '<button class="fa-btn" data-comment><span class="fa-ic">'+CHAT+'</span>Commenter</button>'
       +   '<button class="fa-btn" data-share><span class="fa-ic">'+PLAY+'</span>Partager</button>'
       +   '<a class="fa-btn" href="shop.html"><span class="fa-ic">'+BAG+'</span>Boutique</a>'
@@ -78,11 +88,25 @@
     // interactions
     feed.querySelectorAll('.feed-item').forEach(it=>{
       const v = it.querySelector('video');
-      it.addEventListener('click', (ev)=>{ if(ev.target.closest('a,button')) return; if(v.paused) v.play().catch(()=>{}); else v.pause(); });
+      it.addEventListener('click', (ev)=>{ if(ev.target.closest('a,button')) return; if(!v) return; if(v.paused) v.play().catch(()=>{}); else v.pause(); });
     });
     feed.addEventListener('click', (e)=>{
       const like = e.target.closest('[data-like]');
       if(like){ like.classList.toggle('liked'); const c=like.querySelector('.like-count'); if(c) c.textContent=(parseInt(c.textContent,10)||0)+(like.classList.contains('liked')?1:-1); spawnHeart(like.closest('.feed-item').querySelector('[data-hearts]')); return; }
+      const snd = e.target.closest('[data-sound]');
+      if(snd){
+        const item = snd.closest('.feed-item'); const vid = item.querySelector('video'); if(!vid) return;
+        const turnOn = vid.muted;
+        if(turnOn){ // couper le son des autres : une seule vidéo sonore à la fois
+          feed.querySelectorAll('.feed-item video').forEach(o=>{ if(o!==vid) o.muted=true; });
+          feed.querySelectorAll('[data-sound]').forEach(b=>{ if(b!==snd){ b.querySelector('.fa-ic').innerHTML=SND_OFF; const l=b.querySelector('.snd-lbl'); if(l) l.textContent='Son'; } });
+        }
+        vid.muted = !turnOn;
+        if(!vid.muted) vid.play().catch(()=>{});
+        snd.querySelector('.fa-ic').innerHTML = vid.muted ? SND_OFF : SND_ON;
+        const lbl = snd.querySelector('.snd-lbl'); if(lbl) lbl.textContent = vid.muted ? 'Son' : 'Couper';
+        return;
+      }
       if(e.target.closest('[data-comment]')){ window.open('https://wa.me/22897498685?text=Bonjour+YAYRA+!+J%27ai+vu+vos+vid%C3%A9os.','_blank'); return; }
       if(e.target.closest('[data-share]')){ doShare(); return; }
     });

@@ -38,8 +38,8 @@
     <div class="ph-media" style="background-image:url('../assets/images/net-makeup-model.jpg')"></div>
     <div class="container">
       <p class="section-eyebrow">Administration</p>
-      <h1>Vidéos de la boutique</h1>
-      <p>Publiez des vidéos visibles par vos clientes sur la page Live quand aucun direct n'est en cours.</p>
+      <h1>Vidéos & photos de la boutique</h1>
+      <p>Publiez des vidéos et des photos visibles par vos clientes sur la page Live quand aucun direct n'est en cours.</p>
     </div>
   </header>
 
@@ -53,18 +53,18 @@
         <div>
           <div class="product-card">
             <div class="product-info">
-              <h4 style="font-size:20px;">Publier une vidéo</h4>
+              <h4 style="font-size:20px;">Publier une vidéo ou une photo</h4>
               <form id="vForm" class="form" style="margin-top:8px;">
                 <input id="vCap" placeholder="Légende (facultatif)" />
                 <input id="vTag" placeholder="Catégorie (facultatif)" />
                 <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
-                  <button class="btn-outline" type="button" id="vPick"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 5v14l11-7z"/></svg> Importer (galerie / fichiers)</button>
+                  <button class="btn-outline" type="button" id="vPick"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h4l2-3h6l2 3h4v12H3z"/><circle cx="12" cy="13" r="3.2"/></svg> Importer une photo ou une vidéo</button>
                   <span class="muted" id="vName" style="font-size:12.5px;"></span>
                 </div>
-                <input type="file" id="vFile" accept="video/*" style="display:none;" />
-                <input id="vUrl" placeholder="… ou coller un lien de vidéo (https://…)" />
+                <input type="file" id="vFile" accept="image/*,video/*" style="display:none;" />
+                <input id="vUrl" placeholder="… ou coller un lien (image ou vidéo, https://…)" />
                 <div id="vPreview" style="display:none;"></div>
-                <button class="btn-gold" type="submit" id="vSubmit">Publier la vidéo</button>
+                <button class="btn-gold" type="submit" id="vSubmit">Publier</button>
                 <p class="muted" id="vMsg" aria-live="polite" style="margin:0;"></p>
               </form>
             </div>
@@ -105,11 +105,38 @@
       pickedFile = e.target.files && e.target.files[0]; if(!pickedFile) return;
       $('vName').textContent = pickedFile.name + ' · ' + Math.round(pickedFile.size/1024/1024*10)/10 + ' Mo';
       const url = URL.createObjectURL(pickedFile);
-      $('vPreview').style.display=''; $('vPreview').innerHTML = '<video src="'+url+'" style="width:100%; max-height:220px; border-radius:12px;" muted controls playsinline></video>';
+      $('vPreview').style.display='';
+      $('vPreview').innerHTML = /^image\//.test(pickedFile.type)
+        ? '<img src="'+url+'" style="width:100%; max-height:220px; object-fit:contain; border-radius:12px;" alt="" />'
+        : '<video src="'+url+'" style="width:100%; max-height:220px; border-radius:12px;" muted controls playsinline></video>';
     });
 
+    // Réduit une image et la renvoie en data URL (publication sans Firebase Storage)
+    function imageToDataURL(file, maxSide){
+      return new Promise((resolve, reject)=>{
+        const r = new FileReader();
+        r.onload = ()=>{
+          const im = new Image();
+          im.onload = ()=>{
+            const s = Math.min(1, maxSide / Math.max(im.width, im.height));
+            const w = Math.round(im.width*s), h = Math.round(im.height*s);
+            const c = document.createElement('canvas'); c.width=w; c.height=h;
+            c.getContext('2d').drawImage(im, 0, 0, w, h);
+            resolve(c.toDataURL('image/jpeg', 0.82));
+          };
+          im.onerror = reject; im.src = r.result;
+        };
+        r.onerror = reject; r.readAsDataURL(file);
+      });
+    }
+    function fileToDataURL(file){
+      return new Promise((resolve, reject)=>{ const r=new FileReader(); r.onload=()=>resolve(r.result); r.onerror=reject; r.readAsDataURL(file); });
+    }
+    const isImageUrl = (u)=> /\.(jpe?g|png|gif|webp)$/i.test(u) || /^data:image\//.test(u);
+
     function defThumb(v){ return '<div class="product-row"><div style="flex:1;"><strong>'+(v.cap||'Vidéo')+'</strong><br/><span class="muted" style="font-size:12.5px;">'+(v.tag||'')+' · '+v.src.split('/').pop()+'</span></div></div>'; }
-    function pubRow(v){ return '<div class="product-row"><div style="flex:1;"><strong>'+(v.cap||'Vidéo')+'</strong><br/><span class="muted" style="font-size:12.5px;">'+(v.tag||'')+'</span></div><button class="small-btn danger" data-del="'+v._id+'">Retirer</button></div>'; }
+    function mediaType(v){ return (v.kind === 'image' || /\.(jpe?g|png|gif|webp)$/i.test(v.src||'') || /^data:image\//.test(v.src||'')) ? 'Photo' : 'Vidéo'; }
+    function pubRow(v){ return '<div class="product-row"><div style="flex:1;"><strong>'+(v.cap||mediaType(v))+'</strong><br/><span class="muted" style="font-size:12.5px;">'+mediaType(v)+(v.tag?' · '+v.tag:'')+'</span></div><button class="small-btn danger" data-del="'+v._id+'">Retirer</button></div>'; }
 
     function renderDefaults(){ $('defList').innerHTML = YAYRA_VIDEOS.defaults().map(defThumb).join(''); }
     async function renderPublished(){
@@ -129,21 +156,36 @@
       const tag = $('vTag').value.trim() || '';
       const urlIn = $('vUrl').value.trim();
       try{
-        let src = urlIn;
+        let src = urlIn, kind = '';
         if(pickedFile){
-          if(!hasStorage()){
-            msg.style.color='var(--rose)';
-            msg.innerHTML = "L'import de fichier vidéo nécessite la clé <strong>apiKey</strong> Firebase (à ajouter à la config). En attendant, vous pouvez <strong>coller un lien de vidéo</strong> ci-dessus pour publier tout de suite.";
-            return;
+          const isImg = /^image\//.test(pickedFile.type);
+          if(isImg){
+            // Image : réduite et stockée directement (fonctionne sans Firebase Storage)
+            msg.style.color=''; msg.textContent='Préparation de la photo…';
+            src = await imageToDataURL(pickedFile, 1280); kind = 'image';
+          } else {
+            // Vidéo : Storage si dispo, sinon petit fichier stocké directement
+            if(hasStorage()){
+              msg.style.color=''; msg.textContent='Envoi de la vidéo…';
+              const ref = firebase.storage().ref('videos/' + (LIVE.now()) + '_' + pickedFile.name.replace(/[^a-zA-Z0-9._-]/g,'_'));
+              await ref.put(pickedFile);
+              src = await ref.getDownloadURL(); kind = 'video';
+            } else if(pickedFile.size <= 6 * 1024 * 1024){
+              msg.style.color=''; msg.textContent='Préparation de la vidéo…';
+              src = await fileToDataURL(pickedFile); kind = 'video';
+            } else {
+              msg.style.color='var(--rose)';
+              msg.innerHTML = "Cette vidéo est trop lourde (> 6 Mo) pour une publication directe. Utilisez une vidéo plus courte, ou <strong>collez un lien de vidéo</strong> (YouTube/Drive/hébergeur).";
+              return;
+            }
           }
-          msg.style.color=''; msg.textContent='Envoi de la vidéo…';
-          const ref = firebase.storage().ref('videos/' + (LIVE.now()) + '_' + pickedFile.name.replace(/[^a-zA-Z0-9._-]/g,'_'));
-          await ref.put(pickedFile);
-          src = await ref.getDownloadURL();
+        } else if(src){
+          kind = isImageUrl(src) ? 'image' : 'video';
         }
-        if(!src){ msg.style.color='var(--rose)'; msg.textContent='Ajoutez une vidéo : importez un fichier ou collez un lien.'; return; }
-        await LIVE.ref('videos').push({ src, cap, tag, ts: LIVE.now() });
-        msg.style.color='var(--gold)'; msg.textContent='Vidéo publiée. Elle apparaît sur la page Live (hors direct).';
+        if(!src){ msg.style.color='var(--rose)'; msg.textContent='Ajoutez une photo ou une vidéo : importez un fichier ou collez un lien.'; return; }
+        msg.style.color=''; msg.textContent='Publication…';
+        await LIVE.ref('videos').push({ src, cap, tag, kind, ts: LIVE.now() });
+        msg.style.color='var(--gold)'; msg.textContent = (kind==='image'?'Photo':'Vidéo') + ' publiée. Elle apparaît sur la page Live (hors direct).';
         e.target.reset(); pickedFile=null; $('vPreview').style.display='none'; $('vName').textContent=''; renderPublished();
       }catch(err){ msg.style.color='var(--rose)'; msg.textContent='Erreur : ' + (err && err.message ? err.message : err); }
     });
