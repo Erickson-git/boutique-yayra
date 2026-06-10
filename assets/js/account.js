@@ -10,25 +10,80 @@
 
   // ---- Installation PWA ---------------------------------------------------
   let deferredPrompt = null;
-  window.addEventListener('beforeinstallprompt', function(e){ e.preventDefault(); deferredPrompt = e; });
-  window.addEventListener('appinstalled', function(){ deferredPrompt = null; });
+  window.addEventListener('beforeinstallprompt', function(e){ e.preventDefault(); deferredPrompt = e; maybeBanner(); });
+  window.addEventListener('appinstalled', function(){ deferredPrompt = null; hideBanner(); });
   function isInstalled(){
     return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
   }
+  function isIOS(){
+    const ua = navigator.userAgent || '';
+    return /iPhone|iPad|iPod/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  }
+  function iconPath(){ return paths().base + 'assets/icons/icon-192.png'; }
+
+  // Installation en un clic (Android/ordinateur) sinon fenêtre guidée (iOS)
   function installApp(){
     if(deferredPrompt){
       deferredPrompt.prompt();
-      deferredPrompt.userChoice.finally(function(){ deferredPrompt = null; });
+      deferredPrompt.userChoice.finally(function(){ deferredPrompt = null; hideBanner(); });
       return;
     }
-    // iOS / navigateurs sans prompt natif : instructions manuelles
-    const ua = navigator.userAgent || '';
-    const ios = /iPhone|iPad|iPod/i.test(ua);
-    const msg = ios
-      ? "Pour installer l'application :\n1. Touchez le bouton Partager (carré avec flèche)\n2. Choisissez « Sur l'écran d'accueil »"
-      : "Pour installer l'application :\n• Sur Android : menu ⋮ du navigateur → « Installer l'application » / « Ajouter à l'écran d'accueil »\n• Sur ordinateur : icône d'installation dans la barre d'adresse.";
-    alert(msg);
+    openInstallModal();
   }
+
+  function openInstallModal(){
+    style();
+    let m = document.getElementById('ya-im');
+    if(m){ m.classList.add('open'); return; }
+    m = document.createElement('div'); m.id = 'ya-im'; m.className = 'ya-im open';
+    const ios = isIOS();
+    const steps = ios
+      ? '<ol class="ya-im-steps">'
+        + '<li>Touchez le bouton <b>Partager</b> <span class="ya-im-ic"><svg viewBox="0 0 24 24"><path d="M12 16V4M8 8l4-4 4 4"/><path d="M5 12v7a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-7"/></svg></span> en bas de Safari.</li>'
+        + '<li>Faites défiler et choisissez <b>« Sur l\'écran d\'accueil »</b> <span class="ya-im-ic"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M12 8v8M8 12h8"/></svg></span>.</li>'
+        + '<li>Touchez <b>Ajouter</b>. L\'application YAYRA apparaît sur votre écran d\'accueil.</li>'
+        + '</ol>'
+      : '<ol class="ya-im-steps">'
+        + '<li>Ouvrez le menu <b>⋮</b> du navigateur (en haut à droite).</li>'
+        + '<li>Touchez <b>« Installer l\'application »</b> ou <b>« Ajouter à l\'écran d\'accueil »</b>.</li>'
+        + '<li>Confirmez. Sur ordinateur, utilisez l\'icône d\'installation dans la barre d\'adresse.</li>'
+        + '</ol>';
+    m.innerHTML =
+      '<div class="ya-im-card" role="dialog" aria-modal="true">'
+      + '<button class="ya-im-close" aria-label="Fermer">&times;</button>'
+      + '<img class="ya-im-logo" src="'+ iconPath() +'" alt="YAYRA">'
+      + '<h3>Installer l\'application YAYRA</h3>'
+      + '<p class="ya-im-sub">Accès rapide depuis votre écran d\'accueil, même hors connexion.</p>'
+      + (deferredPrompt ? '<button class="ya-im-go" data-go>Installer maintenant</button>' : '')
+      + steps
+      + '</div>';
+    document.body.appendChild(m);
+    function close(){ m.classList.remove('open'); }
+    m.querySelector('.ya-im-close').addEventListener('click', close);
+    m.addEventListener('click', function(e){ if(e.target === m) close(); });
+    const go = m.querySelector('[data-go]');
+    if(go) go.addEventListener('click', function(){ close(); installApp(); });
+  }
+
+  // Bannière d'invitation à installer (une seule fois, non intrusive)
+  function maybeBanner(){
+    if(isInstalled()) return;
+    if(localStorage.getItem('yayra_install_dismiss') === '1') return;
+    if(!deferredPrompt && !isIOS()) return; // rien à proposer sur ce navigateur
+    if(document.getElementById('ya-ib')) return;
+    style();
+    const b = document.createElement('div'); b.id = 'ya-ib'; b.className = 'ya-ib';
+    b.innerHTML =
+      '<img src="'+ iconPath() +'" alt="">'
+      + '<div class="ya-ib-txt"><b>Installer l\'application YAYRA</b><span>Un accès direct, comme une vraie appli.</span></div>'
+      + '<button class="ya-ib-go" data-install>Installer</button>'
+      + '<button class="ya-ib-x" aria-label="Fermer">&times;</button>';
+    document.body.appendChild(b);
+    requestAnimationFrame(function(){ b.classList.add('show'); });
+    b.querySelector('[data-install]').addEventListener('click', installApp);
+    b.querySelector('.ya-ib-x').addEventListener('click', function(){ localStorage.setItem('yayra_install_dismiss','1'); hideBanner(); });
+  }
+  function hideBanner(){ const b = document.getElementById('ya-ib'); if(b) b.remove(); }
 
   function paths(){
     const p = location.pathname;
@@ -127,6 +182,26 @@
 .ya-acc-item.danger{color:#e8717a}
 .nav-install-link{display:inline-flex; align-items:center; gap:7px}
 .nav-install-link svg{width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:1.7; vertical-align:middle}
+.ya-im{position:fixed; inset:0; z-index:3000; display:none; align-items:center; justify-content:center; background:rgba(8,6,3,.86); backdrop-filter:blur(4px); padding:18px}
+.ya-im.open{display:flex}
+.ya-im-card{position:relative; width:100%; max-width:380px; background:var(--bg,#1c140b); color:var(--ink,#f3ead9); border:1px solid var(--line-2,rgba(201,162,75,.32)); border-radius:18px; padding:26px 22px; text-align:center; box-shadow:0 24px 70px rgba(0,0,0,.5)}
+.ya-im-close{position:absolute; top:10px; right:12px; background:transparent; border:0; color:inherit; font-size:26px; line-height:1; cursor:pointer; opacity:.7}
+.ya-im-logo{width:74px; height:74px; border-radius:18px; margin:0 auto 12px; display:block; box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.ya-im-card h3{margin:0 0 6px; font-family:var(--serif,serif); font-size:22px}
+.ya-im-sub{margin:0 0 16px; font-size:13.5px; opacity:.8}
+.ya-im-go{display:block; width:100%; background:linear-gradient(135deg,#d9b25a,#b8893a); color:#1a1208; border:0; border-radius:12px; padding:13px; font-weight:700; font-size:15px; cursor:pointer; margin-bottom:16px}
+.ya-im-steps{text-align:left; margin:0; padding-left:20px; font-size:13.5px; line-height:1.7}
+.ya-im-steps li{margin-bottom:8px}
+.ya-im-ic{display:inline-flex; vertical-align:middle; width:22px; height:22px; border:1px solid var(--line-2,rgba(201,162,75,.4)); border-radius:6px; padding:2px; margin:0 2px}
+.ya-im-ic svg{width:100%; height:100%; stroke:var(--gold,#c9a24b); fill:none; stroke-width:1.7}
+.ya-ib{position:fixed; left:12px; right:12px; bottom:12px; z-index:1500; display:flex; align-items:center; gap:12px; background:var(--bg,#1c140b); color:var(--ink,#f3ead9); border:1px solid var(--line-2,rgba(201,162,75,.32)); border-radius:14px; padding:10px 12px; box-shadow:0 14px 44px rgba(0,0,0,.45); transform:translateY(140%); transition:transform .35s cubic-bezier(.2,.8,.2,1); max-width:460px; margin:0 auto}
+.ya-ib.show{transform:translateY(0)}
+.ya-ib img{width:42px; height:42px; border-radius:10px; flex:0 0 auto}
+.ya-ib-txt{flex:1; min-width:0; line-height:1.3}
+.ya-ib-txt b{display:block; font-size:14px}
+.ya-ib-txt span{font-size:12px; opacity:.75}
+.ya-ib-go{background:linear-gradient(135deg,#d9b25a,#b8893a); color:#1a1208; border:0; border-radius:9px; padding:9px 14px; font-weight:700; font-size:13px; cursor:pointer; flex:0 0 auto}
+.ya-ib-x{background:transparent; border:0; color:inherit; font-size:22px; line-height:1; cursor:pointer; opacity:.6; flex:0 0 auto}
 `;
     document.head.appendChild(s);
   }
@@ -220,6 +295,8 @@
     addInstallNav();
     const u = currentUser();
     if(u) render(u);
+    // Invite à installer (bannière) après un court délai, une seule fois
+    setTimeout(maybeBanner, 1500);
   }
   if(document.readyState !== 'loading') init();
   else document.addEventListener('DOMContentLoaded', init);
