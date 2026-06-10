@@ -2,7 +2,7 @@
    Stratégie : network-first pour HTML/CSS/JS (toujours la dernière version en
    ligne = mise à jour automatique), cache-first pour les images, secours hors-ligne.
    Bumper CACHE à chaque déploiement majeur pour nettoyer l'ancien cache. */
-const CACHE = 'yayra-v4';
+const CACHE = 'yayra-v5';
 const SHELL = ['./','./index.html','./shop.html','./assets/css/main.css','./assets/favicon.svg','./manifest.webmanifest'];
 
 self.addEventListener('install', (e)=>{
@@ -31,14 +31,18 @@ self.addEventListener('fetch', (e)=>{
 
   const isAsset = /\.(jpg|jpeg|png|gif|webp|svg|ico|woff2?)$/i.test(url.pathname);
   if(isAsset){
+    // cache-first, mais on ne met en cache QUE les réponses réussies (jamais un 404)
     e.respondWith(
-      caches.match(req).then(c=> c || fetch(req).then(r=>{ const cp = r.clone(); caches.open(CACHE).then(ca=> ca.put(req, cp)); return r; }).catch(()=> c))
+      caches.match(req).then(c=> c || fetch(req).then(r=>{
+        if(r && r.ok){ const cp = r.clone(); caches.open(CACHE).then(ca=> ca.put(req, cp)); }
+        return r;
+      }).catch(()=> c))
     );
     return;
   }
   // HTML / CSS / JS : network-first → toujours la dernière version, cache en secours hors-ligne
   e.respondWith(
-    fetch(req).then(r=>{ const cp = r.clone(); caches.open(CACHE).then(ca=> ca.put(req, cp)); return r; })
+    fetch(req).then(r=>{ if(r && r.ok){ const cp = r.clone(); caches.open(CACHE).then(ca=> ca.put(req, cp)); } return r; })
       .catch(()=> caches.match(req).then(c=> c || (req.mode === 'navigate' ? caches.match('./index.html') : undefined)))
   );
 });

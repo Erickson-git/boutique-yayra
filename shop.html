@@ -218,8 +218,10 @@
     let pdCurrent = null;
     function openDetail(p){
       pdCurrent = p;
-      document.getElementById('pdImg').src = (window.YAYRA_PRODIMG ? window.YAYRA_PRODIMG.url(p) : (p.image_url||'')).replace(/'/g,'');
-      document.getElementById('pdImg').alt = p.name || '';
+      const pdImg = document.getElementById('pdImg');
+      pdImg.onerror = ()=>{ pdImg.onerror=null; pdImg.src = 'assets/images/' + (window.YAYRA_PRODIMG ? YAYRA_PRODIMG.photoFor(p.name, p.category_slug) : 'beauty-flatlay') + '.jpg'; };
+      pdImg.src = (window.YAYRA_PRODIMG ? window.YAYRA_PRODIMG.url(p) : (p.image_url||'')).replace(/'/g,'');
+      pdImg.alt = p.name || '';
       document.getElementById('pdCat').textContent = p.category_slug || '';
       document.getElementById('pdTitle').textContent = p.name || '';
       document.getElementById('pdPrice').innerHTML = currencyFCFA(p.price_fcfa) + '<small>TTC · paiement à la livraison</small>';
@@ -327,6 +329,16 @@
           </div>
           ${inStock ? '' : '<p class="muted" style="margin:8px 0 0; font-size:12.5px;">Actuellement en rupture</p>'}
         </div>`;
+      // Repli automatique si l'image par type est absente : photo générique de la catégorie
+      const thumb = wrap.querySelector('.product-thumb');
+      if(thumb && img){
+        const probe = new Image();
+        probe.onerror = ()=>{
+          const fb = 'assets/images/' + (window.YAYRA_PRODIMG ? YAYRA_PRODIMG.photoFor(p.name, p.category_slug) : 'beauty-flatlay') + '.jpg';
+          thumb.style.backgroundImage = "url('" + fb + "')";
+        };
+        probe.src = img;
+      }
       const btn = wrap.querySelector('[data-ai-info]');
       if(btn) btn.addEventListener('click', (e)=>{ e.stopPropagation(); openDetail(p); });
       wrap.addEventListener('click', (e)=>{ if(e.target.closest('button,a')) return; openDetail(p); });

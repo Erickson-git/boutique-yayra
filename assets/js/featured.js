@@ -24,7 +24,7 @@
         const card = document.createElement('div');
         card.className = 'product-card fade-in';
         card.innerHTML = `
-          <div class="product-thumb"><img src="${img}" alt="${(p.name||'Produit').replace(/"/g,'')}" loading="lazy" /></div>
+          <div class="product-thumb"><img src="${img}" alt="${(p.name||'Produit').replace(/"/g,'')}" loading="lazy" onerror="this.onerror=null;this.src='assets/images/net-makeup-marble.jpg'" /></div>
           <div class="product-info">
             <h4>${p.name}</h4>
             <p>${p.description || ''}</p>
