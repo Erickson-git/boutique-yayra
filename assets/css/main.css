@@ -565,6 +565,11 @@ h1,h2,h3,h4{margin:0; font-weight:500}
 .feed-item{position:relative; height:100dvh; scroll-snap-align:start; display:flex; align-items:center; justify-content:center; overflow:hidden; background:#000}
 .feed-item>video,.feed-item>img{width:100%; height:100%; object-fit:cover}
 .feed-item>iframe,.feed-embed{width:100%; height:100%; border:0; display:block}
+.feed-soundcta{position:fixed; left:50%; bottom:96px; transform:translateX(-50%); z-index:9; display:inline-flex; align-items:center; gap:8px;
+  background:rgba(20,14,8,.82); color:#fff; border:1px solid rgba(255,255,255,.25); border-radius:999px; padding:11px 18px; font:600 13.5px var(--sans,system-ui);
+  cursor:pointer; backdrop-filter:blur(6px); box-shadow:0 8px 24px rgba(0,0,0,.4); animation:sndPulse 1.8s ease-in-out infinite}
+.feed-soundcta svg{width:18px; height:18px; stroke:currentColor; fill:none; stroke-width:1.7}
+@keyframes sndPulse{0%,100%{transform:translateX(-50%) scale(1)}50%{transform:translateX(-50%) scale(1.06)}}
 .feed-grad{position:absolute; inset:0; z-index:1; pointer-events:none; background:linear-gradient(180deg, rgba(0,0,0,.45) 0%, transparent 20%, transparent 52%, rgba(0,0,0,.8) 100%)}
 .feed-overlay{position:absolute; left:0; right:0; bottom:0; z-index:3; padding:0 16px 28px; display:flex; align-items:flex-end; justify-content:space-between; gap:14px}
 .feed-info{max-width:72%}

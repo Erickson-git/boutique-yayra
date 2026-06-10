@@ -53,7 +53,7 @@
     if(viewerId){ const cref=LIVE.ref('live/cohostSignals/'+viewerId); cref.off(); cref.remove(); }
   }
 
-  function hideAllLive(){ remoteVideo.style.display='none'; liveInfo.style.display='none'; actions.style.display='none'; compose.style.display='none'; unmute.style.display='none'; chatBox.style.display='none'; if(reactionsBar) reactionsBar.style.display='none'; }
+  function hideAllLive(){ remoteVideo.style.display='none'; liveInfo.style.display='none'; actions.style.display='none'; compose.style.display='none'; unmute.style.display='none'; chatBox.style.display='none'; if(reactionsBar) reactionsBar.style.display='none'; const sc=document.querySelector('.feed-soundcta'); if(sc) sc.style.display='none'; }
 
   function spawnHeart(host){
     host = host || heartsHost; if(!host) return;
@@ -158,11 +158,27 @@
       // Le lecteur peut ne pas être prêt tout de suite : on renvoie la commande
       [350,900,1800].forEach(d=> setTimeout(()=>{ if(current!==idx) return; const f=items[idx].querySelector('iframe[data-embed]'); if(f){ ytCmd(f,'playVideo'); ytCmd(f, soundOn?'unMute':'mute'); } }, d));
     }
-    function enableSound(){
-      if(soundOn) return; soundOn = true;
-      const it = items[current]; if(!it) return;
-      const f = it.querySelector('iframe[data-embed]'); if(f){ ytCmd(f,'unMute'); ytCmd(f,'setVolume',[100]); }
-      const v = it.querySelector('video'); if(v){ v.muted=false; v.play().catch(()=>{}); }
+    function applySound(){
+      // le son suit la vidéo courante ; les autres restent muettes
+      items.forEach((it, i)=>{
+        const f = it.querySelector('iframe[data-embed]'); const v = it.querySelector('video');
+        const on = soundOn && i === current;
+        if(f){ ytCmd(f, on?'unMute':'mute'); if(on) ytCmd(f,'setVolume',[100]); }
+        if(v){ v.muted = !on; if(on) v.play().catch(()=>{}); }
+      });
+    }
+    function enableSound(){ if(soundOn) return; soundOn = true; hideSndCta(); applySound(); }
+    // Bouton visible « activer le son » : un geste sur la PAGE est requis (les touches
+    // sur la vidéo vont dans le lecteur YouTube et n'autorisent pas le son).
+    let sndCta = null;
+    function hideSndCta(){ if(sndCta){ sndCta.remove(); sndCta = null; } }
+    function showSndCta(){
+      if(soundOn || sndCta) return;
+      sndCta = document.createElement('button');
+      sndCta.className = 'feed-soundcta';
+      sndCta.innerHTML = '<svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M16 9a4 4 0 0 1 0 6M19 7a8 8 0 0 1 0 10"/></svg> Touchez pour le son';
+      sndCta.addEventListener('click', (e)=>{ e.stopPropagation(); enableSound(); });
+      document.body.appendChild(sndCta);
     }
     ['pointerdown','touchstart','click','keydown'].forEach(ev=> document.addEventListener(ev, enableSound, { passive:true }));
     if('IntersectionObserver' in window){
@@ -172,6 +188,7 @@
       items.forEach(it=> io.observe(it));
     }
     setCurrent(0);
+    if(feed.querySelector('iframe[data-embed], video')) showSndCta();
     // interactions
     feed.querySelectorAll('.feed-item').forEach(it=>{
       const v = it.querySelector('video');
@@ -205,6 +222,7 @@
     title.textContent = 'Vidéos';
     if(!feedBuilt){ feedBuilt = await buildFeed(); }
     feed.style.display = 'block';
+    const sc=document.querySelector('.feed-soundcta'); if(sc) sc.style.display='';
     leaveLive();
   }
   function showEmpty(){ mode='empty'; hideAllLive(); feed.style.display='none'; empty.style.display='flex'; }
