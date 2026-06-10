@@ -97,8 +97,8 @@
     let media;
     if(img) media = '<img src="'+v.src+'" alt="'+esc(v.cap||'')+'" loading="lazy" />';
     else if(emb) media = '<iframe class="feed-embed" data-embed="'+emb+'" frameborder="0" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen></iframe>';
-    else if(v.blob) media = '<video data-blobid="'+(v._id||'')+'" muted loop playsinline preload="none"></video>';
-    else media = '<video src="'+v.src+'" muted loop playsinline preload="metadata"></video>';
+    else if(v.blob) media = '<video data-blobid="'+(v._id||'')+'" muted loop playsinline controls controlslist="nodownload" preload="none"></video>';
+    else media = '<video src="'+v.src+'" muted loop playsinline controls controlslist="nodownload" preload="metadata"></video>';
     const soundBtn = (img || emb) ? ''
       : '<button class="fa-btn" data-sound><span class="fa-ic">'+SND_OFF+'</span><span class="snd-lbl">Son</span></button>';
     return '<article class="feed-item">'
@@ -189,11 +189,7 @@
     }
     setCurrent(0);
     if(feed.querySelector('iframe[data-embed], video')) showSndCta();
-    // interactions
-    feed.querySelectorAll('.feed-item').forEach(it=>{
-      const v = it.querySelector('video');
-      it.addEventListener('click', (ev)=>{ if(ev.target.closest('a,button')) return; if(!v) return; if(v.paused) v.play().catch(()=>{}); else v.pause(); });
-    });
+    // interactions (les vidéos directes utilisent leurs contrôles natifs : barre de progression)
     feed.addEventListener('click', (e)=>{
       const like = e.target.closest('[data-like]');
       if(like){ like.classList.toggle('liked'); const c=like.querySelector('.like-count'); if(c) c.textContent=(parseInt(c.textContent,10)||0)+(like.classList.contains('liked')?1:-1); spawnHeart(like.closest('.feed-item').querySelector('[data-hearts]')); return; }

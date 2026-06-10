@@ -571,7 +571,10 @@ h1,h2,h3,h4{margin:0; font-weight:500}
 .feed-soundcta svg{width:18px; height:18px; stroke:currentColor; fill:none; stroke-width:1.7}
 @keyframes sndPulse{0%,100%{transform:translateX(-50%) scale(1)}50%{transform:translateX(-50%) scale(1.06)}}
 .feed-grad{position:absolute; inset:0; z-index:1; pointer-events:none; background:linear-gradient(180deg, rgba(0,0,0,.45) 0%, transparent 20%, transparent 52%, rgba(0,0,0,.8) 100%)}
-.feed-overlay{position:absolute; left:0; right:0; bottom:0; z-index:3; padding:0 16px 28px; display:flex; align-items:flex-end; justify-content:space-between; gap:14px}
+.feed-overlay{position:absolute; left:0; right:0; bottom:0; z-index:3; padding:0 16px 52px; display:flex; align-items:flex-end; justify-content:space-between; gap:14px; pointer-events:none}
+/* Les calques laissent passer les clics vers la vidéo (barre de progression YouTube) ;
+   seuls les vrais boutons/liens restent cliquables. */
+.feed-overlay a,.feed-overlay button{pointer-events:auto}
 .feed-info{max-width:72%}
 .feed-handle{display:flex; align-items:center; gap:10px; font-weight:600; margin-bottom:10px}
 .feed-ava{width:42px; height:42px; border-radius:50%; background:linear-gradient(135deg,var(--gold),var(--gold-2)); display:flex; align-items:center; justify-content:center; color:#1a1206; font-family:var(--serif); font-size:19px}
