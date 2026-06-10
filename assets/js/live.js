@@ -21,7 +21,8 @@
   const fmtK = (n)=> n >= 1000 ? (n/1000).toFixed(1).replace('.0','') + 'k' : String(n);
   const esc = (s)=> String(s||'').replace(/[<>&"]/g, c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
 
-  let pc=null, viewerId=null, sigRef=null, commonOn=false, lastLikes=0, feedBuilt=false, mode='', discTimer=null, joinTimer=null, gotStream=false, audioArmed=true;
+  let pc=null, viewerId=null, sigRef=null, commonOn=false, lastLikes=0, feedBuilt=false, mode='', discTimer=null, joinTimer=null, gotStream=false, audioArmed=true, kicked=false;
+  function viewerName(){ return (localStorage.getItem('yayra_live_name')||'').trim() || 'Invité'; }
 
   function hideAllLive(){ remoteVideo.style.display='none'; liveInfo.style.display='none'; actions.style.display='none'; compose.style.display='none'; unmute.style.display='none'; chatBox.style.display='none'; if(reactionsBar) reactionsBar.style.display='none'; }
 
@@ -183,13 +184,32 @@
       }
     }
     unlockEvents.forEach(ev=> document.addEventListener(ev, unlockAudio, { passive:true }));
+
+    // Demander à monter dans le direct (l'animateur peut accepter jusqu'à 7 invités)
+    const joinBtn = document.getElementById('joinBtn'); const joinLbl = document.getElementById('joinLbl');
+    if(joinBtn) joinBtn.addEventListener('click', ()=>{
+      if(!(window.LIVE && LIVE.ready) || !viewerId){ return; }
+      const nm = myName();
+      LIVE.ref('live/requests/'+viewerId).set({ name: nm, ts: LIVE.now() });
+      joinBtn.classList.add('liked'); if(joinLbl) joinLbl.textContent = 'Demande envoyée';
+    });
     reflectMute();
   }
+  function onKicked(){
+    if(kicked) return; kicked = true;
+    leaveLive();
+    try{ alert("Vous avez été retiré du direct par l'animateur."); }catch(e){}
+    const jl = document.getElementById('joinLbl'); if(jl) jl.textContent = 'Rejoindre';
+    showFeed();
+  }
   function joinLive(){
-    if(pc) return;
+    if(pc || kicked) return;
     const signals = LIVE.ref('live/signals');
     viewerId = signals.push().key; sigRef = signals.child(viewerId);
-    sigRef.child('active').set(true); sigRef.onDisconnect().remove();
+    sigRef.child('active').set(true); sigRef.child('name').set(viewerName()); sigRef.onDisconnect().remove();
+    // L'animateur peut exclure ce participant, ou l'inviter à monter
+    LIVE.ref('live/kick/'+viewerId).on('value', (s)=>{ if(s.val()) onKicked(); });
+    LIVE.ref('live/cohosts/'+viewerId).on('value', (s)=>{ const jl=document.getElementById('joinLbl'); if(s.val() && jl){ jl.textContent = 'Invité ✓'; const jb=document.getElementById('joinBtn'); if(jb) jb.classList.add('liked'); } });
     pc = new RTCPeerConnection(LIVE.ICE);
     gotStream = false; title.textContent = 'Connexion au direct…';
     clearTimeout(joinTimer);
@@ -228,6 +248,7 @@
   }
   function leaveLive(){ clearTimeout(discTimer); clearTimeout(joinTimer); if(sigRef){ sigRef.off(); sigRef.remove(); sigRef=null; } if(pc){ try{pc.close();}catch(e){} pc=null; } if(remoteVideo) remoteVideo.srcObject=null; }
   function showLive(){
+    if(kicked){ showFeed(); return; }
     if(mode==='live') return; mode='live';
     feed.style.display='none'; empty.style.display='none';
     remoteVideo.style.display='block'; liveInfo.style.display='inline-flex'; actions.style.display='flex'; compose.style.display='flex'; chatBox.style.display='flex'; reactionsBar.style.display='flex';

@@ -81,6 +81,16 @@
         </div>
       </div>
 
+      <div class="product-card" id="masterCard" style="margin-top:22px; display:none; border-color:rgba(201,162,75,.4);">
+        <div class="product-info">
+          <h4 style="font-size:18px;">Maître du direct</h4>
+          <p class="muted" style="margin:6px 0 8px;">Demandes pour monter dans le direct — <strong id="coCount" style="color:var(--gold)">0</strong>/7 invités à l'écran.</p>
+          <div id="reqList" style="display:flex; flex-direction:column; gap:8px;"><p class="muted" style="margin:0;">Aucune demande pour le moment.</p></div>
+          <h5 style="margin:16px 0 8px; font-size:14px;">Participants connectés</h5>
+          <div id="partList" style="display:flex; flex-direction:column; gap:8px;"><p class="muted" style="margin:0;">—</p></div>
+        </div>
+      </div>
+
       <div class="product-card" style="margin-top:22px;">
         <div class="product-info">
           <h4 style="font-size:18px;">Commentaires en direct</h4>
@@ -130,6 +140,7 @@
         $('flipBtn').style.display = live ? '' : 'none';
         $('micBtn').style.display = live ? '' : 'none';
         $('pipBtn').style.display = live ? '' : 'none';
+        $('masterCard').style.display = live ? '' : 'none';
         if(!live) $('micBtn').textContent = 'Couper le micro';
       }
 
@@ -199,7 +210,7 @@
         if(localStream && localStream.getAudioTracks().length) msg.textContent = '';
         // Nouvelle session : on repart d'un direct vierge (indépendant du précédent)
         await signalsRef.remove();
-        ['live/chat','live/likes','live/reactions','live/boost'].forEach(p=> LIVE.ref(p).remove());
+        ['live/chat','live/likes','live/reactions','live/boost','live/requests','live/cohosts','live/kick'].forEach(p=> LIVE.ref(p).remove());
         liveStartLocal = Date.now(); peakViewers = 0;
         LIVE.ref('live/active').set(true);
         LIVE.ref('live/startedAt').set(LIVE.now());
@@ -218,18 +229,37 @@
         const rec = { startedAt: started, endedAt: endedAt, duration: Math.max(0, Math.round((endedAt - started)/1000)), peak: peakViewers, likes: likes, comments: comments, ts: LIVE.now() };
         try{ await LIVE.ref('live_history').push(rec); }catch(e){}
         // Réinitialisation de la session live (les directs restent indépendants)
-        ['live/chat','live/likes','live/reactions','live/signals','live/boost','live/startedAt'].forEach(p=> LIVE.ref(p).remove());
+        ['live/chat','live/likes','live/reactions','live/signals','live/boost','live/startedAt','live/requests','live/cohosts','live/kick'].forEach(p=> LIVE.ref(p).remove());
       }
       async function stopLive(){
         LIVE.ref('live/active').set(false);
-        signalsRef.off();
+        signalsRef.off('child_added'); signalsRef.off('child_removed');
         Object.keys(pcs).forEach(dropViewer);
         if(liveStartLocal) await archiveLive(); else signalsRef.remove();
         if(localStream){ localStream.getTracks().forEach(t=>t.stop()); localStream = null; }
         preview.srcObject = null; live = false; liveStartLocal = 0; setUI();
       }
 
-      $('goLiveBtn').addEventListener('click', goLive);
+      // Reprise INSTANTANÉE : on réacquiert la caméra/micro et on renégocie avec
+      // les spectateurs déjà présents, SANS réinitialiser la session (chat, likes,
+      // participants et compteur conservés). La vidéo+son reprend tout de suite.
+      let resumeMode = false;
+      async function resumeLive(){
+        try{ msg.style.color=''; msg.textContent='Reprise du direct…'; await startStream(); }
+        catch(e){ msg.style.color='var(--rose)'; msg.textContent="Accès caméra refusé. Autorisez la caméra et le micro."; return; }
+        if(localStream && localStream.getAudioTracks().length) msg.textContent='';
+        LIVE.ref('live/active').set(true);
+        LIVE.ref('live/active').onDisconnect().set(false);
+        if(!liveStartLocal) liveStartLocal = Date.now();
+        // (Re)brancher la signalisation et offrir tout de suite aux spectateurs présents
+        signalsRef.off('child_added'); signalsRef.off('child_removed');
+        signalsRef.on('child_added', (s)=> handleViewer(s.key));
+        signalsRef.on('child_removed', (s)=> dropViewer(s.key));
+        try{ const snap = await signalsRef.once('value'); snap.forEach(ch=>{ dropViewer(ch.key); handleViewer(ch.key); }); }catch(e){}
+        live = true; resumeMode = false; setUI();
+      }
+
+      $('goLiveBtn').addEventListener('click', ()=>{ resumeMode ? resumeLive() : goLive(); });
       $('stopLiveBtn').addEventListener('click', stopLive);
       $('flipBtn').addEventListener('click', async ()=>{
         facing = (facing === 'user') ? 'environment' : 'user';
@@ -281,16 +311,62 @@
         LIVE.ref('live/chat').push({ n:'YAYRA Nail Shop', t, ts: LIVE.now() }); i.value='';
       });
 
+      // ---- Maître du direct : demandes pour monter, invités (max 7), exclusion ----
+      const MAX_CO = 7;
+      let cohosts = {};
+      LIVE.ref('live/cohosts').on('value', (s)=>{ cohosts = s.val() || {}; $('coCount').textContent = Object.keys(cohosts).length; });
+
+      LIVE.ref('live/requests').on('value', (s)=>{
+        const reqs = s.val() || {}; const ids = Object.keys(reqs); const host = $('reqList');
+        if(!ids.length){ host.innerHTML = '<p class="muted" style="margin:0;">Aucune demande pour le moment.</p>'; return; }
+        host.innerHTML = '';
+        ids.forEach(id=>{
+          const r = reqs[id] || {};
+          const row = document.createElement('div'); row.className='product-row';
+          row.innerHTML = '<div style="flex:1;"><strong>'+esc(r.name||'Invité')+'</strong><br/><span class="muted" style="font-size:12px;">souhaite monter dans le direct</span></div>'
+            + '<button class="small-btn" data-acc="'+id+'">Accepter</button> <button class="small-btn danger" data-ref="'+id+'">Refuser</button>';
+          host.appendChild(row);
+        });
+        host.querySelectorAll('[data-acc]').forEach(b=> b.addEventListener('click', ()=>{
+          const id = b.getAttribute('data-acc');
+          if(Object.keys(cohosts).length >= MAX_CO){ alert('Maximum 7 invités à l\'écran.'); return; }
+          LIVE.ref('live/cohosts/'+id).set({ name:(reqs[id]&&reqs[id].name)||'Invité', ts: LIVE.now() });
+          LIVE.ref('live/requests/'+id).remove();
+        }));
+        host.querySelectorAll('[data-ref]').forEach(b=> b.addEventListener('click', ()=> LIVE.ref('live/requests/'+b.getAttribute('data-ref')).remove() ));
+      });
+
+      // Liste des participants connectés + exclusion (kick)
+      signalsRef.on('value', (s)=>{
+        const host = $('partList'); if(!host) return;
+        const rows = [];
+        s.forEach(ch=>{
+          if(ch.child('active').val() !== true) return;
+          const id = ch.key; const nm = ch.child('name').val() || 'Invité';
+          const co = cohosts[id] ? ' <span style="color:var(--gold); font-size:11px;">· à l\'écran</span>' : '';
+          rows.push('<div class="product-row"><div style="flex:1;"><strong>'+esc(nm)+'</strong>'+co+'</div><button class="small-btn danger" data-kick="'+id+'">Exclure</button></div>');
+        });
+        host.innerHTML = rows.length ? rows.join('') : '<p class="muted" style="margin:0;">Aucun participant connecté.</p>';
+        host.querySelectorAll('[data-kick]').forEach(b=> b.addEventListener('click', ()=>{
+          const id = b.getAttribute('data-kick');
+          if(!confirm('Exclure ce participant du direct ?')) return;
+          LIVE.ref('live/kick/'+id).set(LIVE.now());
+          LIVE.ref('live/cohosts/'+id).remove();
+          dropViewer(id); signalsRef.child(id).remove();
+        }));
+      });
+
       // Si un direct est marqué « actif » au chargement de la page, c'est que
       // la diffusion a été interrompue (page quittée) : proposer de reprendre/arrêter.
       LIVE.ref('live/active').once('value', (s)=>{
         if(s.val() === true && !live){
+          resumeMode = true;
           $('stStatus').textContent = 'Interrompu';
           $('stStatus').style.color = '#e23744';
           $('stopLiveBtn').style.display = '';
           $('goLiveBtn').textContent = 'Reprendre le direct';
           msg.style.color = '#e23744';
-          msg.textContent = "Un direct est marqué actif, mais la diffusion est coupée (la page a été quittée). Reprenez le direct, ou arrêtez-le.";
+          msg.textContent = "Direct en pause (page quittée). Touchez « Reprendre le direct » : la vidéo et le son reprennent instantanément.";
         }
       });
       setUI();
