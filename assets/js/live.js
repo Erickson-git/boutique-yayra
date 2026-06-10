@@ -83,7 +83,7 @@
   // Lien hébergeur -> lecteur intégré (YouTube / Vimeo / Google Drive)
   function embedSrc(u){
     u = u || ''; let m;
-    if((m = u.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([\w-]{6,})/)))
+    if((m = u.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/|live\/)|youtu\.be\/)([\w-]{6,})/)))
       return 'https://www.youtube.com/embed/' + m[1] + '?autoplay=1&mute=1&loop=1&playlist=' + m[1] + '&controls=1&playsinline=1&rel=0';
     if((m = u.match(/vimeo\.com\/(?:video\/)?(\d+)/)))
       return 'https://player.vimeo.com/video/' + m[1] + '?autoplay=1&muted=1&loop=1';

@@ -134,6 +134,19 @@
       return new Promise((resolve, reject)=>{ const r=new FileReader(); r.onload=()=>resolve(r.result); r.onerror=reject; r.readAsDataURL(file); });
     }
     const isImageUrl = (u)=> /\.(jpe?g|png|gif|webp)$/i.test(u) || /^data:image\//.test(u);
+    // Lien hébergeur -> vidéo précise jouable (YouTube/Vimeo/Drive) ; null si non jouable
+    function embedSrc(u){
+      u = u || ''; let m;
+      if((m = u.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/|live\/)|youtu\.be\/)([\w-]{6,})/))) return 'youtube:' + m[1];
+      if((m = u.match(/vimeo\.com\/(?:video\/)?(\d+)/))) return 'vimeo:' + m[1];
+      if((m = u.match(/drive\.google\.com\/file\/d\/([\w-]+)/))) return 'drive:' + m[1];
+      return null;
+    }
+    // Domaine d'hébergeur mais SANS identifiant de vidéo (ex. lien de chaîne) -> non jouable
+    function isHostLinkWithoutVideo(u){
+      return /(youtube\.com|youtu\.be|vimeo\.com|drive\.google\.com)/i.test(u) && !embedSrc(u);
+    }
+    const isDirectMedia = (u)=> /\.(mp4|webm|mov|m4v|ogg)(\?|$)/i.test(u) || /^data:video\//.test(u) || isImageUrl(u);
 
     function defThumb(v){ return '<div class="product-row"><div style="flex:1;"><strong>'+(v.cap||'Vidéo')+'</strong><br/><span class="muted" style="font-size:12.5px;">'+(v.tag||'')+' · '+v.src.split('/').pop()+'</span></div></div>'; }
     function mediaType(v){ return (v.kind === 'image' || /\.(jpe?g|png|gif|webp)$/i.test(v.src||'') || /^data:image\//.test(v.src||'')) ? 'Photo' : 'Vidéo'; }
@@ -181,6 +194,11 @@
             }
           }
         } else if(src){
+          if(isHostLinkWithoutVideo(src)){
+            msg.style.color='var(--rose)';
+            msg.innerHTML = "Ce lien pointe vers une <strong>chaîne ou une page</strong>, pas une vidéo précise. Ouvrez la <strong>vidéo</strong> sur YouTube, puis copiez SON lien (il contient <code>watch?v=…</code> ou <code>youtu.be/…</code>).";
+            return;
+          }
           kind = isImageUrl(src) ? 'image' : 'video';
         }
         msg.style.color=''; msg.textContent='Publication…';
