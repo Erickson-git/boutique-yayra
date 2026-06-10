@@ -421,6 +421,18 @@ h1,h2,h3,h4{margin:0; font-weight:500}
 .shop-toolbar input,.shop-toolbar select{padding:14px 18px; border-radius:999px; border:1px solid var(--line-2); background:var(--paper); color:var(--ink); outline:none; font-family:var(--sans)}
 .shop-toolbar input{flex:1; min-width:240px}
 .shop-toolbar input:focus,.shop-toolbar select:focus{border-color:var(--gold)}
+.search-wrap{position:relative; flex:1; min-width:240px}
+.search-wrap .search-ic{position:absolute; left:16px; top:50%; transform:translateY(-50%); width:18px; height:18px; color:var(--ink-soft); pointer-events:none}
+.shop-toolbar .search-wrap input{width:100%; padding-left:44px; padding-right:40px; min-width:0}
+.search-clear{position:absolute; right:9px; top:50%; transform:translateY(-50%); width:26px; height:26px; border-radius:50%; border:0; background:var(--bg-2); color:var(--ink); font-size:18px; line-height:1; cursor:pointer; align-items:center; justify-content:center}
+.search-sug{position:absolute; top:calc(100% + 6px); left:0; right:0; background:var(--paper); border:1px solid var(--line-2); border-radius:14px; box-shadow:0 18px 50px rgba(0,0,0,.18); overflow:hidden; z-index:30; display:none; max-height:340px; overflow-y:auto}
+.search-sug.open{display:block}
+.search-sug button{display:flex; align-items:center; gap:10px; width:100%; text-align:left; background:transparent; border:0; padding:11px 16px; font:500 14px var(--sans); color:var(--ink); cursor:pointer; border-bottom:1px solid var(--line)}
+.search-sug button:last-child{border-bottom:0}
+.search-sug button:hover,.search-sug button.active{background:var(--bg-2)}
+.search-sug .sg-ic{width:15px; height:15px; color:var(--ink-soft); flex:0 0 auto}
+.search-sug .sg-cat{margin-left:auto; font-size:11px; color:var(--ink-soft); text-transform:capitalize}
+.search-sug .sg-empty{padding:14px 16px; color:var(--ink-soft); font-size:13.5px}
 
 /* ---------- Authentification (login / register) ---------- */
 .auth{display:grid; grid-template-columns:1fr; min-height:calc(100vh - 110px)}
@@ -673,6 +685,7 @@ h1,h2,h3,h4{margin:0; font-weight:500}
   .reels-head{gap:16px}
   .shop-toolbar{gap:8px}
   .shop-toolbar input{min-width:0; flex:1 1 100%}
+  .search-wrap{flex:1 1 100%; min-width:0}
 }
 
 @media (prefers-reduced-motion:reduce){

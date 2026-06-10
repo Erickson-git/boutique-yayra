@@ -53,8 +53,13 @@
   <section class="page">
     <div class="container">
       <div class="shop-toolbar">
-        <input id="searchQ" type="text" placeholder="Rechercher un produit..." />
-        <select id="catSelect"><option value="">Toutes catégories</option></select>
+        <div class="search-wrap">
+          <svg class="search-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+          <input id="searchQ" type="text" placeholder="Rechercher un produit, une teinte…" autocomplete="off" aria-label="Rechercher" />
+          <button id="searchClear" class="search-clear" type="button" aria-label="Effacer" style="display:none;">&times;</button>
+          <div id="searchSug" class="search-sug" role="listbox"></div>
+        </div>
+        <select id="catSelect" aria-label="Catégorie"><option value="">Toutes catégories</option></select>
         <button class="btn-gold" id="searchBtn" type="button">Rechercher</button>
       </div>
 
@@ -542,14 +547,53 @@
         b.disabled = false; b.textContent = 'Alerte retour en stock';
       });
 
-      document.getElementById('searchBtn').addEventListener('click', ()=>{
-        loadProducts({ q: document.getElementById('searchQ').value.trim(), category: document.getElementById('catSelect').value });
+      // ---- Recherche dynamique & intuitive ----
+      const qInput = document.getElementById('searchQ');
+      const catSel = document.getElementById('catSelect');
+      const sug = document.getElementById('searchSug');
+      const clearBtn = document.getElementById('searchClear');
+      let sugActive = -1;
+      function debounce(fn, d){ let t; return function(){ clearTimeout(t); t=setTimeout(fn, d); }; }
+      function norm(s){ return String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase(); }
+      const catName = (slug)=>{ const c=(window.YAYRA_CATALOG?YAYRA_CATALOG.categories:[]).find(x=>x.slug===slug); return c?c.name:''; };
+      function getMatches(q, category){
+        const all = (window.YAYRA_CATALOG ? window.YAYRA_CATALOG.products : []);
+        const nq = norm(q); if(!nq) return [];
+        const seen = new Set(), out = [];
+        for(let i=0;i<all.length;i++){ const p=all[i];
+          if(category && p.category_slug !== category) continue;
+          if(norm(p.name).indexOf(nq) === -1) continue;
+          const k = norm(p.name); if(seen.has(k)) continue; seen.add(k);
+          out.push(p); if(out.length>=8) break;
+        }
+        return out;
+      }
+      function runSearch(){ loadProducts({ q: qInput.value.trim(), category: catSel.value }); }
+      function closeSug(){ sug.classList.remove('open'); sug.innerHTML=''; sugActive=-1; }
+      function renderSug(){
+        const q = qInput.value.trim();
+        if(!q){ closeSug(); return; }
+        const items = getMatches(q, catSel.value);
+        if(!items.length){ sug.innerHTML='<div class="sg-empty">Aucune suggestion — appuyez sur Entrée.</div>'; sug.classList.add('open'); return; }
+        sug.innerHTML = items.map(p=> '<button type="button" data-name="'+String(p.name).replace(/"/g,'&quot;')+'"><svg class="sg-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg><span>'+p.name+'</span><span class="sg-cat">'+catName(p.category_slug)+'</span></button>').join('');
+        sug.classList.add('open'); sugActive=-1;
+        sug.querySelectorAll('button').forEach(b=> b.addEventListener('click', ()=>{ qInput.value=b.getAttribute('data-name'); clearBtn.style.display='flex'; closeSug(); runSearch(); }));
+      }
+      const live = debounce(()=>{ runSearch(); renderSug(); }, 220);
+      qInput.addEventListener('input', ()=>{ clearBtn.style.display = qInput.value ? 'flex' : 'none'; live(); });
+      qInput.addEventListener('focus', renderSug);
+      clearBtn.addEventListener('click', ()=>{ qInput.value=''; clearBtn.style.display='none'; closeSug(); runSearch(); qInput.focus(); });
+      document.getElementById('searchBtn').addEventListener('click', ()=>{ closeSug(); runSearch(); });
+      catSel.addEventListener('change', ()=>{ runSearch(); renderSug(); });
+      qInput.addEventListener('keydown', (e)=>{
+        const btns = sug.querySelectorAll('button');
+        if(e.key==='ArrowDown' && btns.length){ e.preventDefault(); sugActive=Math.min(btns.length-1, sugActive+1); btns.forEach((b,i)=>b.classList.toggle('active', i===sugActive)); btns[sugActive].scrollIntoView({block:'nearest'}); }
+        else if(e.key==='ArrowUp' && btns.length){ e.preventDefault(); sugActive=Math.max(0, sugActive-1); btns.forEach((b,i)=>b.classList.toggle('active', i===sugActive)); btns[sugActive].scrollIntoView({block:'nearest'}); }
+        else if(e.key==='Enter'){ e.preventDefault(); if(sugActive>-1 && btns[sugActive]){ btns[sugActive].click(); } else { closeSug(); runSearch(); } }
+        else if(e.key==='Escape'){ closeSug(); }
       });
-      document.getElementById('searchQ').addEventListener('keydown', (e)=>{ if(e.key==='Enter') document.getElementById('searchBtn').click(); });
+      document.addEventListener('click', (e)=>{ if(!e.target.closest('.search-wrap')) closeSug(); });
       document.getElementById('moreBtn').addEventListener('click', renderBatch);
-      document.getElementById('catSelect').addEventListener('change', ()=>{
-        loadProducts({ q: document.getElementById('searchQ').value.trim(), category: document.getElementById('catSelect').value });
-      });
       document.getElementById('clearCartBtn').addEventListener('click', ()=>{
         localStorage.setItem('yaya_cart_v1', JSON.stringify({items:[]}));
         window.YayaCart.syncCartCount(); renderCart();
