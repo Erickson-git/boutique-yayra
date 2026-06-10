@@ -37,6 +37,11 @@
             </div>
           </div>`;
         grid.appendChild(card);
+        // Image web spécifique au produit (lien direct depuis le net) si elle charge
+        if(window.YAYRA_PRODIMG && YAYRA_PRODIMG.netUrl){
+          const im = card.querySelector('img'); const net = YAYRA_PRODIMG.netUrl(p);
+          if(im){ const nim = new Image(); nim.onload = ()=>{ im.src = net; }; nim.src = net; }
+        }
       });
     });
   }

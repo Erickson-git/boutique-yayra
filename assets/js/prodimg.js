@@ -56,5 +56,19 @@ window.YAYRA_PRODIMG = (function(){
     if(p.image_url && p.image_url.indexOf('assets/images/p/') === 0) return p.image_url;
     return 'assets/images/' + photoFor(p.name, p.category_slug) + '.jpg';
   }
-  return { url, photoFor };
+
+  // Lien d'image DIRECT depuis le net, ciblé par le nom du produit (recherche
+  // d'image Bing). Sert d'image web spécifique ; l'image locale reste le secours.
+  const QUALS = ['premium','éclat','eclat','pro','luxe','signature','essentiel','prestige','classic','édition or','edition or','confort','nature','intense','élégance','elegance','original','velours'];
+  const CATKW = { ongles:'manucure ongles', kits:'maquillage cosmétique', visage:'soin visage crème', capillaire:'cheveux soin', meubles:'mobilier salon beauté', machines:'appareil esthétique' };
+  function netUrl(p){
+    p = p || {};
+    let n = (p.name || '').toLowerCase();
+    QUALS.forEach(function(q){ n = n.split(q).join(' '); });
+    n = n.replace(/\s+/g, ' ').trim();
+    const kw = CATKW[p.category_slug] || 'beauté produit';
+    const q = encodeURIComponent((n + ' ' + kw).trim());
+    return 'https://tse.mm.bing.net/th?q=' + q + '&w=600&h=600&c=7&dpr=1';
+  }
+  return { url, photoFor, netUrl };
 })();
