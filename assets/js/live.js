@@ -22,7 +22,36 @@
   const esc = (s)=> String(s||'').replace(/[<>&"]/g, c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
 
   let pc=null, viewerId=null, sigRef=null, commonOn=false, lastLikes=0, feedBuilt=false, mode='', discTimer=null, joinTimer=null, gotStream=false, audioArmed=true, kicked=false;
+  let coPc=null, coStream=null;
   function viewerName(){ return (localStorage.getItem('yayra_live_name')||'').trim() || 'Invité'; }
+
+  /* L'invité accepté publie SA caméra/micro vers l'animateur (qui compose la mosaïque) */
+  async function startCohost(){
+    if(coPc || !(window.LIVE && LIVE.ready) || !viewerId) return;
+    try{
+      coStream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'user', width:{ideal:480}, height:{ideal:640} }, audio:{ echoCancellation:true, noiseSuppression:true, autoGainControl:true } });
+    }catch(e){ try{ alert("Pour monter dans le direct, autorisez la caméra et le micro."); }catch(_){} return; }
+    // On coupe le retour son du direct pour cet invité (évite l'écho de sa propre voix)
+    audioArmed = false; if(remoteVideo) remoteVideo.muted = true; reflectMute();
+    coPc = new RTCPeerConnection(LIVE.ICE);
+    coStream.getTracks().forEach(t=> coPc.addTrack(t, coStream));
+    const cref = LIVE.ref('live/cohostSignals/' + viewerId);
+    coPc.onicecandidate = (e)=>{ if(e.candidate) cref.child('pubCandidates').push(e.candidate.toJSON()); };
+    const pend=[]; let answered=false;
+    cref.child('answer').on('value', async (s)=>{
+      const a=s.val(); if(a && !(coPc.currentRemoteDescription && coPc.currentRemoteDescription.sdp)){
+        try{ await coPc.setRemoteDescription(new RTCSessionDescription(a)); answered=true; while(pend.length) coPc.addIceCandidate(new RTCIceCandidate(pend.shift())).catch(()=>{}); }catch(e){}
+      }
+    });
+    cref.child('subCandidates').on('child_added', (s)=>{ const c=s.val(); if(!c) return; if(answered && coPc.remoteDescription) coPc.addIceCandidate(new RTCIceCandidate(c)).catch(()=>{}); else pend.push(c); });
+    try{ const offer = await coPc.createOffer(); await coPc.setLocalDescription(offer); cref.child('offer').set({ type:offer.type, sdp:offer.sdp }); }catch(e){}
+    const jl=document.getElementById('joinLbl'); if(jl) jl.textContent = "À l'écran ✓";
+  }
+  function stopCohost(){
+    if(coPc){ try{ coPc.close(); }catch(e){} coPc=null; }
+    if(coStream){ coStream.getTracks().forEach(t=> t.stop()); coStream=null; }
+    if(viewerId){ const cref=LIVE.ref('live/cohostSignals/'+viewerId); cref.off(); cref.remove(); }
+  }
 
   function hideAllLive(){ remoteVideo.style.display='none'; liveInfo.style.display='none'; actions.style.display='none'; compose.style.display='none'; unmute.style.display='none'; chatBox.style.display='none'; if(reactionsBar) reactionsBar.style.display='none'; }
 
@@ -197,6 +226,7 @@
   }
   function onKicked(){
     if(kicked) return; kicked = true;
+    stopCohost();
     leaveLive();
     try{ alert("Vous avez été retiré du direct par l'animateur."); }catch(e){}
     const jl = document.getElementById('joinLbl'); if(jl) jl.textContent = 'Rejoindre';
@@ -209,7 +239,11 @@
     sigRef.child('active').set(true); sigRef.child('name').set(viewerName()); sigRef.onDisconnect().remove();
     // L'animateur peut exclure ce participant, ou l'inviter à monter
     LIVE.ref('live/kick/'+viewerId).on('value', (s)=>{ if(s.val()) onKicked(); });
-    LIVE.ref('live/cohosts/'+viewerId).on('value', (s)=>{ const jl=document.getElementById('joinLbl'); if(s.val() && jl){ jl.textContent = 'Invité ✓'; const jb=document.getElementById('joinBtn'); if(jb) jb.classList.add('liked'); } });
+    LIVE.ref('live/cohosts/'+viewerId).on('value', (s)=>{
+      const jl=document.getElementById('joinLbl'); const jb=document.getElementById('joinBtn');
+      if(s.val()){ if(jb) jb.classList.add('liked'); startCohost(); }
+      else { stopCohost(); if(jl) jl.textContent='Rejoindre'; if(jb) jb.classList.remove('liked'); }
+    });
     pc = new RTCPeerConnection(LIVE.ICE);
     gotStream = false; title.textContent = 'Connexion au direct…';
     clearTimeout(joinTimer);
