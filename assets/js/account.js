@@ -21,6 +21,28 @@
   }
   function iconPath(){ return paths().base + 'assets/icons/icon-192.png'; }
 
+  // iOS ignore les icônes SVG et n'ouvre l'app en plein écran que si ces balises
+  // sont présentes. On les injecte sur toutes les pages au chargement.
+  function injectAppleMeta(){
+    const base = paths().base;
+    const metas = [
+      ['meta', { name:'apple-mobile-web-app-capable', content:'yes' }],
+      ['meta', { name:'mobile-web-app-capable', content:'yes' }],
+      ['meta', { name:'apple-mobile-web-app-status-bar-style', content:'default' }],
+      ['meta', { name:'apple-mobile-web-app-title', content:'YAYRA Nail Shop' }]
+    ];
+    metas.forEach(function(m){
+      if(document.querySelector('meta[name="'+m[1].name+'"]')) return;
+      const el = document.createElement('meta'); el.setAttribute('name', m[1].name); el.setAttribute('content', m[1].content);
+      document.head.appendChild(el);
+    });
+    // Icône Apple en PNG (iOS ignore le SVG -> sinon icône blanche sur l'écran d'accueil)
+    if(!document.querySelector('link[rel="apple-touch-icon"][href*=".png"]')){
+      const l = document.createElement('link'); l.rel='apple-touch-icon'; l.setAttribute('sizes','180x180');
+      l.href = base + 'assets/icons/apple-touch-icon.png'; document.head.appendChild(l);
+    }
+  }
+
   // Installation en un clic (Android/ordinateur) sinon fenêtre guidée (iOS)
   function installApp(){
     if(deferredPrompt){
@@ -37,8 +59,14 @@
     if(m){ m.classList.add('open'); return; }
     m = document.createElement('div'); m.id = 'ya-im'; m.className = 'ya-im open';
     const ios = isIOS();
+    const ua = navigator.userAgent || '';
+    const iosNotSafari = ios && /(CriOS|FxiOS|EdgiOS|OPiOS|GSA)/.test(ua);
+    const safariNote = iosNotSafari
+      ? '<li style="color:#e8a13a;"><b>Important :</b> ouvrez d\'abord ce site dans <b>Safari</b> (l\'ajout à l\'écran d\'accueil n\'existe que dans Safari sur iPhone).</li>'
+      : '';
     const steps = ios
       ? '<ol class="ya-im-steps">'
+        + safariNote
         + '<li>Touchez le bouton <b>Partager</b> <span class="ya-im-ic"><svg viewBox="0 0 24 24"><path d="M12 16V4M8 8l4-4 4 4"/><path d="M5 12v7a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-7"/></svg></span> en bas de Safari.</li>'
         + '<li>Faites défiler et choisissez <b>« Sur l\'écran d\'accueil »</b> <span class="ya-im-ic"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M12 8v8M8 12h8"/></svg></span>.</li>'
         + '<li>Touchez <b>Ajouter</b>. L\'application YAYRA apparaît sur votre écran d\'accueil.</li>'
@@ -305,6 +333,7 @@
   }
 
   function init(){
+    injectAppleMeta();
     addInstallNav();
     wireInstallButtons();
     const u = currentUser();
