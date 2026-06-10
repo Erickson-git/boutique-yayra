@@ -11,7 +11,9 @@
     { slug:'machines', name:'Machines & Accessoires' },
   ];
 
-  const QUAL = ['Premium','Éclat','Pro','Luxe','Signature','Essentiel','Prestige','Classic','Édition Or','Confort','Nature','Intense','Élégance','Original','Velours'];
+  // Variantes DISTINCTIVES (teintes/finitions) : chaque produit est unique, avec
+  // une image web différente. Évite que le même produit semble répété.
+  const QUAL = ['Rouge Passion','Rose Poudré','Nude Beige','Corail','Bordeaux','Bleu Nuit','Vert Émeraude','Violet Améthyste','Doré','Argenté','Noir Intense','Blanc Pur','Pêche','Prune','Turquoise'];
 
   // bases : [nom, prix_min, prix_max] en FCFA (prix marché)
   const GROUPS = [
