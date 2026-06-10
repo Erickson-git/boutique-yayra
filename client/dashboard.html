@@ -100,20 +100,21 @@
     document.addEventListener('DOMContentLoaded', ()=>{
       const txt = document.getElementById('liveStatusTxt');
       if(!window.FIREBASE_READY){
-        txt.textContent = 'Live à configurer (ouvrez le studio pour les étapes).';
+        txt.textContent = 'Suivez nos directs et nos vidéos ici.';
         txt.style.color = 'var(--ink-soft)';
         return;
       }
       const base = window.FIREBASE_CONFIG.databaseURL.replace(/\/$/, '');
       fetch(base + '/live/active.json').then(r=>r.json()).then(v=>{
         const on = v === true;
-        txt.textContent = on ? 'Vous êtes EN DIRECT — un badge s\'affiche sur tout le site.' : 'Hors ligne. Ouvrez le studio pour passer en direct.';
+        txt.textContent = on ? 'La boutique est EN DIRECT — regardez maintenant !' : 'Aucun direct en cours pour le moment.';
         txt.style.color = on ? '#e23744' : 'var(--ink-soft)';
-      }).catch(()=>{ txt.textContent = 'Hors ligne. Ouvrez le studio pour passer en direct.'; });
+      }).catch(()=>{ txt.textContent = 'Aucun direct en cours pour le moment.'; });
     });
   </script>
   <script src="../assets/js/firebase-config.js"></script>
   <script src="../assets/js/livebadge.js"></script>
   <script src="../assets/js/xofix.js"></script>
+  <script src="../assets/js/sw-register.js"></script>
 </body>
 </html>
