@@ -96,7 +96,7 @@
     const emb = (!img && !v.blob) ? embedSrc(v.src) : null;
     let media;
     if(img) media = '<img src="'+v.src+'" alt="'+esc(v.cap||'')+'" loading="lazy" />';
-    else if(emb) media = '<iframe class="feed-embed" src="'+emb+'" frameborder="0" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen></iframe>';
+    else if(emb) media = '<iframe class="feed-embed" data-embed="'+emb+'" frameborder="0" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen></iframe>';
     else if(v.blob) media = '<video data-blobid="'+(v._id||'')+'" muted loop playsinline preload="none"></video>';
     else media = '<video src="'+v.src+'" muted loop playsinline preload="metadata"></video>';
     const soundBtn = (img || emb) ? ''
@@ -128,14 +128,25 @@
       return LIVE.ref('videoBlobs/'+bid).once('value').then(s=>{ const d=s.val(); if(d){ v.src = d; return true; } return false; }).catch(()=> false);
     }
     function playVid(v){ if(!v) return; const bid=v.getAttribute('data-blobid'); if(bid && !v.src){ loadBlob(v).then(ok=>{ if(ok) v.play().catch(()=>{}); }); } else v.play().catch(()=>{}); }
-    // lecture auto de l'élément visible
+    // Active un élément (vidéo ou lecteur intégré) ; charge l'iframe seulement quand visible
+    function activate(it){
+      const v = it.querySelector('video'); if(v) playVid(v);
+      const f = it.querySelector('iframe[data-embed]'); if(f && !f.src) f.src = f.getAttribute('data-embed');
+    }
+    function deactivate(it){
+      const v = it.querySelector('video'); if(v) v.pause();
+      const f = it.querySelector('iframe[data-embed]'); if(f && f.src){ f.removeAttribute('src'); try{ f.src=''; }catch(e){} }
+    }
     if('IntersectionObserver' in window){
       const io = new IntersectionObserver((entries)=>{
-        entries.forEach(e=>{ const v=e.target.querySelector('video'); if(!v) return; if(e.isIntersecting && e.intersectionRatio>0.6) playVid(v); else v.pause(); });
-      }, {threshold:[0,0.6,1]});
+        entries.forEach(e=>{
+          if(e.isIntersecting && e.intersectionRatio > 0.5) activate(e.target);
+          else if(e.intersectionRatio === 0) deactivate(e.target);
+        });
+      }, {threshold:[0,0.5,1]});
       feed.querySelectorAll('.feed-item').forEach(it=> io.observe(it));
     }
-    const first = feed.querySelector('video'); if(first) playVid(first);
+    const firstItem = feed.querySelector('.feed-item'); if(firstItem) activate(firstItem);
     // interactions
     feed.querySelectorAll('.feed-item').forEach(it=>{
       const v = it.querySelector('video');
