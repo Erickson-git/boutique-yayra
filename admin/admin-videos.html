@@ -66,6 +66,7 @@
                 <div id="vPreview" style="display:none;"></div>
                 <button class="btn-gold" type="submit" id="vSubmit">Publier</button>
                 <p class="muted" id="vMsg" aria-live="polite" style="margin:0;"></p>
+                <p class="muted" style="margin:6px 0 0; font-size:12px;">Photos et petits clips (≤ 9 Mo) : import direct. Vidéos plus longues : mettez-les sur <strong>YouTube</strong> ou <strong>Google Drive</strong> et collez le lien (sans limite).</p>
               </form>
             </div>
           </div>
@@ -143,7 +144,7 @@
       if(!ready){ $('pubList').innerHTML = '<p class="muted">Configurez Firebase pour publier et afficher vos propres vidéos.</p>'; return; }
       const pub = await YAYRA_VIDEOS.published();
       $('pubList').innerHTML = pub.length ? pub.map(pubRow).join('') : '<p class="muted">Aucune vidéo publiée pour le moment.</p>';
-      $('pubList').querySelectorAll('[data-del]').forEach(b=> b.addEventListener('click', ()=>{ if(confirm('Retirer cette vidéo ?')){ LIVE.ref('videos/'+b.getAttribute('data-del')).remove().then(renderPublished); } }));
+      $('pubList').querySelectorAll('[data-del]').forEach(b=> b.addEventListener('click', ()=>{ if(confirm('Retirer ?')){ const id=b.getAttribute('data-del'); LIVE.ref('videoBlobs/'+id).remove().catch(()=>{}); LIVE.ref('videos/'+id).remove().then(renderPublished); } }));
     }
 
     function hasStorage(){ return !!(window.FIREBASE_CONFIG.storageBucket && window.FIREBASE_CONFIG.apiKey && firebase.storage); }
@@ -156,7 +157,7 @@
       const tag = $('vTag').value.trim() || '';
       const urlIn = $('vUrl').value.trim();
       try{
-        let src = urlIn, kind = '';
+        let src = urlIn, kind = '', blobData = null;
         if(pickedFile){
           const isImg = /^image\//.test(pickedFile.type);
           if(isImg){
@@ -164,27 +165,34 @@
             msg.style.color=''; msg.textContent='Préparation de la photo…';
             src = await imageToDataURL(pickedFile, 1280); kind = 'image';
           } else {
-            // Vidéo : Storage si dispo, sinon petit fichier stocké directement
+            // Vidéo : Storage si dispo, sinon petit clip stocké à part (chargé à la demande)
             if(hasStorage()){
               msg.style.color=''; msg.textContent='Envoi de la vidéo…';
               const ref = firebase.storage().ref('videos/' + (LIVE.now()) + '_' + pickedFile.name.replace(/[^a-zA-Z0-9._-]/g,'_'));
               await ref.put(pickedFile);
               src = await ref.getDownloadURL(); kind = 'video';
-            } else if(pickedFile.size <= 6 * 1024 * 1024){
+            } else if(pickedFile.size <= 9 * 1024 * 1024){
               msg.style.color=''; msg.textContent='Préparation de la vidéo…';
-              src = await fileToDataURL(pickedFile); kind = 'video';
+              blobData = await fileToDataURL(pickedFile); kind = 'video'; src = '';
             } else {
               msg.style.color='var(--rose)';
-              msg.innerHTML = "Cette vidéo est trop lourde (> 6 Mo) pour une publication directe. Utilisez une vidéo plus courte, ou <strong>collez un lien de vidéo</strong> (YouTube/Drive/hébergeur).";
+              msg.innerHTML = "Vidéo trop lourde pour l'import direct (limite ~9 Mo). <strong>Solution recommandée :</strong> mettez la vidéo sur <strong>YouTube</strong> ou <strong>Google Drive</strong>, puis <strong>collez le lien</strong> ci-dessus (aucune limite de taille). Vous pouvez aussi importer un clip plus court.";
               return;
             }
           }
         } else if(src){
           kind = isImageUrl(src) ? 'image' : 'video';
         }
-        if(!src){ msg.style.color='var(--rose)'; msg.textContent='Ajoutez une photo ou une vidéo : importez un fichier ou collez un lien.'; return; }
         msg.style.color=''; msg.textContent='Publication…';
-        await LIVE.ref('videos').push({ src, cap, tag, kind, ts: LIVE.now() });
+        if(blobData){
+          // Clip importé : métadonnées dans "videos", données dans "videoBlobs" (chargé à la demande)
+          const node = LIVE.ref('videos').push();
+          await LIVE.ref('videoBlobs/' + node.key).set(blobData);
+          await node.set({ cap, tag, kind:'video', blob:true, ts: LIVE.now() });
+        } else {
+          if(!src){ msg.style.color='var(--rose)'; msg.textContent='Ajoutez une photo ou une vidéo : importez un fichier ou collez un lien.'; return; }
+          await LIVE.ref('videos').push({ src, cap, tag, kind, ts: LIVE.now() });
+        }
         msg.style.color='var(--gold)'; msg.textContent = (kind==='image'?'Photo':'Vidéo') + ' publiée. Elle apparaît sur la page Live (hors direct).';
         e.target.reset(); pickedFile=null; $('vPreview').style.display='none'; $('vName').textContent=''; renderPublished();
       }catch(err){ msg.style.color='var(--rose)'; msg.textContent='Erreur : ' + (err && err.message ? err.message : err); }

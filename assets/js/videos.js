@@ -21,7 +21,7 @@ window.YAYRA_VIDEOS = (function(){
       const snap = await LIVE.ref('videos').once('value');
       const v = snap.val() || {};
       return Object.keys(v).map(k=> Object.assign({ _id:k }, v[k]))
-        .filter(x=> x && x.src)
+        .filter(x=> x && (x.src || x.blob))
         .sort((a,b)=> (b.ts||0) - (a.ts||0));
     }catch(e){ return []; }
   }

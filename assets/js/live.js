@@ -80,12 +80,26 @@
   const SND_ON  = '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M16 9a4 4 0 0 1 0 6M19 7a8 8 0 0 1 0 10"/></svg>';
   const SND_OFF = '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M22 9l-6 6M16 9l6 6"/></svg>';
   function isImageItem(v){ return v && (v.kind === 'image' || /\.(jpe?g|png|gif|webp)$/i.test(v.src||'') || /^data:image\//.test(v.src||'')); }
+  // Lien hébergeur -> lecteur intégré (YouTube / Vimeo / Google Drive)
+  function embedSrc(u){
+    u = u || ''; let m;
+    if((m = u.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([\w-]{6,})/)))
+      return 'https://www.youtube.com/embed/' + m[1] + '?autoplay=1&mute=1&loop=1&playlist=' + m[1] + '&controls=1&playsinline=1&rel=0';
+    if((m = u.match(/vimeo\.com\/(?:video\/)?(\d+)/)))
+      return 'https://player.vimeo.com/video/' + m[1] + '?autoplay=1&muted=1&loop=1';
+    if((m = u.match(/drive\.google\.com\/file\/d\/([\w-]+)/)))
+      return 'https://drive.google.com/file/d/' + m[1] + '/preview';
+    return null;
+  }
   function feedItem(v, i){
     const img = isImageItem(v);
-    const media = img
-      ? '<img src="'+v.src+'" alt="'+esc(v.cap||'')+'" loading="lazy" />'
-      : '<video src="'+v.src+'" muted loop playsinline preload="metadata"></video>';
-    const soundBtn = img ? ''
+    const emb = (!img && !v.blob) ? embedSrc(v.src) : null;
+    let media;
+    if(img) media = '<img src="'+v.src+'" alt="'+esc(v.cap||'')+'" loading="lazy" />';
+    else if(emb) media = '<iframe class="feed-embed" src="'+emb+'" frameborder="0" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen></iframe>';
+    else if(v.blob) media = '<video data-blobid="'+(v._id||'')+'" muted loop playsinline preload="none"></video>';
+    else media = '<video src="'+v.src+'" muted loop playsinline preload="metadata"></video>';
+    const soundBtn = (img || emb) ? ''
       : '<button class="fa-btn" data-sound><span class="fa-ic">'+SND_OFF+'</span><span class="snd-lbl">Son</span></button>';
     return '<article class="feed-item">'
       + media
@@ -107,14 +121,21 @@
     const vids = (window.YAYRA_VIDEOS) ? await YAYRA_VIDEOS.all() : [];
     if(!vids.length){ showEmpty(); return false; }
     feed.innerHTML = vids.map(feedItem).join('');
+    // Charge à la demande les petits clips importés (stockés à part pour ne pas alourdir le fil)
+    function loadBlob(v){
+      const bid = v.getAttribute && v.getAttribute('data-blobid');
+      if(!bid || v.src || !(window.LIVE && LIVE.ready)) return Promise.resolve(false);
+      return LIVE.ref('videoBlobs/'+bid).once('value').then(s=>{ const d=s.val(); if(d){ v.src = d; return true; } return false; }).catch(()=> false);
+    }
+    function playVid(v){ if(!v) return; const bid=v.getAttribute('data-blobid'); if(bid && !v.src){ loadBlob(v).then(ok=>{ if(ok) v.play().catch(()=>{}); }); } else v.play().catch(()=>{}); }
     // lecture auto de l'élément visible
     if('IntersectionObserver' in window){
       const io = new IntersectionObserver((entries)=>{
-        entries.forEach(e=>{ const v=e.target.querySelector('video'); if(!v) return; if(e.isIntersecting && e.intersectionRatio>0.6) v.play().catch(()=>{}); else v.pause(); });
+        entries.forEach(e=>{ const v=e.target.querySelector('video'); if(!v) return; if(e.isIntersecting && e.intersectionRatio>0.6) playVid(v); else v.pause(); });
       }, {threshold:[0,0.6,1]});
       feed.querySelectorAll('.feed-item').forEach(it=> io.observe(it));
     }
-    const first = feed.querySelector('video'); if(first) first.play().catch(()=>{});
+    const first = feed.querySelector('video'); if(first) playVid(first);
     // interactions
     feed.querySelectorAll('.feed-item').forEach(it=>{
       const v = it.querySelector('video');
