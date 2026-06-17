@@ -1,18 +1,32 @@
 {
+  "id": "./index.html",
   "name": "YAYRA Nail Shop",
   "short_name": "YAYRA",
   "description": "Cosmétiques, onglerie, soins et mobilier professionnel à Lomé. Livraison 24h, paiement à la livraison.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "orientation": "portrait",
   "background_color": "#1c140b",
   "theme_color": "#1c140b",
   "lang": "fr",
+  "dir": "ltr",
+  "categories": ["shopping", "lifestyle", "beauty"],
   "icons": [
     { "src": "assets/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
-    { "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
-    { "src": "assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" },
-    { "src": "assets/icons/icon-512-any.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+    { "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "assets/icons/icon-512-any.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" }
+  ],
+  "screenshots": [
+    { "src": "assets/screenshots/shot-narrow.jpg", "sizes": "720x1280", "type": "image/jpeg", "form_factor": "narrow", "label": "Boutique YAYRA Nail Shop" },
+    { "src": "assets/screenshots/shot-wide.jpg", "sizes": "1280x720", "type": "image/jpeg", "form_factor": "wide", "label": "Boutique YAYRA Nail Shop" }
+  ],
+  "shortcuts": [
+    { "name": "Boutique", "short_name": "Boutique", "url": "./shop.html", "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Live & Vidéos", "short_name": "Live", "url": "./live.html", "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Mon compte", "short_name": "Compte", "url": "./client/login.html", "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }] }
   ]
 }
