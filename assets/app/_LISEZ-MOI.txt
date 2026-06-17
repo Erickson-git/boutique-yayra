@@ -1,0 +1,38 @@
+FICHIER APK ANDROID — YAYRA Nail Shop
+======================================
+
+Le bouton « Télécharger l'APK (Android) » du site cherche le fichier :
+    assets/app/yayra-nail-shop.apk
+
+Tant que ce fichier n'est pas là, le bouton affiche la marche à suivre.
+Sur Android, le plus simple reste « Installer (1 clic) » (PWA) : vraie appli,
+plein écran, hors-ligne, mises à jour automatiques — aucun APK nécessaire.
+
+GÉNÉRER UN VRAI APK (GRATUIT, ~5 MIN) — recommandé : PWABuilder (Microsoft)
+--------------------------------------------------------------------------
+1. Allez sur  https://www.pwabuilder.com
+2. Entrez l'adresse de votre site (ex. https://erickson-git.github.io/boutique-yayra/)
+   puis « Start ».
+3. Onglet « Package For Stores » → « Android » → « Generate Package ».
+4. Téléchargez le ZIP. Il contient :
+     - app-release-signed.apk   (à installer / partager)
+     - app-release.aab          (pour Google Play, si un jour vous publiez)
+     - signing.keystore + signing-key-info.txt  (À CONSERVER précieusement :
+       ils servent à signer les futures mises à jour)
+5. Renommez l'APK en  yayra-nail-shop.apk  et déposez-le dans ce dossier
+   (assets/app/), puis publiez (commit + push). Le bouton le téléchargera.
+
+ALTERNATIVE : Bubblewrap (ligne de commande, nécessite Node + JDK + Android SDK)
+   npm i -g @bwa/cli   puis   bubblewrap init / build.
+
+NOTE : un APK doit être SIGNÉ pour s'installer. Ne mettez ici qu'un APK signé
+issu de PWABuilder/Bubblewrap. Sur le téléphone, autoriser « installer des
+applications de sources inconnues » lors de la première installation.
+
+APK « CONFORME » (vérifié, sans barre d'adresse) :
+   PWABuilder vous donne une EMPREINTE SHA-256 (signing-key-info.txt) et un
+   package_name. Reportez-les dans le fichier  .well-known/assetlinks.json
+   (à la racine du site), puis publiez. Android vérifie ce lien et l'appli
+   s'ouvre en plein écran, comme une vraie application installée du Play Store.
+   - package_name par défaut suggéré : app.yayra.nailshop
+   - vérif en ligne : https://developers.google.com/digital-asset-links/tools/generator

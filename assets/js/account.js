@@ -53,6 +53,18 @@
     openInstallModal();
   }
 
+  function apkUrl(){ return paths().base + 'assets/app/yayra-nail-shop.apk'; }
+  function downloadApk(){
+    const url = apkUrl();
+    fetch(url, { method:'HEAD' }).then(function(r){
+      if(r && r.ok){ const a = document.createElement('a'); a.href = url; a.setAttribute('download','YAYRA-Nail-Shop.apk'); document.body.appendChild(a); a.click(); a.remove(); }
+      else showApkGuide();
+    }).catch(showApkGuide);
+  }
+  function showApkGuide(){
+    alert("Le fichier APK n'est pas encore disponible.\n\nLe plus simple sur Android : touchez « Installer (1 clic) » — l'application s'installe comme une vraie appli (icône sur l'écran d'accueil, plein écran, hors-ligne, mises à jour automatiques).\n\nPour obtenir un vrai fichier .apk : allez sur pwabuilder.com, entrez l'adresse du site, et téléchargez le paquet Android (gratuit).");
+  }
+
   function openInstallModal(){
     style();
     let m = document.getElementById('ya-im');
@@ -60,6 +72,7 @@
     m = document.createElement('div'); m.id = 'ya-im'; m.className = 'ya-im open';
     const ios = isIOS();
     const ua = navigator.userAgent || '';
+    const isAndroid = /Android/i.test(ua);
     const iosNotSafari = ios && /(CriOS|FxiOS|EdgiOS|OPiOS|GSA)/.test(ua);
     const safariNote = iosNotSafari
       ? '<li style="color:#e8a13a;"><b>Important :</b> ouvrez d\'abord ce site dans <b>Safari</b> (l\'ajout à l\'écran d\'accueil n\'existe que dans Safari sur iPhone).</li>'
@@ -72,17 +85,22 @@
         + '<li>Touchez <b>Ajouter</b>. L\'application YAYRA apparaît sur votre écran d\'accueil.</li>'
         + '</ol>'
       : '<ol class="ya-im-steps">'
-        + '<li>Ouvrez le menu <b>⋮</b> du navigateur (en haut à droite).</li>'
-        + '<li>Touchez <b>« Installer l\'application »</b> ou <b>« Ajouter à l\'écran d\'accueil »</b>.</li>'
-        + '<li>Confirmez. Sur ordinateur, utilisez l\'icône d\'installation dans la barre d\'adresse.</li>'
+        + '<li><b>Option 1 (recommandée) :</b> touchez « Installer (1 clic) » ci-dessus — vraie appli, mise à jour automatique.</li>'
+        + '<li><b>Option 2 — fichier APK :</b> touchez « Télécharger l\'APK » pour installer hors Play Store (autorisez les « sources inconnues » si demandé).</li>'
         + '</ol>';
+    const androidBlock = ios ? '' : (
+      (deferredPrompt ? '<button class="ya-im-go" data-go>Installer sur Android (1 clic)</button>' : '')
+      + '<button class="ya-im-apk" data-apk><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M8 11l4 4 4-4"/><path d="M5 21h14"/></svg> Télécharger l\'APK (Android)</button>'
+    );
+    const iosGo = ios && deferredPrompt ? '<button class="ya-im-go" data-go>Installer maintenant</button>' : '';
     m.innerHTML =
       '<div class="ya-im-card" role="dialog" aria-modal="true">'
       + '<button class="ya-im-close" aria-label="Fermer">&times;</button>'
       + '<img class="ya-im-logo" src="'+ iconPath() +'" alt="YAYRA">'
       + '<h3>Installer l\'application YAYRA</h3>'
-      + '<p class="ya-im-sub">Accès rapide depuis votre écran d\'accueil, même hors connexion.</p>'
-      + (deferredPrompt ? '<button class="ya-im-go" data-go>Installer maintenant</button>' : '')
+      + '<p class="ya-im-sub">' + (ios ? 'Sur iPhone, ajoutez-la à l\'écran d\'accueil.' : 'Sur Android : en 1 clic, ou en fichier APK.') + '</p>'
+      + iosGo
+      + androidBlock
       + steps
       + '</div>';
     document.body.appendChild(m);
@@ -91,6 +109,8 @@
     m.addEventListener('click', function(e){ if(e.target === m) close(); });
     const go = m.querySelector('[data-go]');
     if(go) go.addEventListener('click', function(){ close(); installApp(); });
+    const apk = m.querySelector('[data-apk]');
+    if(apk) apk.addEventListener('click', downloadApk);
   }
 
   // Bannière d'invitation à installer (une seule fois, non intrusive)
@@ -217,7 +237,10 @@
 .ya-im-logo{width:74px; height:74px; border-radius:18px; margin:0 auto 12px; display:block; box-shadow:0 8px 24px rgba(0,0,0,.4)}
 .ya-im-card h3{margin:0 0 6px; font-family:var(--serif,serif); font-size:22px}
 .ya-im-sub{margin:0 0 16px; font-size:13.5px; opacity:.8}
-.ya-im-go{display:block; width:100%; background:linear-gradient(135deg,#d9b25a,#b8893a); color:#1a1208; border:0; border-radius:12px; padding:13px; font-weight:700; font-size:15px; cursor:pointer; margin-bottom:16px}
+.ya-im-go{display:block; width:100%; background:linear-gradient(135deg,#d9b25a,#b8893a); color:#1a1208; border:0; border-radius:12px; padding:13px; font-weight:700; font-size:15px; cursor:pointer; margin-bottom:10px}
+.ya-im-apk{display:flex; align-items:center; justify-content:center; gap:8px; width:100%; background:transparent; color:var(--ink,#f3ead9); border:1px solid var(--line-2,rgba(201,162,75,.4)); border-radius:12px; padding:12px; font-weight:600; font-size:14.5px; cursor:pointer; margin-bottom:16px}
+.ya-im-apk svg{width:18px; height:18px}
+.ya-im-apk:hover{background:var(--bg-2,rgba(201,162,75,.12))}
 .ya-im-steps{text-align:left; margin:0; padding-left:20px; font-size:13.5px; line-height:1.7}
 .ya-im-steps li{margin-bottom:8px}
 .ya-im-ic{display:inline-flex; vertical-align:middle; width:22px; height:22px; border:1px solid var(--line-2,rgba(201,162,75,.4)); border-radius:6px; padding:2px; margin:0 2px}
