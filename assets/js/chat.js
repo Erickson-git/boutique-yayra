@@ -7,7 +7,7 @@
   if(/\/admin\//.test(location.pathname)) return;            // pas de widget en admin
   const DB = (window.FIREBASE_CONFIG && FIREBASE_CONFIG.databaseURL) ? FIREBASE_CONFIG.databaseURL.replace(/\/$/, '') : '';
   const WA = 'https://wa.me/22897498685?text=' + encodeURIComponent('Bonjour YAYRA !');
-  const DELAY = 5 * 60 * 1000;                                 // 5 minutes
+  const DELAY = 2 * 60 * 1000;                                 // 2 minutes
 
   function norm(s){ return String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase(); }
   function botReply(text){
@@ -106,7 +106,7 @@
     elBody.innerHTML = '';
     if(!list.length){
       const w = document.createElement('div'); w.className='ya-msg bot';
-      w.innerHTML = '<span class="ya-who">YAYRA Nail Shop</span>Bonjour 👋 Bienvenue ! Posez votre question (livraison, prix, commande…). Notre équipe vous répond, et en moins de 5 min un assistant vous aide automatiquement.';
+      w.innerHTML = '<span class="ya-who">YAYRA Nail Shop</span>Bonjour 👋 Bienvenue ! Posez votre question (livraison, prix, commande…). Notre équipe vous répond, et en moins de 2 min un assistant vous aide automatiquement.';
       elBody.appendChild(w);
     }
     list.forEach(m=>{
