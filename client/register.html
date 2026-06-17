@@ -79,9 +79,9 @@
         if(data.ok){ ok(); return; }
         msg.style.color = 'var(--rose)'; msg.textContent = data.error || 'Erreur lors de la création.'; return;
       }catch(err){ /* pas de backend : compte local */ }
-      // 2) Compte local (site statique)
+      // 2) Compte enregistré sur Firebase (valable sur tous les appareils) + cache local
       if(!backendHandled){
-        const r = YAYRA_CLIENTS.add({ name: full_name, email, password });
+        const r = await YAYRA_CLIENTS.add({ name: full_name, email, password });
         if(r.error){ msg.style.color = 'var(--rose)'; msg.textContent = r.error; return; }
         ok();
       }

@@ -117,8 +117,8 @@
         return;
       }
 
-      // 3) Comptes clientes
-      const c = window.YAYRA_CLIENTS && YAYRA_CLIENTS.auth(id, password);
+      // 3) Comptes clientes (Firebase multi-appareils + cache local)
+      const c = window.YAYRA_CLIENTS && await YAYRA_CLIENTS.auth(id, password);
       if(c){
         localStorage.setItem('yayra_token', 'client-' + c.id);
         localStorage.setItem('yayra_role', 'client');
