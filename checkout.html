@@ -45,7 +45,7 @@
       <div class="section-header">
         <p class="section-eyebrow">Commande</p>
         <h2 class="section-title">Finaliser votre commande</h2>
-        <p class="section-sub">Connexion requise pour enregistrer la commande. Paiement à la livraison.</p>
+        <p class="section-sub">Vérifiez votre panier, renseignez vos infos, puis envoyez votre commande à la boutique par WhatsApp. La boutique confirme le paiement et la livraison.</p>
       </div>
 
       <div class="products-grid" style="grid-template-columns:1fr;">
@@ -63,11 +63,12 @@
           <div class="product-info">
             <h4 style="font-size:22px;">Vos informations</h4>
             <form id="checkoutForm" class="form">
-              <input name="full_name" placeholder="Nom complet" required />
-              <input name="phone" placeholder="Téléphone" required />
-              <input name="address" placeholder="Adresse (Quartier / Rue)" required />
+              <input name="full_name" placeholder="Nom complet *" required />
+              <input name="phone" type="tel" placeholder="Téléphone avec indicatif pays * (ex. +228 90 00 00 00)" required />
+              <input name="address" placeholder="Adresse (optionnel)" />
+              <p class="muted" style="margin:0; font-size:13px;">* Nom et numéro (avec l'indicatif du pays) obligatoires. L'adresse est facultative.</p>
               <p class="muted" id="checkoutMsg" aria-live="polite" style="margin:0;"></p>
-              <button class="btn-gold" type="submit">Envoyer la commande</button>
+              <button class="btn-gold" type="submit"><svg class="ic" viewBox="0 0 24 24" style="margin-right:6px;"><path d="M20.5 11.5a8.5 8.5 0 0 1-12.7 7.4L3.5 20l1.1-4.2a8.5 8.5 0 1 1 15.9-4.3Z"/><path d="M8.5 8.8c0 4 2.7 6.7 6.7 6.7"/></svg> Envoyer la commande par WhatsApp</button>
             </form>
           </div>
         </div>
@@ -130,14 +131,47 @@
 
   <script src="assets/js/main.js"></script>
   <script src="assets/js/cart.js"></script>
+  <script src="assets/js/catalog.js"></script>
+  <script src="assets/js/prodimg.js"></script>
   <script>
     const currencyFCFA = (n)=> (parseInt(n,10)||0).toLocaleString('fr-FR') + ' FCFA';
-    function tokenFromStorage(){ try{ return localStorage.getItem('yayra_token') || ''; }catch(e){ return ''; } }
-    function requireToken(){
-      const t = tokenFromStorage();
-      if(!t){ document.getElementById('checkoutMsg').textContent = 'Veuillez vous connecter pour finaliser.'; throw new Error('no token'); }
-      return t;
+    function clientSession(){ try{ return JSON.parse(localStorage.getItem('yayra_client_session') || 'null'); }catch(e){ return null; } }
+    function itemImage(it){
+      var prod = null;
+      try{ if(window.YAYRA_CATALOG) prod = YAYRA_CATALOG.products.find(function(p){ return String(p.id) === String(it.product_id); }); }catch(e){}
+      if(window.YAYRA_PRODIMG) return YAYRA_PRODIMG.url(prod || { name: it.name });
+      return (prod && prod.image_url) ? prod.image_url : '';
     }
+    // Popup image : clic sur un nom de produit -> image ; toucher ailleurs -> disparaît.
+    var cartPop = null;
+    function ensurePop(){
+      if(cartPop) return cartPop;
+      cartPop = document.createElement('div'); cartPop.className = 'cart-img-pop';
+      cartPop.innerHTML = '<img alt="" />';
+      document.body.appendChild(cartPop);
+      return cartPop;
+    }
+    function hidePop(){ if(cartPop) cartPop.classList.remove('show'); }
+    function showProdImage(el){
+      var src = el.getAttribute('data-img'); if(!src) return;
+      var pop = ensurePop(); pop.querySelector('img').src = src;
+      var r = el.getBoundingClientRect();
+      pop.style.left = Math.min(window.innerWidth - 16, Math.max(16, r.left)) + 'px';
+      pop.style.top = (r.bottom + 8) + 'px';
+      // recadrage si dépasse en bas
+      pop.classList.add('show');
+      requestAnimationFrame(function(){
+        var pr = pop.getBoundingClientRect();
+        if(pr.bottom > window.innerHeight - 8){ pop.style.top = Math.max(8, r.top - pr.height - 8) + 'px'; }
+        if(pr.right > window.innerWidth - 8){ pop.style.left = Math.max(8, window.innerWidth - pr.width - 8) + 'px'; }
+      });
+    }
+    document.addEventListener('click', function(e){
+      var name = e.target.closest ? e.target.closest('.cart-prod') : null;
+      if(name){ e.stopPropagation(); showProdImage(name); }
+      else hidePop();
+    });
+    document.addEventListener('touchstart', function(e){ if(!(e.target.closest && e.target.closest('.cart-prod'))) hidePop(); }, { passive:true });
     function renderCart(){
       const box = document.getElementById('cartBox');
       const state = window.YayaCart ? window.YayaCart.load() : {items:[]};
@@ -147,10 +181,12 @@
         document.getElementById('grandTotal').textContent = currencyFCFA(0);
         return;
       }
-      let html = '<div class="table-wrap"><table class="table"><thead><tr><th>Produit</th><th>Qté</th><th>Prix</th><th>Total</th></tr></thead><tbody>';
+      let html = '<p class="muted" style="margin:0 0 10px; font-size:13px;">Astuce : touchez le nom d\'un produit pour voir sa photo.</p>';
+      html += '<div class="table-wrap"><table class="table"><thead><tr><th>Produit</th><th>Qté</th><th>Prix</th><th>Total</th></tr></thead><tbody>';
       for(const it of items){
         const line = currencyFCFA((parseInt(it.price_fcfa,10)||0) * (parseInt(it.qty,10)||0));
-        html += `<tr><td style="font-weight:600; color:var(--ink);">${it.name||''}</td><td>${it.qty}</td><td>${currencyFCFA(it.price_fcfa)}</td><td>${line}</td></tr>`;
+        const img = itemImage(it);
+        html += `<tr><td><span class="cart-prod" data-img="${img}" style="font-weight:600; color:var(--ink);">${it.name||''}</span></td><td>${it.qty}</td><td>${currencyFCFA(it.price_fcfa)}</td><td>${line}</td></tr>`;
       }
       html += '</tbody></table></div>';
       box.innerHTML = html;
@@ -159,34 +195,47 @@
     document.addEventListener('DOMContentLoaded', ()=>{
       renderCart();
       window.YayaCart.syncCartCount();
+      // Pré-remplir le nom si la cliente est connectée
+      var sess = clientSession();
+      if(sess && sess.name){ var nf = document.querySelector('#checkoutForm [name=full_name]'); if(nf && !nf.value) nf.value = sess.name; }
+
       document.getElementById('checkoutForm').addEventListener('submit', async (e)=>{
         e.preventDefault();
         const msg = document.getElementById('checkoutMsg');
-        msg.textContent = '';
-        try{ requireToken(); }catch{ return; }
         const form = e.target;
-        const body = {
+        const items = (window.YayaCart ? window.YayaCart.load().items : []) || [];
+        if(!items.length){ msg.style.color = 'var(--rose)'; msg.textContent = 'Votre panier est vide.'; return; }
+        if(!window.YAYRA_ORDERS){ msg.style.color = 'var(--rose)'; msg.textContent = 'Module commande indisponible, réessayez.'; return; }
+        // Nom + numéro avec indicatif pays obligatoires (adresse optionnelle)
+        const nom = form.full_name.value.trim();
+        const tel = form.phone.value.trim();
+        if(!nom){ msg.style.color = 'var(--rose)'; msg.textContent = 'Votre nom est obligatoire.'; return; }
+        const digits = tel.replace(/[^0-9]/g, '');
+        if(!/^\+/.test(tel) || digits.length < 8){ msg.style.color = 'var(--rose)'; msg.textContent = 'Entrez votre numéro avec l\'indicatif du pays (ex. +228 90 00 00 00).'; return; }
+        const s = clientSession();
+        msg.style.color = ''; msg.textContent = 'Préparation de votre commande...';
+        const order = await window.YAYRA_ORDERS.create({
           full_name: form.full_name.value.trim(),
           phone: form.phone.value.trim(),
           address: form.address.value.trim(),
-          items: window.YayaCart.load().items,
+          clientEmail: s ? s.email : '',
+          items: items,
           total_fcfa: window.YayaCart.total(),
-        };
-        try{
-          const res = await fetch('api/orders.php?action=create', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tokenFromStorage() },
-            body: JSON.stringify(body),
-          });
-          const data = await res.json();
-          if(!data.ok){ msg.textContent = data.error || 'Erreur lors de l’envoi.'; return; }
-          localStorage.setItem('yaya_cart_v1', JSON.stringify({items:[]}));
-          window.location.href = 'client/orders.html';
-        }catch(err){ msg.textContent = 'Erreur réseau.'; }
+        });
+        // Vide le panier
+        localStorage.setItem('yaya_cart_v1', JSON.stringify({ items: [] }));
+        window.YayaCart.syncCartCount();
+        renderCart();
+        // Ouvre WhatsApp avec la fiche pré-remplie vers la boutique
+        window.open(window.YAYRA_ORDERS.waUrl(order), '_blank');
+        msg.style.color = 'var(--gold)';
+        msg.innerHTML = 'Commande <strong>' + order.ref + '</strong> envoyée ✓ — finalisez l\'envoi dans WhatsApp.'
+          + (s ? ' Retrouvez-la dans <a href="client/orders.html" style="color:var(--gold);font-weight:600;">vos commandes</a>.' : '');
       });
     });
   </script>
   <script src="assets/js/firebase-config.js"></script>
+  <script src="assets/js/orders.js"></script>
   <script src="assets/js/livebadge.js"></script>
   <script src="assets/js/xofix.js"></script>
   <script src="assets/js/account.js"></script>

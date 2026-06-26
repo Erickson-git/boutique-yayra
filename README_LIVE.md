@@ -54,7 +54,9 @@ ceci (règles permanentes, sans date d'expiration), puis **Publier** :
     "live":         { ".read": true, ".write": true },
     "videos":       { ".read": true, ".write": true },
     "contacts":     { ".read": true, ".write": true },
-    "live_history": { ".read": true, ".write": true }
+    "live_history": { ".read": true, ".write": true },
+    "clients":      { ".read": true, ".write": true },
+    "orders":       { ".read": true, ".write": true }
   }
 }
 ```

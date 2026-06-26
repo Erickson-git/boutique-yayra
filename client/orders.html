@@ -64,31 +64,48 @@
   <script src="../assets/js/main.js"></script>
   <script>
     const token = () => localStorage.getItem('yayra_token') || '';
+    function clientSession(){ try{ return JSON.parse(localStorage.getItem('yayra_client_session') || 'null'); }catch(e){ return null; } }
     const goLogin = () => { window.location.href = 'login.html'; };
     document.getElementById('logoutBtn').addEventListener('click', ()=>{ localStorage.removeItem('yayra_token'); goLogin(); });
+    function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g, c=> ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
     async function loadOrders(){
       const wrap = document.getElementById('ordersWrap');
-      const t = token();
-      if(!t){ goLogin(); return; }
+      if(!token()){ goLogin(); return; }
+      if(!window.YAYRA_ORDERS){ wrap.innerHTML = '<p class="muted">Chargement…</p>'; return; }
+      const O = window.YAYRA_ORDERS;
+      const s = clientSession();
       wrap.innerHTML = '<p class="muted">Chargement...</p>';
-      try{
-        const res = await fetch('../api/orders.php?action=list', { method: 'GET', headers: { 'Authorization': 'Bearer ' + t } });
-        const data = await res.json();
-        if(!data.ok){ wrap.innerHTML = '<p class="muted">Aucune commande pour le moment. <a href="../shop.html" style="color:var(--gold)">Découvrir la boutique</a></p>'; return; }
-        const orders = data.orders || [];
-        if(orders.length === 0){ wrap.innerHTML = '<p class="muted">Vous n\'avez pas encore de commande. <a href="../shop.html" style="color:var(--gold)">Découvrir la boutique</a></p>'; return; }
-        let html = '<div class="table-wrap"><table class="table"><thead><tr><th>N°</th><th>Statut</th><th>Total</th><th>Date</th></tr></thead><tbody>';
-        for(const o of orders){
-          html += `<tr><td>#${o.id}</td><td>${o.status}</td><td>${(parseInt(o.total_fcfa,10)||0).toLocaleString('fr-FR')} FCFA</td><td>${o.created_at || ''}</td></tr>`;
-        }
-        html += '</tbody></table></div>';
-        wrap.innerHTML = html;
-      }catch(e){ wrap.innerHTML = '<p class="muted">Aucune commande pour le moment. <a href="../shop.html" style="color:var(--gold)">Découvrir la boutique</a></p>'; }
+      const orders = (s && s.email) ? await O.listForClient(s.email) : [];
+      if(!orders.length){ wrap.innerHTML = '<p class="muted">Vous n\'avez pas encore de commande. <a href="../shop.html" style="color:var(--gold)">Découvrir la boutique</a></p>'; return; }
+      wrap.innerHTML = orders.map(function(o){
+        const paid = o.status === 'paid';
+        const disc = (o.discount_fcfa||0) > 0;
+        const eff = O.effectiveTotal(o);
+        const badge = paid
+          ? '<span class="order-stamp" style="font-size:13px;">Payé</span>'
+          : '<span style="background:var(--gold);color:#1a1206;padding:4px 11px;border-radius:999px;font-size:12px;font-weight:600;">En attente de paiement</span>';
+        const items = (o.items||[]).map(function(it){ return esc(it.name)+' ×'+(it.qty||1); }).join(', ');
+        const notice = disc
+          ? '<div style="margin:10px 0;padding:11px 14px;border:1px solid var(--gold-2);border-radius:12px;background:var(--bg-2);color:var(--gold);font-weight:600;font-size:14px;">🎉 Réduction de '+O.fcfa(o.discount_fcfa)+' appliquée par la boutique !'+(o.discountStr?(' <span class="muted" style="font-weight:400;">('+esc(o.discountStr)+')</span>'):'')+'</div>'
+          : '';
+        const totalHtml = disc
+          ? 'Total : <span class="muted" style="text-decoration:line-through;font-weight:400;font-size:13px;">'+O.fcfa(o.total_fcfa)+'</span> <span style="color:var(--gold);">'+O.fcfa(eff)+'</span>'
+          : 'Total : <span style="color:var(--gold);">'+O.fcfa(o.total_fcfa)+'</span>';
+        return '<div style="border:1px solid var(--line-2);border-radius:var(--r-md);padding:18px;margin-bottom:14px;background:var(--paper);">'
+          + '<div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;"><strong>'+esc(o.ref||o.id)+'</strong>'+badge+'</div>'
+          + '<p class="muted" style="margin:8px 0 4px;font-size:13px;">🗓 Commandé le '+esc(o.createdStr||'')+(paid&&o.paidStr?(' · payé le '+esc(o.paidStr)):'')+'</p>'
+          + notice
+          + '<p style="margin:4px 0;">'+items+'</p>'
+          + '<strong>'+totalHtml+'</strong>'
+          + '</div>';
+      }).join('');
     }
     document.addEventListener('DOMContentLoaded', loadOrders);
+    setInterval(loadOrders, 25000); // met à jour le statut (ex. paiement confirmé)
   </script>
   <script src="../assets/js/firebase-config.js"></script>
+  <script src="../assets/js/orders.js"></script>
   <script src="../assets/js/livebadge.js"></script>
   <script src="../assets/js/xofix.js"></script>
   <script src="../assets/js/account.js"></script>

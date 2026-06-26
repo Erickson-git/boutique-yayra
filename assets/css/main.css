@@ -410,6 +410,17 @@ h1,h2,h3,h4{margin:0; font-weight:500}
 .scroll-fab.up .ic{transform:rotate(180deg)}
 @media (max-width:560px){ .scroll-fab{width:44px; height:44px; left:16px; bottom:16px} }
 
+/* ---------- Commandes : tampon PAYÉ + popup image panier ---------- */
+.order-stamp{display:inline-block; border:3px double #1f7a3f; color:#1f7a3f; font-weight:800; text-transform:uppercase;
+  letter-spacing:.14em; padding:6px 16px; border-radius:8px; transform:rotate(-9deg); font-size:15px; opacity:.92}
+.cart-prod{cursor:pointer; border-bottom:1px dotted var(--gold-2)}
+.cart-prod:hover{color:var(--gold)}
+.cart-img-pop{position:fixed; z-index:1200; max-width:min(74vw,300px); border-radius:14px; overflow:hidden;
+  box-shadow:var(--shadow); border:3px solid #fff; background:#fff; opacity:0; visibility:hidden; transform:scale(.92);
+  transition:opacity .18s, transform .18s, visibility .18s; pointer-events:none}
+.cart-img-pop.show{opacity:1; visibility:visible; transform:scale(1)}
+.cart-img-pop img{display:block; width:100%; height:auto}
+
 /* ---------- Pages internes ---------- */
 .page{padding:clamp(44px,6vw,80px) 0}
 .page-hero{position:relative; padding:clamp(70px,9vw,130px) 0 clamp(40px,5vw,64px); text-align:center; overflow:hidden; isolation:isolate; color:#fff}
