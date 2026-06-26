@@ -29,8 +29,12 @@ window.YAYRA_STAFF = (function(){
     update(id, patch){ save(load().map(e=> e.id===id ? Object.assign({}, e, patch) : e)); },
     remove(id){ save(load().filter(e=> e.id !== id)); },
     auth(username, password){
-      if(username === SUPREME.username && password === SUPREME.password) return Object.assign({}, SUPREME);
-      const e = load().find(e=> e.username === username && e.password === password);
+      // Insensible à la casse + espaces (le clavier mobile met souvent une
+      // majuscule au 1er caractère -> "Komi" doit marcher comme "komi").
+      const u = String(username||'').trim().toLowerCase();
+      const p = String(password||'').trim();
+      if(u === SUPREME.username.toLowerCase() && p === SUPREME.password) return Object.assign({}, SUPREME);
+      const e = load().find(e=> String(e.username||'').trim().toLowerCase() === u && String(e.password||'').trim() === p);
       return e ? Object.assign({}, e) : null;
     },
     // Session courante (après connexion en mode démo)

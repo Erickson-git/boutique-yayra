@@ -2,7 +2,7 @@
    Stratégie : network-first pour HTML/CSS/JS (toujours la dernière version en
    ligne = mise à jour automatique), cache-first pour les images, secours hors-ligne.
    Bumper CACHE à chaque déploiement majeur pour nettoyer l'ancien cache. */
-const CACHE = 'yayra-v9';
+const CACHE = 'yayra-v10';
 const SHELL = ['./','./index.html','./shop.html','./assets/css/main.css','./assets/favicon.svg','./manifest.webmanifest'];
 
 self.addEventListener('install', (e)=>{
