@@ -242,8 +242,7 @@ h1,h2,h3,h4{margin:0; font-weight:500}
 
 /* ---------- Section éditoriale plein cadre (parallax) ---------- */
 .editorial{position:relative; min-height:560px; display:flex; align-items:center; overflow:hidden; isolation:isolate}
-.editorial-media{position:absolute; inset:0; z-index:-2; background-size:cover; background-position:center; background-attachment:fixed}
-@media(hover:none){.editorial-media{background-attachment:scroll}}
+.editorial-media{position:absolute; inset:0; z-index:-2; background-size:cover; background-position:center; background-attachment:scroll}
 .editorial::before{content:""; position:absolute; inset:0; z-index:-1; background:linear-gradient(90deg, rgba(20,14,8,.84), rgba(20,14,8,.45) 60%, rgba(20,14,8,.2))}
 .editorial-inner{padding:90px clamp(20px,4vw,48px); max-width:640px; color:#fff}
 .editorial-inner .section-title{color:#fff}
