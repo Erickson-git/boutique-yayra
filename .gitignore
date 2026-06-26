@@ -22,3 +22,6 @@ _sheets/
 _probe/
 _t/
 _tools/
+
+# Outils de build Android (volumineux, hors site)
+_apkbuild/

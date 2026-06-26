@@ -30,10 +30,7 @@ function clamp_str(string $s, int $max): string {
   return $s;
 }
 
-function json_response(array $data, int $status = 200): void {
-  http_response_code($status);
-  echo json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-}
+// json_response() est déjà fournie par api/db.php (inclus ci-dessus) — ne pas la redéclarer.
 
 if ($action === 'create_demo_payment') {
   require_post();

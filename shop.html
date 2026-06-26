@@ -194,6 +194,7 @@
           <button class="btn-outline" type="button" id="kbAdd">Ajouter</button>
         </div>
         <div class="kb-list" id="kbList"><p class="kb-empty">Aucun produit dans le kit.</p></div>
+        <div class="kb-advice" id="kbAdvice" style="display:none;"></div>
         <div class="kb-summary">
           <div class="kb-line"><span>Sous-total</span><span class="kb-old" id="kbSub">0 FCFA</span></div>
           <div class="kb-line"><span>Remise kit (−5%)</span><span class="kb-save" id="kbSave">0 FCFA</span></div>
@@ -211,6 +212,7 @@
   </div>
 
   <script src="assets/js/catalog.js"></script>
+  <script src="assets/js/kit-knowledge.js"></script>
   <script src="assets/js/prodimg.js"></script>
   <script src="assets/js/advisor.js"></script>
   <script src="assets/js/kits.js"></script>
@@ -432,11 +434,19 @@
       kbModal.classList.add('open'); document.body.style.overflow = 'hidden';
     }
     function kbCloseFn(){ kbModal.classList.remove('open'); document.body.style.overflow = ''; }
+    function kbWhyHtml(why){
+      if(!why) return '';
+      const parts = [];
+      if(why.utilite) parts.push('<strong>Utilité :</strong> ' + why.utilite);
+      if(why.aide) parts.push('<strong>Pour votre travail :</strong> ' + why.aide);
+      if(!parts.length) return '';
+      return '<div class="kb-why muted" style="font-size:12.5px; line-height:1.5; margin-top:4px;">' + parts.join('<br>') + '</div>';
+    }
     function kbRender(){
       const list = document.getElementById('kbList');
       if(!kbItems.length){ list.innerHTML = '<p class="kb-empty">Aucun produit dans le kit.</p>'; }
       else {
-        list.innerHTML = kbItems.map((it,idx)=> '<div class="kb-row"><span>'+it.name+' <span class="muted">×'+it.qty+'</span></span><span>'+currencyFCFA(it.price_fcfa*it.qty)+' &nbsp;<button class="kb-rm" data-i="'+idx+'">Retirer</button></span></div>').join('');
+        list.innerHTML = kbItems.map((it,idx)=> '<div class="kb-row" style="display:block;"><div style="display:flex; justify-content:space-between; gap:10px;"><span>'+it.name+' <span class="muted">×'+it.qty+'</span></span><span style="white-space:nowrap;">'+currencyFCFA(it.price_fcfa*it.qty)+' &nbsp;<button class="kb-rm" data-i="'+idx+'">Retirer</button></span></div>'+kbWhyHtml(it.why)+'</div>').join('');
         list.querySelectorAll('.kb-rm').forEach(b=> b.addEventListener('click', ()=>{ kbItems.splice(parseInt(b.dataset.i,10),1); kbRender(); }));
       }
       const pr = window.YAYRA_KITS.price(kbItems);
@@ -449,12 +459,43 @@
     function kbBudgetPropose(){
       const amount = parseInt(document.getElementById('kbBudget').value, 10) || 0;
       const msg = document.getElementById('kbMsg');
-      if(amount <= 0){ msg.style.color='var(--rose)'; msg.textContent='Indiquez un budget.'; return; }
+      const advice = document.getElementById('kbAdvice');
+      if(amount <= 0){ msg.style.color='var(--rose)'; msg.textContent='Indiquez un budget.'; if(advice) advice.style.display='none'; return; }
       const cat = document.getElementById('kbBudgetCat').value;
       const kit = window.YAYRA_KITS.byBudget(amount, cat);
-      if(!kit.items.length){ msg.style.color='var(--rose)'; msg.textContent='Aucun produit ne rentre dans ce budget.'; return; }
+      if(!kit.items.length){ msg.style.color='var(--rose)'; msg.textContent='Aucun produit ne rentre dans ce budget.'; if(advice) advice.style.display='none'; return; }
       kbItems = kit.items.slice();
-      msg.style.color='var(--gold)'; msg.textContent = kit.items.length + ' produits proposés pour votre budget (remise −5% incluse).';
+      msg.style.color='var(--gold)';
+      msg.textContent = 'Voici votre meilleur kit pour ' + currencyFCFA(amount) + ' — ' + kit.items.length + ' produit(s), remise −5% incluse (' + currencyFCFA(kit.total) + ').';
+      // Conseil d'upsell : produits essentiels juste au-dessus du budget.
+      if(advice){
+        if(kit.upsell && kit.upsell.length){
+          let html = '<div class="kb-advice-card" style="margin-top:6px; padding:12px 14px; border:1px solid var(--gold-2); border-radius:12px; background:var(--bg-2);">'
+            + '<p style="margin:0 0 8px; font-weight:600; color:var(--gold);">💡 Conseil pour aller plus loin</p>';
+          kit.upsell.forEach(u=>{
+            html += '<p style="margin:0 0 8px; font-size:13px; line-height:1.55;">'
+              + 'Ajoutez seulement <strong>+' + currencyFCFA(u.extra) + '</strong> pour avoir aussi <strong>' + u.name + '</strong>.'
+              + (u.why && u.why.utilite ? '<br><span class="muted">' + u.why.utilite + (u.why.aide ? ' ' + u.why.aide : '') + '</span>' : '')
+              + ' <button class="kb-up small-btn" data-up="' + u.id + '" style="margin-top:4px;">Ajouter</button>'
+              + '</p>';
+          });
+          html += '</div>';
+          advice.innerHTML = html;
+          advice.style.display = 'block';
+          advice.querySelectorAll('[data-up]').forEach(b=> b.addEventListener('click', ()=>{
+            const id = b.getAttribute('data-up');
+            const p = findProduct(id); if(!p) return;
+            if(!kbItems.find(x=> String(x.id)===String(id))){
+              const info = window.YAYRA_KIT_KB ? window.YAYRA_KIT_KB.info(p.name, p.category_slug) : null;
+              kbItems.push({ id:p.id, name:p.name, price_fcfa:p.price_fcfa, qty:1, why: info ? { utilite:info.utilite, usage:info.usage, aide:info.aide } : null });
+            }
+            advice.style.display = 'none';
+            kbRender();
+          }));
+        } else {
+          advice.style.display = 'none';
+        }
+      }
       kbRender();
     }
     function kbAddToCart(){
