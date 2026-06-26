@@ -96,6 +96,32 @@
     document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape' && introLb.classList.contains('open')) closeIntro(); });
   }
 
+  /* Parallax des images d'arrière-plan des sections éditoriales : l'image reste
+     quasi fixe pendant que la page défile par-dessus. Fonctionne sur mobile
+     (contrairement à background-attachment:fixed, non supporté sur téléphone). */
+  (function(){
+    var medias = Array.prototype.slice.call(document.querySelectorAll('.editorial-media'));
+    if(!medias.length) return;
+    var ticking = false;
+    function apply(){
+      var vh = window.innerHeight || document.documentElement.clientHeight;
+      medias.forEach(function(m){
+        var sec = m.parentElement; if(!sec) return;
+        var rect = sec.getBoundingClientRect();
+        if(rect.bottom < -50 || rect.top > vh + 50) return; // hors écran : on ignore
+        var center = rect.top + rect.height / 2;
+        var p = (center - vh / 2) / vh;                     // ~ +0.x (bas) .. -0.x (haut)
+        var shift = Math.max(-1, Math.min(1, p)) * 15;      // % borné -> jamais de bord visible
+        m.style.transform = 'translate3d(0,' + shift.toFixed(2) + '%,0)';
+      });
+      ticking = false;
+    }
+    function onScroll(){ if(!ticking){ ticking = true; (window.requestAnimationFrame || function(f){ f(); })(apply); } }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    apply();
+  })();
+
   /* Diaporama de l'image d'entête (accueil) : fondu enchaîné automatique. */
   (function(){
     var media = document.querySelector('.hero-media');

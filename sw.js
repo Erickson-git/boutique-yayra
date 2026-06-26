@@ -2,12 +2,15 @@
    Stratégie : network-first pour HTML/CSS/JS (toujours la dernière version en
    ligne = mise à jour automatique), cache-first pour les images, secours hors-ligne.
    Bumper CACHE à chaque déploiement majeur pour nettoyer l'ancien cache. */
-const CACHE = 'yayra-v7';
+const CACHE = 'yayra-v8';
 const SHELL = ['./','./index.html','./shop.html','./assets/css/main.css','./assets/favicon.svg','./manifest.webmanifest'];
 
 self.addEventListener('install', (e)=>{
   self.skipWaiting();
-  e.waitUntil(caches.open(CACHE).then(c=> c.addAll(SHELL).catch(()=>{})));
+  // {cache:'reload'} : on récupère la version RÉSEAU fraîche (contourne le cache HTTP du navigateur)
+  e.waitUntil(caches.open(CACHE).then(c=> Promise.all(SHELL.map(u=>
+    fetch(u, { cache:'reload' }).then(r=>{ if(r && r.ok) return c.put(u, r); }).catch(()=>{})
+  ))));
 });
 
 self.addEventListener('activate', (e)=>{
