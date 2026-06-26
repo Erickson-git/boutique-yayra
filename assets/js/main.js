@@ -113,7 +113,7 @@
       if(ds){ img.src = ds; img.removeAttribute('data-src'); }
       img.classList.add('active');
     }
-    setInterval(function(){ show(i + 1); }, 5000);
+    setInterval(function(){ show(i + 1); }, 10000);
   })();
 
   /* Bouton flottant pour descendre / remonter la page facilement.
