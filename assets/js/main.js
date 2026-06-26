@@ -95,4 +95,34 @@
     v.addEventListener('ended', ()=>{ if(idx < PLAYLIST.length - 1) playIdx(idx + 1); else closeIntro(); });
     document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape' && introLb.classList.contains('open')) closeIntro(); });
   }
+
+  /* Bouton flottant pour descendre / remonter la page facilement.
+     En haut de page : flèche bas -> descend. Après défilement : flèche haut -> remonte.
+     Placé en bas à gauche (le bouton WhatsApp est en bas à droite). */
+  (function(){
+    var btn = document.createElement('button');
+    btn.type = 'button'; btn.className = 'scroll-fab';
+    btn.setAttribute('aria-label', 'Descendre la page');
+    btn.innerHTML = '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M6 13l6 6 6-6"/></svg>';
+    function add(){
+      if(!document.body) return;
+      document.body.appendChild(btn);
+      var goingUp = false;
+      function maxScroll(){ var d = document.documentElement, b = document.body; return Math.max(d.scrollHeight, b.scrollHeight) - window.innerHeight; }
+      function update(){
+        var max = maxScroll();
+        if(max < 120){ btn.classList.remove('show'); return; }
+        btn.classList.add('show');
+        var y = window.pageYOffset || document.documentElement.scrollTop || 0;
+        goingUp = y > window.innerHeight * 0.6;
+        btn.classList.toggle('up', goingUp);
+        btn.setAttribute('aria-label', goingUp ? 'Remonter en haut' : 'Descendre la page');
+      }
+      btn.addEventListener('click', function(){ window.scrollTo({ top: goingUp ? 0 : maxScroll(), behavior: 'smooth' }); });
+      window.addEventListener('scroll', update, { passive: true });
+      window.addEventListener('resize', update);
+      update();
+    }
+    if(document.body) add(); else document.addEventListener('DOMContentLoaded', add);
+  })();
 })();

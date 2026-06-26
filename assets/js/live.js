@@ -130,14 +130,33 @@
       if(!bid || v.src || !(window.LIVE && LIVE.ready)) return Promise.resolve(false);
       return LIVE.ref('videoBlobs/'+bid).once('value').then(s=>{ const d=s.val(); if(d){ v.src = d; return true; } return false; }).catch(()=> false);
     }
-    function playVid(v){ if(!v) return; const bid=v.getAttribute('data-blobid'); if(bid && !v.src){ loadBlob(v).then(ok=>{ if(ok) v.play().catch(()=>{}); }); } else v.play().catch(()=>{}); }
+    function playVid(v){
+      if(!v) return;
+      const bid = v.getAttribute('data-blobid');
+      function attempt(){
+        // On TENTE de lire avec le son (son automatique). Si le navigateur refuse
+        // l'autoplay sonore, on retombe en muet et on propose d'activer le son.
+        v.muted = !soundOn;
+        const p = v.play();
+        if(p && p.catch) p.catch(()=>{ if(!v.muted){ v.muted = true; v.play().catch(()=>{}); showSndCta(); } });
+      }
+      function go(){
+        v.preload = 'auto';      // démarrage rapide pour la vidéo courante
+        attempt();
+        // Si la vidéo n'était pas encore prête, on relance la lecture dès qu'elle l'est.
+        v.addEventListener('canplay', attempt, { once:true });
+        v.addEventListener('loadeddata', attempt, { once:true });
+      }
+      if(bid && !v.src){ loadBlob(v).then(ok=>{ if(ok) go(); }); } else go();
+    }
 
     /* Fenêtre glissante : on précharge la vidéo courante ± WINDOW (≈10 voisines)
        pour un défilement fluide, et on pilote lecture/son via l'API YouTube
        (postMessage) — sans recharger l'iframe. */
     let items = Array.from(feed.querySelectorAll('.feed-item'));
     const WINDOW = 5;
-    let soundOn = false, current = -1, io = null;
+    // soundOn = true : on veut le son automatiquement (repli muet si le navigateur bloque).
+    let soundOn = true, current = -1, io = null;
 
     /* Préchargement progressif des posters (miniatures) des 100 vidéos :
        toutes finissent par se charger, mais les plus PROCHES de la vidéo
@@ -176,7 +195,7 @@
             else { ytCmd(f,'pauseVideo'); ytCmd(f,'mute'); }
           } else unloadFrame(f);
         }
-        if(v){ if(i === idx){ playVid(v); v.muted = !soundOn; } else { v.pause(); v.muted = true; } }
+        if(v){ if(i === idx){ playVid(v); } else { v.pause(); v.muted = true; } }
       });
     }
     function setCurrent(idx){
@@ -187,20 +206,23 @@
       // Les lecteurs fraîchement chargés peuvent ne pas être prêts : on réapplique
       [400,1000,2000].forEach(d=> setTimeout(()=>{ if(current === idx) applyState(idx); }, d));
     }
-    function enableSound(){ if(soundOn) return; soundOn = true; hideSndCta(); applyState(current); }
+    // Au tout premier geste (tap/clic/scroll tactile/touche) : on (ré)active le son
+    // sur la vidéo courante — le navigateur n'autorise le son qu'après un geste.
+    function enableSound(){ soundOn = true; hideSndCta(); if(current >= 0) applyState(current); }
     // Bouton visible « activer le son » : un geste sur la PAGE est requis (les touches
     // sur la vidéo vont dans le lecteur YouTube et n'autorisent pas le son).
     let sndCta = null;
     function hideSndCta(){ if(sndCta){ sndCta.remove(); sndCta = null; } }
     function showSndCta(){
-      if(soundOn || sndCta) return;
+      if(sndCta) return;
       sndCta = document.createElement('button');
       sndCta.className = 'feed-soundcta';
       sndCta.innerHTML = '<svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M16 9a4 4 0 0 1 0 6M19 7a8 8 0 0 1 0 10"/></svg> Touchez pour le son';
       sndCta.addEventListener('click', (e)=>{ e.stopPropagation(); enableSound(); });
       document.body.appendChild(sndCta);
     }
-    ['pointerdown','touchstart','click','keydown'].forEach(ev=> document.addEventListener(ev, enableSound, { passive:true }));
+    ['pointerdown','pointerup','touchstart','touchend','click','keydown','wheel'].forEach(ev=> document.addEventListener(ev, enableSound, { passive:true }));
+    feed.addEventListener('scroll', enableSound, { passive:true });
     if('IntersectionObserver' in window){
       io = new IntersectionObserver((entries)=>{
         entries.forEach(e=>{ if(e.isIntersecting && e.intersectionRatio > 0.6){ const idx = items.indexOf(e.target); if(idx > -1) setCurrent(idx); } });
