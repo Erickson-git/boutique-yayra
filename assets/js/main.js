@@ -96,6 +96,26 @@
     document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape' && introLb.classList.contains('open')) closeIntro(); });
   }
 
+  /* Diaporama de l'image d'entête (accueil) : fondu enchaîné automatique. */
+  (function(){
+    var media = document.querySelector('.hero-media');
+    if(!media) return;
+    var slides = Array.prototype.slice.call(media.querySelectorAll('.hero-slide'));
+    if(slides.length < 2) return;
+    // Précharge les images suivantes (différées) pour une transition fluide.
+    slides.forEach(function(img){ var ds = img.getAttribute('data-src'); if(ds){ var pre = new Image(); pre.src = ds; } });
+    var i = 0;
+    function show(n){
+      slides[i].classList.remove('active');
+      i = (n + slides.length) % slides.length;
+      var img = slides[i];
+      var ds = img.getAttribute('data-src');
+      if(ds){ img.src = ds; img.removeAttribute('data-src'); }
+      img.classList.add('active');
+    }
+    setInterval(function(){ show(i + 1); }, 5000);
+  })();
+
   /* Bouton flottant pour descendre / remonter la page facilement.
      En haut de page : flèche bas -> descend. Après défilement : flèche haut -> remonte.
      Placé en bas à gauche (le bouton WhatsApp est en bas à droite). */
