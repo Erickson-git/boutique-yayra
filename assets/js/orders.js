@@ -45,6 +45,30 @@ window.YAYRA_ORDERS = (function(){
     return order;
   }
 
+  // Encodage URL-safe de la commande (pour la transmettre à l'admin via un lien).
+  function b64url(s){ try{ return btoa(unescape(encodeURIComponent(s))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''); }catch(e){ return ''; } }
+  function unb64url(s){ try{ s = String(s||'').replace(/-/g,'+').replace(/_/g,'/'); while(s.length % 4) s += '='; return decodeURIComponent(escape(atob(s))); }catch(e){ return ''; } }
+  function encodeOrder(o){
+    const slim = { id:o.id, ref:o.ref, full_name:o.full_name, phone:o.phone, address:o.address, items:o.items, total_fcfa:o.total_fcfa, clientEmail:o.clientEmail, created:o.created, createdStr:o.createdStr, status:o.status||'pending' };
+    return b64url(JSON.stringify(slim));
+  }
+  function decodeOrder(code){ const j = unb64url(code); if(!j) return null; try{ return JSON.parse(j); }catch(e){ return null; } }
+  // Lien que l'admin ouvre pour enregistrer la commande + générer la facture.
+  function adminImportUrl(order){
+    if(typeof location === 'undefined') return '';
+    const base = location.origin + location.pathname.replace(/[^\/]*$/, '');
+    return base + 'admin/recevoir.html#i=' + encodeOrder(order);
+  }
+  // Enregistre une commande reçue (côté admin) en local + Firebase si dispo.
+  async function importOrder(o){
+    if(!o || !o.id) return null;
+    o.status = o.status || 'pending';
+    upsertLocal(o);
+    const DB = db();
+    if(DB){ try{ await fetch(DB + '/orders/' + o.id + '.json', { method:'PUT', body: JSON.stringify(o) }); }catch(e){} }
+    return o;
+  }
+
   // Fiche pro (texte brandé) pour WhatsApp.
   function waFiche(order){
     const L = [];
@@ -66,6 +90,8 @@ window.YAYRA_ORDERS = (function(){
     L.push('💰 *TOTAL : ' + fcfa(order.total_fcfa) + '*');
     L.push('');
     L.push('Merci de me confirmer le paiement et la livraison. 💖');
+    const link = adminImportUrl(order);
+    if(link){ L.push(''); L.push('— Réservé à la boutique —'); L.push('🔗 Enregistrer + facture :'); L.push(link); }
     return L.join('\n');
   }
   function waUrl(order, number){
@@ -169,5 +195,5 @@ window.YAYRA_ORDERS = (function(){
 
   function statusLabel(s){ return s === 'paid' ? 'Payé' : (s === 'cancelled' ? 'Annulé' : 'En attente de paiement'); }
 
-  return { create, waFiche, waUrl, listAll, listForClient, confirmPaid, applyDiscount, effectiveTotal, waInvoice, waInvoiceUrl, intlDigits, fcfa, dateStr, statusLabel, BOUTIQUE_WA };
+  return { create, waFiche, waUrl, listAll, listForClient, confirmPaid, applyDiscount, effectiveTotal, waInvoice, waInvoiceUrl, intlDigits, encodeOrder, decodeOrder, adminImportUrl, importOrder, fcfa, dateStr, statusLabel, BOUTIQUE_WA };
 })();
